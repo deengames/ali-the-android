@@ -1,0 +1,15 @@
+language: csharp
+solution: AliTheAndroid.sln
+mono: none
+dotnet: 2.1.300
+# Before/Install steps from: https://stackoverflow.com/questions/37048232/how-to-build-a-monogame-c-sharp-project-on-travis-ci
+before_install:
+  - wget http://www.monogame.net/releases/v3.4/MonoGame.Linux.zip
+  - unzip MonoGame.Linux.zip
+  - find * -type f -exec chmod 777 {} \; # lazy just make all executable
+install:
+  - sudo apt-get install -qq monodevelop libopenal-dev ttf-mscorefonts-installer gtk-sharp2; # install needed packages for the monogame sdk
+  - sudo ./generate.sh && yes Y|sudo ./monogame-linux.run; # install monogame sdk
+script:
+  - cd AbdullahTheAndroid.UnitTests
+  - dotnet test
