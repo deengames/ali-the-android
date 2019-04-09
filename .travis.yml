@@ -11,5 +11,5 @@ install:
   - sudo apt-get install -qq monodevelop libopenal-dev ttf-mscorefonts-installer gtk-sharp2; # install needed packages for the monogame sdk
   - sudo ./generate.sh && yes Y|sudo ./monogame-linux.run; # install monogame sdk
 script:
-  - cd AliTheAndroid.UnitTests
+  - cd AliTheAndroid.Tests
   - dotnet test
