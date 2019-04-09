@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhmadTheAndroid", "AhmadTheAndroid\AhmadTheAndroid.csproj", "{11D4B4EF-5D31-411C-B183-62AAF6FB7644}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AliTheAndroid", "AliTheAndroid\AliTheAndroid.csproj", "{11D4B4EF-5D31-411C-B183-62AAF6FB7644}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhmadTheAndroid.Tests", "AhmadTheAndroid.Tests\AhmadTheAndroid.Tests.csproj", "{1BF37446-CCD1-4715-8B40-30025BB07E55}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AliTheAndroid.Tests", "AliTheAndroid.Tests\AliTheAndroid.Tests.csproj", "{1BF37446-CCD1-4715-8B40-30025BB07E55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-# Ahmad the Android
+# Ali the Android
 
 Distant-future sci-fi narrative horror roguelike/metroidvania fusion built around learning/mastering abilities.
 
@@ -23,6 +23,7 @@ Distant-future sci-fi narrative horror roguelike/metroidvania fusion built aroun
 	- Other optional upgrades like health, power/damage, etc.
 - Jump (upgradable range)
 - Grappling hook (upgradable range)
+- Dash (breaks through walls, knocks back enemies)
 - Backtracking
   - Floors < bomb floor, which have bomb-locked doors
   - Floors < rocket floor, which have rocket-locked doors

@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/AhmadTheAndroid.Tests/AhmadTheAndroid.Tests.csproj"
+                "${workspaceFolder}/AliTheAndroid.Tests/AliTheAndroid.Tests.csproj"
             ],
             "problemMatcher": "$tsc"
         },
@@ -17,7 +17,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/AhmadTheAndroid.Tests/AhmadTheAndroid.Tests.csproj"
+                "${workspaceFolder}/AliTheAndroid.Tests/AliTheAndroid.Tests.csproj"
             ],
             "problemMatcher": "$tsc"
         },
@@ -28,7 +28,7 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/AhmadTheAndroid.Tests/AhmadTheAndroid.Tests.csproj"
+                "${workspaceFolder}/AliTheAndroid.Tests/AliTheAndroid.Tests.csproj"
             ],
             "problemMatcher": "$tsc"
         }

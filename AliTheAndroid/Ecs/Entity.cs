@@ -1,9 +1,9 @@
-using DeenGames.AhmadTheAndroid.Ecs;
+using DeenGames.AliTheAndroid.Ecs;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 
-namespace DeenGames.AhmadTheAndroid.Ecs
+namespace DeenGames.AliTheAndroid.Ecs
 {
     /// <summary>
     /// Just a simple collection of entities. You can't have dupes, though.

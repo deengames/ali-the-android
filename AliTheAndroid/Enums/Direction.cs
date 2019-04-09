@@ -1,4 +1,4 @@
-namespace AhmadTheAndroid.Enums {
+namespace AliTheAndroid.Enums {
 	enum Direction {
 		Up,
 		Right,

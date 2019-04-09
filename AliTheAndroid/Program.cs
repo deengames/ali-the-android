@@ -1,10 +1,10 @@
-﻿using DeenGames.AhmadTheAndroid.Consoles;
+﻿using DeenGames.AliTheAndroid.Consoles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SadConsole;
 using System;
 
-namespace DeenGames.AhmadTheAndroid
+namespace DeenGames.AliTheAndroid
 {
     public static class Program
     {

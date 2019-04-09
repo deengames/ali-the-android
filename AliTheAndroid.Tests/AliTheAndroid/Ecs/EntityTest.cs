@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using DeenGames.AhmadTheAndroid.Ecs;
-using DeenGames.AhmadTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Ecs;
+using DeenGames.AliTheAndroid.Enums;
 
-namespace DeenGames.AhmadTheAndroid.Tests.Ecs
+namespace DeenGames.AliTheAndroid.Tests.Ecs
 {
     [TestFixture]
     public class EntityTests

@@ -1,4 +1,4 @@
-namespace DeenGames.AhmadTheAndroid.Enums {
+namespace DeenGames.AliTheAndroid.Enums {
     public enum GameEvent
     {
         EntityDeath

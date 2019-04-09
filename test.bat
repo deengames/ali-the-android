@@ -1,1 +1,1 @@
-dotnet test AhmadTheAndroid.Tests 
+dotnet test AliTheAndroid.Tests 

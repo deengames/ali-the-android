@@ -9,9 +9,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/AhmadTheAndroid/bin/Debug/netcoreapp2.1/AhmadTheAndroid.dll",
+            "program": "${workspaceFolder}/AliTheAndroid/bin/Debug/netcoreapp2.1/AliTheAndroid.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/AhmadTheAndroid.Tests",
+            "cwd": "${workspaceFolder}/AliTheAndroid.Tests",
             "console": "internalConsole",
             "stopAtEntry": false
         },

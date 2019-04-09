@@ -1,12 +1,12 @@
 using Microsoft.Xna.Framework;
 using SadConsole;
 
-namespace DeenGames.AhmadTheAndroid.Consoles {
+namespace DeenGames.AliTheAndroid.Consoles {
     public static class ConsoleExtensions
     {
         public static void DrawCharacter(this SadConsole.Console console, float x, float y, char character, Color color)
         {
-            console.DrawCharacter(x, y, character, color, DeenGames.AhmadTheAndroid.Enums.Palette.BlackAlmost);
+            console.DrawCharacter(x, y, character, color, DeenGames.AliTheAndroid.Enums.Palette.BlackAlmost);
         }
 
         public static void DrawCharacter(this SadConsole.Console console, float x, float y, char character, Color color, Color backgroundColour)
