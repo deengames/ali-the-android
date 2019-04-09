@@ -80,13 +80,16 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             var map = new ArrayMap<bool>(this.Width, this.mapHeight);
             GoRogue.MapGeneration.Generators.CellularAutomataGenerator.Generate(map, MainGameConsole.GlobalRandom, 40);
+            var random = new Random();
 
             for (var y = 0; y < this.mapHeight; y++) {
                 for (var x = 0; x < this.Width; x++) {
                     // Invert. We want an internal cave surrounded by walls.
+                    var wallColour = random.Next(1, 100) <= 30 ? Palette.Blue : Palette.DarkestBlue;
                     map[x, y] = !map[x, y];
+
                     if (map[x, y]) {
-                        this.walls.Add(new Entity(x, y, '#', Palette.LightGrey)); // FOV determines colour
+                        this.walls.Add(new Entity(x, y, '#', wallColour)); // FOV determines colour
                     }
                 }
             }
@@ -181,7 +184,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             foreach (var wall in this.walls)
             {
-                var colour = Palette.Grey;
+                var colour = Palette.DarkBlueMuted;
                 if (IsInPlayerFov((int)wall.X, (int)wall.Y))
                 {
                     colour = wall.Color;
