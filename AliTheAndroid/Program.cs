@@ -59,8 +59,7 @@ namespace DeenGames.AliTheAndroid
             Global.CurrentScreen = new SadConsole.ScreenObject();
 
             // Initialize the windows
-            // Global.CurrentScreen.Children.Add(new PrototypeGameConsole(GameWidthInTiles, GameHeightInTiles));
-            Global.CurrentScreen.Children.Add(new MainGameConsole(GameWidthInTiles, GameHeightInTiles));
+            Global.CurrentScreen.Children.Add(new PrototypeGameConsole(GameWidthInTiles, GameHeightInTiles));
         }
 
         private static void Update(GameTime time)

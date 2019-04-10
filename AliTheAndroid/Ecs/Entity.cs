@@ -10,14 +10,14 @@ namespace DeenGames.AliTheAndroid.Ecs
     /// Insert is O(1), retrieval by type is O(1).
     public class Entity
     {
-		public string Name { get; private set; }
+		public string Name { get; protected set; }
 
         public Color Color { get; set; }
         public char Character { get; set; }
 		public int X { get; set; }
 		public int Y { get; set; }
         
-		public int VisionRange { get; } = 5;
+		public int VisionRange { get; protected set; } = 5;
 		
         private IDictionary<Type, AbstractComponent> components = new Dictionary<Type, AbstractComponent>();
 

@@ -1,37 +1,39 @@
-using DeenGames.AliTheAndroid.Consoles;
-using DeenGames.AliTheAndroid.Ecs;
-using DeenGames.AliTheAndroid.Events;
-using DeenGames.AliTheAndroid.Enums;
-using Palette = DeenGames.AliTheAndroid.Enums.Palette;
-using GoRogue.MapViews;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-
-using SadConsole;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using GoRogue.MapViews;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
+using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Events;
+using Global = SadConsole.Global;
+using DeenGames.AliTheAndroid.Consoles;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
-    public class MainGameConsole : SadConsole.Console
+    public class PrototypeGameConsole : SadConsole.Console
     {
+        private const int MaxRooms = 10;
+        // These are exterior sizes (walls included)
+        private const int MinRoomSize = 7;
+        private const int MaxRoomSize = 10;
         private static readonly int? GameSeed = null;
 
         public static readonly IGenerator GlobalRandom;
 
-        private readonly Entity player = new Entity(0, 0, '@', Palette.White);
-        private readonly List<Entity> walls = new List<Entity>();
+        private readonly Entity player;
         private readonly List<Entity> monsters = new List<Entity>();
+        private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
 
-        private readonly int mapHeight = 40;
+        private readonly int mapHeight;
 
         private string latestMessage = "";
         private ArrayMap<bool> map;
 
-        static MainGameConsole() {
+
+        static PrototypeGameConsole() {
             if (!GameSeed.HasValue) {
                 GameSeed = new Random().Next();
             }
@@ -40,9 +42,14 @@ namespace DeenGames.AliTheAndroid.Prototype
             GlobalRandom = new StandardGenerator(GameSeed.Value);
         }
 
-        public MainGameConsole(int width, int height) : base(width, height)
+        public PrototypeGameConsole(int width, int height) : base(width, height)
         {
+            this.mapHeight = height - 2;
+            this.player = new Entity("Player", '@', Color.White, 50, 7, 5, 5);
+
             this.map = this.GenerateWalls();
+            this.GenerateMonsters();
+
             var emptySpot = this.FindEmptySpot();
             player.X = (int)emptySpot.X;
             player.Y = (int)emptySpot.Y;
@@ -54,7 +61,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 {
                     this.latestMessage = "YOU DIE!!!";
                     this.player.Character = '%';
-                    this.player.Color = Palette.Burgandy;
+                    this.player.Color = Enums.Palette.DarkBurgandyPurple;
 
                     this.RedrawEverything();
                 }
@@ -65,13 +72,13 @@ namespace DeenGames.AliTheAndroid.Prototype
             });
         }
 
-        private Tuple<int, int> FindEmptyLocation(ArrayMap<bool> map, List<Entity> monsters, List<Entity> walls)
+        private Tuple<int, int> FindEmptyLocation(ArrayMap<bool> map, List<Entity> monsters, List<AbstractEntity> walls)
         {
             while (true) {
-                var x = MainGameConsole.GlobalRandom.Next(0, map.Width);
-                var y = MainGameConsole.GlobalRandom.Next(0, map.Height);
+                var x = PrototypeGameConsole.GlobalRandom.Next(0, map.Width);
+                var y = PrototypeGameConsole.GlobalRandom.Next(0, map.Height);
 
-                if (map[x, y] == false && monsters.All(m => m.X != x || m.Y != y) && walls.All(w => w.X != x || w.Y != y))  {
+                if (map[x, y] == false && monsters.All(m => m.X != x || m.Y != y) && walls.All(w => w.X != x || w.Y != y)) {
                     return new Tuple<int, int>(x, y);
                 }
             }
@@ -80,17 +87,14 @@ namespace DeenGames.AliTheAndroid.Prototype
         private ArrayMap<bool> GenerateWalls()
         {
             var map = new ArrayMap<bool>(this.Width, this.mapHeight);
-            GoRogue.MapGeneration.Generators.CellularAutomataGenerator.Generate(map, MainGameConsole.GlobalRandom, 40);
-            var random = new Random();
+            var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, MaxRooms, MinRoomSize, MaxRoomSize);
 
             for (var y = 0; y < this.mapHeight; y++) {
                 for (var x = 0; x < this.Width; x++) {
                     // Invert. We want an internal cave surrounded by walls.
-                    var wallColour = random.Next(1, 100) <= 30 ? Palette.Blue : Palette.DarkestBlue;
                     map[x, y] = !map[x, y];
-
                     if (map[x, y]) {
-                        this.walls.Add(new Entity(x, y, '#', wallColour)); // FOV determines colour
+                        this.walls.Add(new AbstractEntity(x, y, '#', Palette.LightGrey)); // FOV determines colour
                     }
                 }
             }
@@ -102,11 +106,56 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
             bool playerPressedKey = this.ProcessPlayerInput();
 
+            if (playerPressedKey)
+            {
+                this.ConsumePlayerTurn();
+            }
+
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
             // Eg. Program.cs must call Draw on the console; and, changing consoles should work.
             this.RedrawEverything();
         }
 
+        private void ConsumePlayerTurn()
+        {
+                this.ProcessMonsterTurns();
+        }
+
+        private void ProcessMonsterTurns()
+        {
+            foreach (var monster in this.monsters)
+            {
+                var distance = Math.Sqrt(Math.Pow(player.X - monster.X, 2) + Math.Pow(player.Y - monster.Y, 2));
+
+                // Monsters who you can see, or hurt monsters, attack.
+                if (!monster.IsDead && (distance <= monster.VisionRange || monster.CurrentHealth < monster.TotalHealth))
+                {
+                    // Process turn.
+                    if (distance <= 1)
+                    {
+                        // ATTACK~!
+                        var damage = monster.Strength - player.Defense;
+                        player.Damage(damage);
+                        this.latestMessage += $" {monster.Name} attacks for {damage} damage!";
+                    }
+                    else
+                    {
+                        // Move closer. Naively. Randomly.
+                        var dx = player.X - monster.X;
+                        var dy = player.Y - monster.Y;
+                        var tryHorizontallyFirst = PrototypeGameConsole.GlobalRandom.Next(0, 100) <= 50;
+                        if (tryHorizontallyFirst && dx != 0)
+                        {
+                            this.TryToMove(monster, monster.X + Math.Sign(dx), monster.Y);
+                        }
+                        else
+                        {
+                            this.TryToMove(monster, monster.X, monster.Y + Math.Sign(dy));
+                        }
+                    }
+                }
+            }
+        }
 
         private bool TryToMove(Entity entity, int targetX, int targetY)
         {
@@ -125,6 +174,10 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private bool ProcessPlayerInput()
         {            
+            if (player.IsDead) {
+                return false; // don't pass time
+            }
+
             var processedInput = false;
 
             if (Global.KeyboardState.IsKeyPressed(Keys.Escape) || Global.KeyboardState.IsKeyPressed(Keys.Q))
@@ -158,10 +211,24 @@ namespace DeenGames.AliTheAndroid.Prototype
                 processedInput = true;
                 this.latestMessage = "";
             }
+            else if (this.GetMonsterAt(destinationX, destinationY) != null)
+            {
+                var monster = this.GetMonsterAt(destinationX, destinationY);
+                processedInput = true;
+
+                var damage = player.Strength - monster.Defense;
+                monster.Damage(damage);
+                this.latestMessage = $"You hit {monster.Name} for {damage} damage!";
+            }
             else if (Global.KeyboardState.IsKeyPressed(Keys.OemPeriod) || Global.KeyboardState.IsKeyPressed(Keys.Space))
             {
                 // Skip turn
                 processedInput = true;
+            }
+
+            if (player.CurrentHealth <= 0)
+            {
+                this.latestMessage = "YOU DIE!!!!";
             }
 
             return processedInput;
@@ -185,12 +252,26 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             foreach (var wall in this.walls)
             {
-                var colour = Palette.DarkBlueMuted;
+                var colour = Palette.Grey;
                 if (IsInPlayerFov((int)wall.X, (int)wall.Y))
                 {
                     colour = wall.Color;
                 }
                 this.DrawCharacter(wall.X, wall.Y, wall.Character, colour);
+            }
+
+            foreach (var monster in this.monsters)
+            {                
+                if (IsInPlayerFov(monster.X, monster.Y))
+                {
+                    var character = monster.Character;
+
+                    this.DrawCharacter(monster.X, monster.Y, character, monster.Color);
+                    
+                    if (monster.CurrentHealth < monster.TotalHealth) {
+                        this.DrawCharacter(monster.X, monster.Y, character, Palette.Orange);
+                    }
+                }
             }
 
             this.DrawCharacter(player.X, player.Y, player.Character, player.Color);
@@ -203,17 +284,17 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void DrawHealthIndicators()
         {
-            string message = $"You: 20/20";
+            string message = $"You: {player.CurrentHealth}/{player.TotalHealth}";
             
-            // foreach (var monster in this.monsters)
-            // {
-            //     var distance = Math.Sqrt(Math.Pow(monster.X - player.X, 2) + Math.Pow(monster.Y - player.Y, 2));
-            //     if (distance <= 1)
-            //     {
-            //         // compact
-            //         message = $"{message} {monster.Character}: {monster.CurrentHealth}/{monster.TotalHealth}"; 
-            //     }
-            // }
+            foreach (var monster in this.monsters)
+            {
+                var distance = Math.Sqrt(Math.Pow(monster.X - player.X, 2) + Math.Pow(monster.Y - player.Y, 2));
+                if (distance <= 1)
+                {
+                    // compact
+                    message = $"{message} {monster.Character}: {monster.CurrentHealth}/{monster.TotalHealth}"; 
+                }
+            }
 
             this.Print(1, this.Height - 2, message, Palette.White);
         }
@@ -225,6 +306,19 @@ namespace DeenGames.AliTheAndroid.Prototype
             return distance <= player.VisionRange;
         }
 
+        private void GenerateMonsters()
+        {
+            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(80, 90);
+            while (this.monsters.Count < numMonsters)
+            {
+                var spot = this.FindEmptySpot();
+                var monster = Entity.CreateFromTemplate("Brigand");
+                monster.X = (int)spot.X;
+                monster.Y = (int)spot.Y;
+                this.monsters.Add(monster);
+            }
+        }
+
         private Vector2 FindEmptySpot()
         {
             int targetX = 0;
@@ -232,8 +326,8 @@ namespace DeenGames.AliTheAndroid.Prototype
             
             do 
             {
-                targetX = MainGameConsole.GlobalRandom.Next(0, this.Width);
-                targetY = MainGameConsole.GlobalRandom.Next(0, this.mapHeight);
+                targetX = PrototypeGameConsole.GlobalRandom.Next(0, this.Width);
+                targetY = PrototypeGameConsole.GlobalRandom.Next(0, this.mapHeight);
             } while (!this.IsWalkable(targetX, targetY));
 
             return new Vector2(targetX, targetY);
