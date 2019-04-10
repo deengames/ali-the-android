@@ -1,4 +1,7 @@
+using DeenGames.AliTheAndroid.Consoles;
 using DeenGames.AliTheAndroid.Ecs;
+using DeenGames.AliTheAndroid.Events;
+using DeenGames.AliTheAndroid.Enums;
 using Palette = DeenGames.AliTheAndroid.Enums.Palette;
 using GoRogue.MapViews;
 using Microsoft.Xna.Framework;
@@ -10,10 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
-using DeenGames.AliTheAndroid.Events;
-using DeenGames.AliTheAndroid.Enums;
 
-namespace DeenGames.AliTheAndroid.Consoles
+namespace DeenGames.AliTheAndroid.Prototype
 {
     public class MainGameConsole : SadConsole.Console
     {
