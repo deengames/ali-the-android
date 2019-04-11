@@ -15,13 +15,14 @@ namespace DeenGames.AliTheAndroid.Prototype
 {
     public class PrototypeGameConsole : SadConsole.Console
     {
+        public static readonly IGenerator GlobalRandom;
+
         private const int MaxRooms = 10;
         // These are exterior sizes (walls included)
         private const int MinRoomSize = 7;
         private const int MaxRoomSize = 10;
         private static readonly int? GameSeed = null;
 
-        public static readonly IGenerator GlobalRandom;
 
         private readonly Entity player;
         private readonly List<Entity> monsters = new List<Entity>();
@@ -31,6 +32,9 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private string latestMessage = "";
         private ArrayMap<bool> map;
+        
+        // Super hack. Key is "x, y", value is IsDiscovered.
+        private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
 
 
         static PrototypeGameConsole() {
@@ -45,7 +49,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         public PrototypeGameConsole(int width, int height) : base(width, height)
         {
             this.mapHeight = height - 2;
-            this.player = new Entity("Player", '@', Color.White, 50, 7, 5, 5);
+            this.player = new Entity("Player", '@', Color.White, 50, 7, 5, 4);
 
             this.map = this.GenerateWalls();
             this.GenerateMonsters();
@@ -208,6 +212,20 @@ namespace DeenGames.AliTheAndroid.Prototype
             
             if (this.TryToMove(player, destinationX, destinationY))
             {
+                // This is too late - player already moved. For the prototype, we can live with this.
+                int viewRadius = (int)Math.Ceiling(player.VisionRange / 2.0);
+                for (var y = player.Y - viewRadius; y <= player.Y + viewRadius; y++)
+                {
+                    for (var x = player.X - viewRadius; x <= player.X + viewRadius; x++)
+                    {
+                        // Just to be sure
+                        if (IsInPlayerFov(x, y))
+                        {
+                            this.MarkAsSeen(x, y);
+                        }
+                    }
+                }
+
                 processedInput = true;
                 this.latestMessage = "";
             }
@@ -236,28 +254,38 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void RedrawEverything()
         {
+            this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
+
             // One day, I will do better. One day, I will efficiently draw only what changed!
             for (var y = 0; y < this.mapHeight; y++)
             {
                 for (var x = 0; x < this.Width; x++)
                 {
-                    var colour = Palette.Grey;
                     if (IsInPlayerFov(x, y))
                     {
-                        colour = Palette.LightGrey;
+                        this.DrawCharacter(x, y, '.', Palette.LightGrey);
                     }
-                    this.DrawCharacter(x, y, '.', colour);
+                    else if (IsSeen(x, y))
+                    {
+                        this.DrawCharacter(x, y, '.', Palette.Grey);
+                    }
                 }
             }
 
             foreach (var wall in this.walls)
             {
+                var x = (int)wall.X;
+                var y = (int)wall.Y;
+
                 var colour = Palette.Grey;
-                if (IsInPlayerFov((int)wall.X, (int)wall.Y))
+                if (IsInPlayerFov(x, y))
                 {
-                    colour = wall.Color;
+                    this.DrawCharacter(wall.X, wall.Y, wall.Character, Palette.LightGrey);
                 }
-                this.DrawCharacter(wall.X, wall.Y, wall.Character, colour);
+                else if (IsSeen(x, y))
+                {
+                    this.DrawCharacter(wall.X, wall.Y, wall.Character, Palette.Grey);
+                }
             }
 
             foreach (var monster in this.monsters)
@@ -308,7 +336,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateMonsters()
         {
-            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(80, 90);
+            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(8, 9);
             while (this.monsters.Count < numMonsters)
             {
                 var spot = this.FindEmptySpot();
@@ -357,6 +385,18 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             return true;
+        }
+
+        private bool IsSeen(int x, int y)
+        {
+            string key = $"{x}, {y}";
+            return isTileDiscovered.ContainsKey(key) && isTileDiscovered[key] == true;
+        }
+
+        private void MarkAsSeen(int x, int y)
+        {
+            string key = $"{x}, {y}";
+            isTileDiscovered[key] = true;
         }
     }
 }
