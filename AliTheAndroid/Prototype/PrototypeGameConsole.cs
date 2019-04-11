@@ -11,6 +11,7 @@ using DeenGames.AliTheAndroid.Events;
 using Global = SadConsole.Global;
 using DeenGames.AliTheAndroid.Consoles;
 using AliTheAndroid.Prototype;
+using AliTheAndroid.Enums;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
@@ -28,6 +29,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
+        private readonly List<AbstractEntity> effects = new List<AbstractEntity>();
 
         private readonly int mapHeight;
 
@@ -191,6 +193,10 @@ namespace DeenGames.AliTheAndroid.Prototype
                 return false; // don't pass time
             }
 
+            if (!player.CanMove) {
+                return false;
+            }
+
             var processedInput = false;
 
             if (Global.KeyboardState.IsKeyPressed(Keys.Escape) || Global.KeyboardState.IsKeyPressed(Keys.Q))
@@ -217,6 +223,14 @@ namespace DeenGames.AliTheAndroid.Prototype
             else if ((Global.KeyboardState.IsKeyPressed(Keys.D) || Global.KeyboardState.IsKeyPressed(Keys.Right)))
             {
                 destinationX += 1;
+            }
+            else if ((Global.KeyboardState.IsKeyDown(Keys.F)))
+            {
+                player.Charge();
+            } 
+            if (Global.KeyboardState.IsKeyUp(Keys.F) && player.IsCharging)
+            {
+                this.DischargeShot();
             }
             
             if (this.TryToMove(player, destinationX, destinationY))
@@ -259,6 +273,30 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             return processedInput;
+        }
+
+        private void DischargeShot()
+        {
+            var chargeTime = (DateTime.Now - this.player.ChargeStartTime.Value).TotalSeconds;
+            var isChargedShot = chargeTime >= Player.ChargedShotTimeSeconds;
+
+            var character = isChargedShot ? '*' : 'o';
+            var dx = 0;
+            var dy = 0;
+
+            switch(player.DirectionFacing) {
+                case Direction.Up: dy = -1; break;
+                case Direction.Down: dy = 1; break;
+                case Direction.Left: dx = -1; break;
+                case Direction.Right: dx += 1; break;
+                default: throw new InvalidOperationException(nameof(player.DirectionFacing));
+            }
+
+            var shot = new AbstractEntity(player.X + dx, player.Y + dy, character, Palette.Red);
+            effects.Add(shot);
+
+            this.player.Discharge();
+            this.player.Freeze();
         }
 
         private void RedrawEverything()
@@ -309,6 +347,11 @@ namespace DeenGames.AliTheAndroid.Prototype
                         this.DrawCharacter(monster.X, monster.Y, character, Palette.Orange);
                     }
                 }
+            }
+
+            foreach (var effect in this.effects) {
+                // Always, always visible. Always.
+                this.DrawCharacter(effect.X, effect.Y, effect.Character, effect.Color);
             }
 
             this.DrawCharacter(player.X, player.Y, player.Character, player.Color);
