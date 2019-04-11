@@ -10,6 +10,7 @@ using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Events;
 using Global = SadConsole.Global;
 using DeenGames.AliTheAndroid.Consoles;
+using AliTheAndroid.Prototype;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
@@ -24,7 +25,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private static readonly int? GameSeed = null;
 
 
-        private readonly Entity player;
+        private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
 
@@ -49,7 +50,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         public PrototypeGameConsole(int width, int height) : base(width, height)
         {
             this.mapHeight = height - 2;
-            this.player = new Entity("Player", '@', Color.White, 50, 7, 5, 4);
+            this.player = new Player();
 
             this.map = this.GenerateWalls();
             this.GenerateMonsters();
@@ -166,8 +167,16 @@ namespace DeenGames.AliTheAndroid.Prototype
             // Assuming targetX/targetY are adjacent, or entity can fly/teleport, etc.
             if (this.IsWalkable(targetX, targetY))
             {
+                var previousX = entity.X;
+                var previousY = entity.Y;
+
                 entity.X = targetX;
                 entity.Y = targetY;
+
+                if (entity == player)
+                {
+                    player.OnMove(previousX, previousY);
+                }
                 return true;
             }
             else
@@ -312,7 +321,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void DrawHealthIndicators()
         {
-            string message = $"You: {player.CurrentHealth}/{player.TotalHealth}";
+            string message = $"You: {player.CurrentHealth}/{player.TotalHealth} (facing {player.DirectionFacing.ToString()})";
             
             foreach (var monster in this.monsters)
             {
