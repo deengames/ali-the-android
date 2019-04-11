@@ -340,7 +340,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             while (this.monsters.Count < numMonsters)
             {
                 var spot = this.FindEmptySpot();
-                var monster = Entity.CreateFromTemplate("Brigand");
+                var monster = Entity.CreateFromTemplate("Alien");
                 monster.X = (int)spot.X;
                 monster.Y = (int)spot.Y;
                 this.monsters.Add(monster);
