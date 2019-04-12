@@ -134,7 +134,8 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
                 
                 // Destroy any effect that hit something (wall/monster/etc.)
-                var destroyedEffects = this.effectEntities.Where((e) => !this.IsWalkable(e.X, e.Y));
+                // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
+                var destroyedEffects = this.effectEntities.Where((e) => !this.IsWalkable(e.X, e.Y)).ToList();
                 // If they hit a monster, damage it.
                 var harmedMonsters = this.monsters.Where(m => destroyedEffects.Any(e => e.X == m.X && e.Y == m.Y)).ToArray(); // Create copy to prevent concurrent modification exception
                 foreach (var monster in harmedMonsters) {
@@ -421,7 +422,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateMonsters()
         {
-            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(8, 9);
+            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
             while (this.monsters.Count < numMonsters)
             {
                 var spot = this.FindEmptySpot();

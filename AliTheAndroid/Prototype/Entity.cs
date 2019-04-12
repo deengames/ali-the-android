@@ -50,7 +50,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
             if (damage < 0) 
             {
-                throw new InvalidOperationException($"Damage ({damage}) must be non-negative");
+                return;
             }
 
             this.CurrentHealth -= damage;
