@@ -23,13 +23,14 @@ namespace DeenGames.AliTheAndroid.Prototype
         // These are exterior sizes (walls included)
         private const int MinRoomSize = 7;
         private const int MaxRoomSize = 10;
+
         private static readonly int? GameSeed = null;
 
 
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
-        private readonly List<AbstractEntity> effects = new List<AbstractEntity>();
+        private readonly List<Effect> effectEntities = new List<Effect>();
 
         private readonly int mapHeight;
 
@@ -116,6 +117,12 @@ namespace DeenGames.AliTheAndroid.Prototype
             if (playerPressedKey)
             {
                 this.ConsumePlayerTurn();
+            }
+
+            this.effectEntities.ForEach(e => e.OnUpdate());
+            this.effectEntities.RemoveAll((e) => !this.IsWalkable(e.X, e.Y)); // Remove destroyed ones
+            if (!this.effectEntities.Any()) {
+                this.player.Unfreeze();
             }
 
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
@@ -292,8 +299,8 @@ namespace DeenGames.AliTheAndroid.Prototype
                 default: throw new InvalidOperationException(nameof(player.DirectionFacing));
             }
 
-            var shot = new AbstractEntity(player.X + dx, player.Y + dy, character, Palette.Red);
-            effects.Add(shot);
+            var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing);
+            effectEntities.Add(shot);
 
             this.player.Discharge();
             this.player.Freeze();
@@ -349,9 +356,10 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            foreach (var effect in this.effects) {
-                // Always, always visible. Always.
-                this.DrawCharacter(effect.X, effect.Y, effect.Character, effect.Color);
+            foreach (var effect in this.effectEntities) {
+                if (IsInPlayerFov(effect.X, effect.Y)) {
+                    this.DrawCharacter(effect.X, effect.Y, effect.Character, effect.Color);
+                }
             }
 
             this.DrawCharacter(player.X, player.Y, player.Character, player.Color);
