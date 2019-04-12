@@ -120,19 +120,30 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             if (this.effectEntities.Any()) {
+                // Move all effects.
                 foreach (var effect in this.effectEntities)
                 {
                     effect.OnUpdate();
+                    // For out-of-sight effects, accelerate to the point that they destroy.
+                    // This prevents the player from waiting, frozen, for out-of-sight shots.
                     if (!this.IsInPlayerFov(effect.X, effect.Y)) {
                         while (this.IsWalkable(effect.X, effect.Y)) {
                             effect.OnAction();
-                            Console.WriteLine($"now at {effect.X}, {effect.Y}");
                         }
                     }
                 }
                 
-                var destroyedEntities = this.effectEntities.Where((e) => !this.IsWalkable(e.X, e.Y));
-                this.effectEntities.RemoveAll(e => destroyedEntities.Contains(e));
+                // Destroy any effect that hit something (wall/monster/etc.)
+                var destroyedEffects = this.effectEntities.Where((e) => !this.IsWalkable(e.X, e.Y));
+                // If they hit a monster, damage it.
+                var harmedMonsters = this.monsters.Where(m => destroyedEffects.Any(e => e.X == m.X && e.Y == m.Y)).ToArray(); // Create copy to prevent concurrent modification exception
+                foreach (var monster in harmedMonsters) {
+                    monster.Damage(player.Strength);
+                    Console.WriteLine($"Hit monster {monster.Name} at ({monster.X}, {monster.Y}) -- health is now {monster.CurrentHealth}!");
+                }
+
+                // Trim all dead effects
+                this.effectEntities.RemoveAll(e => destroyedEffects.Contains(e));
             }
             
             if (!this.player.CanMove && !this.effectEntities.Any()) {
