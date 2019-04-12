@@ -149,6 +149,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             
             if (!this.player.CanMove && !this.effectEntities.Any()) {
                 this.player.Unfreeze();
+                this.ConsumePlayerTurn();
             }
 
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
