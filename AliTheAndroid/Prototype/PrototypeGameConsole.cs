@@ -119,9 +119,23 @@ namespace DeenGames.AliTheAndroid.Prototype
                 this.ConsumePlayerTurn();
             }
 
-            this.effectEntities.ForEach(e => e.OnUpdate());
-            this.effectEntities.RemoveAll((e) => !this.IsWalkable(e.X, e.Y)); // Remove destroyed ones
-            if (!this.effectEntities.Any()) {
+            if (this.effectEntities.Any()) {
+                foreach (var effect in this.effectEntities)
+                {
+                    effect.OnUpdate();
+                    if (!this.IsInPlayerFov(effect.X, effect.Y)) {
+                        while (this.IsWalkable(effect.X, effect.Y)) {
+                            effect.OnAction();
+                            Console.WriteLine($"now at {effect.X}, {effect.Y}");
+                        }
+                    }
+                }
+                
+                var destroyedEntities = this.effectEntities.Where((e) => !this.IsWalkable(e.X, e.Y));
+                this.effectEntities.RemoveAll(e => destroyedEntities.Contains(e));
+            }
+            
+            if (!this.player.CanMove && !this.effectEntities.Any()) {
                 this.player.Unfreeze();
             }
 

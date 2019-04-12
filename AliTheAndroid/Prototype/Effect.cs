@@ -26,7 +26,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
-        protected abstract void OnAction();
+        internal abstract void OnAction();
     }
 
     public class Shot : Effect
@@ -40,7 +40,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.direction = direction;
         }
 
-        override protected void OnAction()
+        override internal void OnAction()
         {
             switch (this.direction) {
                 case Direction.Up:
