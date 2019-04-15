@@ -314,7 +314,13 @@ namespace DeenGames.AliTheAndroid.Prototype
             var chargeTime = (DateTime.Now - this.player.ChargeStartTime.Value).TotalSeconds;
             var isChargedShot = chargeTime >= Player.ChargedShotTimeSeconds;
 
-            var character = isChargedShot ? '*' : 'o';
+            var character = ' ';
+            if (player.DirectionFacing == Direction.Down || player.DirectionFacing == Direction.Up) {
+                character = isChargedShot ? 'o' : '|'; // TODO: o => ║
+            } else {
+                character = isChargedShot ? '=' : '-';
+            }
+
             var dx = 0;
             var dy = 0;
 

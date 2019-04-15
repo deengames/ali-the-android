@@ -32,10 +32,9 @@ namespace DeenGames.AliTheAndroid.Prototype
     public class Shot : Effect
     {
         private const int ShotUpdateTimeMs = 100; // 100ms
-        private const char ShotCharacter = 'o'; // working on it ... ║
         private Direction direction;
 
-        public Shot(int x, int y, char character, Color color, Direction direction) : base(x, y, ShotCharacter, Palette.Red, ShotUpdateTimeMs)
+        public Shot(int x, int y, char character, Color color, Direction direction) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
         {
             this.direction = direction;
         }
