@@ -399,7 +399,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void DrawHealthIndicators()
         {
-            string message = $"You: {player.CurrentHealth}/{player.TotalHealth} (facing {player.DirectionFacing.ToString()})";
+            string message = $"You: {player.CurrentHealth}/{player.TotalHealth} (facing {player.DirectionFacing.ToString()}) Equipped: {player.CurrentWeapon}";
             
             foreach (var monster in this.monsters)
             {

@@ -1,5 +1,6 @@
 using System;
 using AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
 
@@ -9,6 +10,7 @@ namespace AliTheAndroid.Prototype
     {
         public Direction DirectionFacing { get; private set; }
         public bool CanMove {get; private set;} = true;
+        public Weapon CurrentWeapon = Weapon.Blaster;
 
         public Player() : base("You", '@', Color.White, 50, 7, 5, 4)
         {
