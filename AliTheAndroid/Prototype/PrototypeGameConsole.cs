@@ -130,6 +130,11 @@ namespace DeenGames.AliTheAndroid.Prototype
                         effect.OnAction();
                     }
                 }
+
+                var explosions = this.effectEntities.Where(e => e.Character == '*');
+                if (explosions.Any(e => e.X == player.X && e.Y == player.Y)) {
+                    player.Damage(CalculateDamage(Weapon.MiniMissile));
+                }
                 
                 // Destroy any effect that hit something (wall/monster/etc.)
                 // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
