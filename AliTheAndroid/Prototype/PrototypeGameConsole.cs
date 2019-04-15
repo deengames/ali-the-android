@@ -257,10 +257,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 destinationX += 1;
             }
-            else if ((Global.KeyboardState.IsKeyDown(Keys.F)))
-            {
-                player.Charge();
-            }
             else if ((Global.KeyboardState.IsKeyPressed(Keys.Q)))
             {
                 player.TurnCounterClockwise();
@@ -269,12 +265,10 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.TurnClockwise();
             }
-            
-            if (Global.KeyboardState.IsKeyUp(Keys.F) && player.IsCharging)
+            else if (Global.KeyboardState.IsKeyPressed(Keys.F))
             {
-                this.DischargeShot();
+                this.FireShot();
             }
-            
             
             if (this.TryToMove(player, destinationX, destinationY))
             {
@@ -318,17 +312,9 @@ namespace DeenGames.AliTheAndroid.Prototype
             return processedInput;
         }
 
-        private void DischargeShot()
+        private void FireShot()
         {
-            var chargeTime = (DateTime.Now - this.player.ChargeStartTime.Value).TotalSeconds;
-            var isChargedShot = chargeTime >= Player.ChargedShotTimeSeconds;
-
-            var character = ' ';
-            if (player.DirectionFacing == Direction.Down || player.DirectionFacing == Direction.Up) {
-                character = isChargedShot ? (char)186 : '|'; // char(186) => ║
-            } else {
-                character = isChargedShot ? '=' : '-';
-            }
+            var character = (player.DirectionFacing == Direction.Down || player.DirectionFacing == Direction.Up) ? (char)186 : '=';
 
             var dx = 0;
             var dy = 0;
@@ -344,7 +330,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing);
             effectEntities.Add(shot);
 
-            this.player.Discharge();
             this.player.Freeze();
         }
 
