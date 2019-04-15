@@ -269,6 +269,22 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 this.FireShot();
             }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad1))
+            {
+                player.CurrentWeapon = Weapon.Blaster;
+            }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2))
+            {
+                player.CurrentWeapon = Weapon.MiniMissile;
+            }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3))
+            {
+                player.CurrentWeapon = Weapon.ShockZone;
+            }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4))
+            {
+                player.CurrentWeapon = Weapon.PlasmaCannon;
+            }
             
             if (this.TryToMove(player, destinationX, destinationY))
             {
