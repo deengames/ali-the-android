@@ -233,7 +233,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             var processedInput = false;
 
-            if (Global.KeyboardState.IsKeyPressed(Keys.Escape) || Global.KeyboardState.IsKeyPressed(Keys.Q))
+            if (Global.KeyboardState.IsKeyPressed(Keys.Escape))
             {
                 Environment.Exit(0);
             }
@@ -261,11 +261,21 @@ namespace DeenGames.AliTheAndroid.Prototype
             else if ((Global.KeyboardState.IsKeyDown(Keys.F)))
             {
                 player.Charge();
-            } 
+            }
+            else if ((Global.KeyboardState.IsKeyPressed(Keys.Q)))
+            {
+                player.TurnCounterClockwise();
+            }
+            else if ((Global.KeyboardState.IsKeyPressed(Keys.E)))
+            {
+                player.TurnClockwise();
+            }
+            
             if (Global.KeyboardState.IsKeyUp(Keys.F) && player.IsCharging)
             {
                 this.DischargeShot();
             }
+            
             
             if (this.TryToMove(player, destinationX, destinationY))
             {

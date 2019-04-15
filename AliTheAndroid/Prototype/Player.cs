@@ -52,5 +52,41 @@ namespace AliTheAndroid.Prototype
         public void Unfreeze() {
             this.CanMove = true;
         }
+
+        internal void TurnCounterClockwise()
+        {
+            switch (this.DirectionFacing) {
+                case Direction.Up:
+                    this.DirectionFacing = Direction.Right;
+                    break;
+                case Direction.Right:
+                    this.DirectionFacing = Direction.Down;
+                    break;
+                case Direction.Down:
+                    this.DirectionFacing = Direction.Left;
+                    break;
+                case Direction.Left:
+                    this.DirectionFacing = Direction.Up;
+                    break;
+            }
+        }
+
+        internal void TurnClockwise()
+        {
+            switch (this.DirectionFacing) {
+                case Direction.Up:
+                    this.DirectionFacing = Direction.Left;
+                    break;
+                case Direction.Left:
+                    this.DirectionFacing = Direction.Down;
+                    break;
+                case Direction.Down:
+                    this.DirectionFacing = Direction.Right;
+                    break;
+                case Direction.Right:
+                    this.DirectionFacing = Direction.Up;
+                    break;
+            }
+        }
     }
 }
