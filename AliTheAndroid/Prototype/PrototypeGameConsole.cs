@@ -9,7 +9,6 @@ using Troschuetz.Random.Generators;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Events;
 using Global = SadConsole.Global;
-using DeenGames.AliTheAndroid.Consoles;
 using AliTheAndroid.Prototype;
 using AliTheAndroid.Enums;
 
@@ -360,11 +359,11 @@ namespace DeenGames.AliTheAndroid.Prototype
                 {
                     if (IsInPlayerFov(x, y))
                     {
-                        this.DrawCharacter(x, y, '.', Palette.LightGrey);
+                        this.SetGlyph(x, y, '.', Palette.LightGrey);
                     }
                     else if (IsSeen(x, y))
                     {
-                        this.DrawCharacter(x, y, '.', Palette.Grey);
+                        this.SetGlyph(x, y, '.', Palette.Grey);
                     }
                 }
             }
@@ -377,11 +376,11 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var colour = Palette.Grey;
                 if (IsInPlayerFov(x, y))
                 {
-                    this.DrawCharacter(wall.X, wall.Y, wall.Character, Palette.LightGrey);
+                    this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.LightGrey);
                 }
                 else if (IsSeen(x, y))
                 {
-                    this.DrawCharacter(wall.X, wall.Y, wall.Character, Palette.Grey);
+                    this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.Grey);
                 }
             }
 
@@ -391,21 +390,21 @@ namespace DeenGames.AliTheAndroid.Prototype
                 {
                     var character = monster.Character;
 
-                    this.DrawCharacter(monster.X, monster.Y, character, monster.Color);
+                    this.SetGlyph(monster.X, monster.Y, character, monster.Color);
                     
                     if (monster.CurrentHealth < monster.TotalHealth) {
-                        this.DrawCharacter(monster.X, monster.Y, character, Palette.Orange);
+                        this.SetGlyph(monster.X, monster.Y, character, Palette.Orange);
                     }
                 }
             }
 
             foreach (var effect in this.effectEntities) {
                 if (IsInPlayerFov(effect.X, effect.Y)) {
-                    this.DrawCharacter(effect.X, effect.Y, effect.Character, effect.Color);
+                    this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
                 }
             }
 
-            this.DrawCharacter(player.X, player.Y, player.Character, player.Color);
+            this.SetGlyph(player.X, player.Y, player.Character, player.Color);
 
             this.DrawLine(new Point(0, this.Height - 2), new Point(this.Width, this.Height - 2), null, Palette.BlackAlmost, ' ');
             this.DrawLine(new Point(0, this.Height - 1), new Point(this.Width, this.Height - 1), null, Palette.BlackAlmost, ' ');
