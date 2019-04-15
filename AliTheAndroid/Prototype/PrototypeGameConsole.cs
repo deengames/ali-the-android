@@ -330,7 +330,25 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void FireShot()
         {
-            var character = (player.DirectionFacing == Direction.Down || player.DirectionFacing == Direction.Up) ? (char)186 : '=';
+            // Blaster: ~
+            // Missle: !
+            // Shock: $
+            // Plasma: o
+            var character = '~';
+            switch (player.CurrentWeapon) {
+                case Weapon.Blaster:
+                    character = '~';
+                    break;
+                case Weapon.MiniMissile:
+                    character = '!';
+                    break;
+                case Weapon.ShockZone:
+                    character = '%';
+                    break;
+                case Weapon.PlasmaCannon:
+                    character = 'o';
+                    break;
+            }
 
             var dx = 0;
             var dy = 0;
