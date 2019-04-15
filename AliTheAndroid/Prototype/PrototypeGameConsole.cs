@@ -22,6 +22,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         // These are exterior sizes (walls included)
         private const int MinRoomSize = 7;
         private const int MaxRoomSize = 10;
+        private const int ExplosionRadius = 1;
 
         private static readonly int? GameSeed = null;
 
@@ -126,15 +127,13 @@ namespace DeenGames.AliTheAndroid.Prototype
                     // For out-of-sight effects, accelerate to the point that they destroy.
                     // This prevents the player from waiting, frozen, for out-of-sight shots.
                     if (!this.IsInPlayerFov(effect.X, effect.Y)) {
-                        while (this.IsWalkable(effect.X, effect.Y)) {
-                            effect.OnAction();
-                        }
+                        effect.OnAction();
                     }
                 }
                 
                 // Destroy any effect that hit something (wall/monster/etc.)
                 // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
-                var destroyedEffects = this.effectEntities.Where((e) => !this.IsWalkable(e.X, e.Y)).ToList();
+                var destroyedEffects = this.effectEntities.Where((e) => !e.IsAlive || !this.IsWalkable(e.X, e.Y)).ToList();
                 // If they hit a monster, damage it.
                 var harmedMonsters = this.monsters.Where(m => destroyedEffects.Any(e => e.X == m.X && e.Y == m.Y)).ToArray(); // Create copy to prevent concurrent modification exception
                 
@@ -142,8 +141,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                     var hitBy = destroyedEffects.Single(e => e.X == monster.X && e.Y == monster.Y);
                     var type = CharacterToWeapon(hitBy.Character);
                     var damage = CalculateDamage(type);
-
                     monster.Damage(damage);
+                }
+
+                var missiles = destroyedEffects.Where(e => e.Character == '!');
+                foreach (var missile in missiles) {
+                    this.CreateExplosion(missile.X, missile.Y);
                 }
 
                 // Trim all dead effects
@@ -158,6 +161,14 @@ namespace DeenGames.AliTheAndroid.Prototype
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
             // Eg. Program.cs must call Draw on the console; and, changing consoles should work.
             this.RedrawEverything();
+        }
+
+        private void CreateExplosion(int centerX, int centerY) {
+            for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++) {
+                for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++) {
+                    this.effectEntities.Add(new Explosion(x, y));
+                }
+            }
         }
 
         private int CalculateDamage(Weapon weapon)
@@ -175,9 +186,11 @@ namespace DeenGames.AliTheAndroid.Prototype
             switch(display) {
                 case '~': return Weapon.Blaster;
                 case '!': return Weapon.MiniMissile;
+                case '*': return Weapon.MiniMissile; // explosion
                 case '%': return Weapon.ShockZone;
                 case 'o': return Weapon.PlasmaCannon;
             }
+            throw new InvalidOperationException($"{display} ???");
         }
 
         private void ConsumePlayerTurn()
@@ -385,7 +398,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 default: throw new InvalidOperationException(nameof(player.DirectionFacing));
             }
 
-            var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing);
+            var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
             effectEntities.Add(shot);
 
             this.player.Freeze();

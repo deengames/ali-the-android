@@ -8,6 +8,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 {
     public abstract class Effect : AbstractEntity
     {
+        public bool IsAlive {get; set;} = true;
+
         private int tickEveryMilliseconds = 0;
         private DateTime lastTickOn = DateTime.Now;
 
@@ -33,28 +35,47 @@ namespace DeenGames.AliTheAndroid.Prototype
     {
         private const int ShotUpdateTimeMs = 100; // 100ms
         private Direction direction;
+        private Func<int, int, bool> isWalkableCheck;
 
-        public Shot(int x, int y, char character, Color color, Direction direction) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
+        public Shot(int x, int y, char character, Color color, Direction direction, Func<int, int, bool> isWalkable) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
         {
             this.direction = direction;
+            this.isWalkableCheck = isWalkable;
         }
 
         override internal void OnAction()
         {
-            switch (this.direction) {
-                case Direction.Up:
-                    this.Y -= 1;
-                    break;
-                case Direction.Right:
-                    this.X += 1;
-                    break;
-                case Direction.Down:
-                    this.Y += 1;
-                    break;
-                case Direction.Left:
-                    this.X -= 1;
-                    break;
+            if (this.isWalkableCheck(this.X, this.Y))
+            {
+                switch (this.direction) {
+                    case Direction.Up:
+                        this.Y -= 1;
+                        break;
+                    case Direction.Right:
+                        this.X += 1;
+                        break;
+                    case Direction.Down:
+                        this.Y += 1;
+                        break;
+                    case Direction.Left:
+                        this.X -= 1;
+                        break;
+                }
             }
+        }
+    }
+
+    public class Explosion : Effect
+    {
+        private const int LifetimeMs = 100;
+
+        public Explosion(int x, int y) : base(x, y, '*', Palette.Orange, LifetimeMs)
+        {
+        }
+
+        internal override void OnAction()
+        {
+            this.IsAlive = false;
         }
     }
 }
