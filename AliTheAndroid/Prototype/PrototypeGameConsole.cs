@@ -326,7 +326,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             var character = ' ';
             if (player.DirectionFacing == Direction.Down || player.DirectionFacing == Direction.Up) {
-                character = isChargedShot ? 'o' : '|'; // TODO: o => ║
+                character = isChargedShot ? (char)186 : '|'; // char(186) => ║
             } else {
                 character = isChargedShot ? '=' : '-';
             }
