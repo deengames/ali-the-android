@@ -137,9 +137,13 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var destroyedEffects = this.effectEntities.Where((e) => !this.IsWalkable(e.X, e.Y)).ToList();
                 // If they hit a monster, damage it.
                 var harmedMonsters = this.monsters.Where(m => destroyedEffects.Any(e => e.X == m.X && e.Y == m.Y)).ToArray(); // Create copy to prevent concurrent modification exception
+                
                 foreach (var monster in harmedMonsters) {
-                    monster.Damage(player.Strength);
-                    Console.WriteLine($"Hit monster {monster.Name} at ({monster.X}, {monster.Y}) -- health is now {monster.CurrentHealth}!");
+                    var hitBy = destroyedEffects.Single(e => e.X == monster.X && e.Y == monster.Y);
+                    var type = CharacterToWeapon(hitBy.Character);
+                    var damage = CalculateDamage(type);
+
+                    monster.Damage(damage);
                 }
 
                 // Trim all dead effects
@@ -154,6 +158,26 @@ namespace DeenGames.AliTheAndroid.Prototype
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
             // Eg. Program.cs must call Draw on the console; and, changing consoles should work.
             this.RedrawEverything();
+        }
+
+        private int CalculateDamage(Weapon weapon)
+        {
+            switch(weapon) {
+                case Weapon.Blaster: return player.Strength;
+                case Weapon.MiniMissile: return player.Strength * 2;
+                case Weapon.ShockZone: return player.Strength * 4;
+                case Weapon.PlasmaCannon: return player.Strength * 3;
+                default: return -1;
+            }
+        }
+
+        private Weapon CharacterToWeapon(char display) {
+            switch(display) {
+                case '~': return Weapon.Blaster;
+                case '!': return Weapon.MiniMissile;
+                case '%': return Weapon.ShockZone;
+                case 'o': return Weapon.PlasmaCannon;
+            }
         }
 
         private void ConsumePlayerTurn()
