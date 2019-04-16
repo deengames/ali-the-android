@@ -18,6 +18,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         public int Defense { get; }
 
         public int VisionRange { get; }
+        public bool CanMove { get; set; } = true; // False for fake walls
 
         public static Entity CreateFromTemplate(string name)
         {
