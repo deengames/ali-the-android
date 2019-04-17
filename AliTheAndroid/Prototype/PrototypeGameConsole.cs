@@ -31,6 +31,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<Entity> monsters = new List<Entity>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
         private readonly List<Effect> effectEntities = new List<Effect>();
+        private readonly List<Vector2> secretFloors = new List<Vector2>();
 
         private readonly int mapHeight;
 
@@ -111,39 +112,36 @@ namespace DeenGames.AliTheAndroid.Prototype
             var secretRooms = this.GenerateSecretRooms(rooms);
             foreach (var room in secretRooms) {
                 // Tunnel out interior, because it could be touching hallways, etc.
-                for (var y = room.Rectangle.Y; y < room.Rectangle.Y + room.Rectangle.Height; y++) {
-                    for (var x = room.Rectangle.X; x < room.Rectangle.X + room.Rectangle.Width; x++) {
+                // Trim perimeter by 1 tile so we get an interior only
+                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                    for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
                         var wall = this.walls.SingleOrDefault(w => w.X == x && w.Y == y);
                         if (wall != null) {
                             this.walls.Remove(wall);
                         }
 
                         // Mark as "secret floor" if not perimeter
-                        var e = Entity.CreateFromTemplate("Alien");
-                        e.X = x;
-                        e.Y = y;
-                        this.monsters.Add(e);
+                        this.secretFloors.Add(new Vector2(x, y));
                     }
                 }
 
                 // Hollow out the walls between us and the real room and fill it with fake walls
-                // var secretX = room.ConnectedOnLeft ? room.Rectangle.X : room.Rectangle.X + room.Rectangle.Width;
-                // for (var y = room.Rectangle.Y; y < room.Rectangle.Y + room.Rectangle.Height; y++) {
-                //     var wall = this.walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
-                //     if (wall != null) {
-                //         this.walls.Remove(wall);
-                //     }
+                var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
+                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                    var wall = this.walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
+                    if (wall != null) {
+                        this.walls.Remove(wall);
+                    }
 
-                //     // Ah, NightBlade, ah. Fake walls are monsters with 1HP and CanMove=false.
-                //     // TODO: change to LightGrey, and make a custom entity (not add to monsters) - shows up when adjacent
-                //     //var secretWall = new Entity("Fake Wall", '#', Palette.Blue, 1, 0, 0);
-                //     //secretWall.CanMove = false;
-                //     //secretWall.X = secretX;
-                //     //secretWall.Y = y;
+                    // Ah, NightBlade, ah. Fake walls are monsters with 1HP and CanMove=false.
+                    // TODO: change to LightGrey, and make a custom entity (not add to monsters) - shows up when adjacent
+                    var secretWall = new Entity("Fake Wall", '#', Palette.Blue, 1, 0, 0);
+                    secretWall.CanMove = false;
+                    secretWall.X = secretX;
+                    secretWall.Y = y;
 
-                //     //Console.WriteLine($"Added secret wall at {secretX}, {y}");
-                //     //this.monsters.Add(secretWall);
-                // }
+                    this.monsters.Add(secretWall);
+                }
             }
 
             return map;
@@ -163,15 +161,15 @@ namespace DeenGames.AliTheAndroid.Prototype
                 // If so, hollow it out, and mark the border with fake walls.
 
                 // LEFT
-                if (IsAreaWalled(room.X - room.Width + 2, room.Y, room.X - 2, room.Y + room.Height - 2))
+                if (IsAreaWalled(room.X - room.Width + 3, room.Y, room.X - 2, room.Y + room.Height - 2))
                 {
-                    candidateRooms.Add(new ConnectedRoom(room.X - room.Width + 2, room.Y + 1, room.Width - 2, room.Height - 2, true, room));
+                    candidateRooms.Add(new ConnectedRoom(room.X - room.Width + 3, room.Y + 1, room.Width - 2, room.Height - 2, true, room));
                 }
                 // Else here: don't want two secret rooms from the same one room
                 // RIGHT
-                else if (IsAreaWalled(room.X + room.Width, room.Y, room.X + 2 * (room.Width - 2), room.Y + room.Height - 2))
+                else if (IsAreaWalled(room.X + room.Width - 1, room.Y, room.X + 2 * (room.Width - 2), room.Y + room.Height - 2))
                 {
-                    candidateRooms.Add(new ConnectedRoom(room.X + room.Width, room.Y + 1, room.Width - 2, room.Height - 2, false, room));
+                    candidateRooms.Add(new ConnectedRoom(room.X + room.Width - 1, room.Y + 1, room.Width - 2, room.Height - 2, false, room));
                 }
             }
 
