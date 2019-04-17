@@ -22,7 +22,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         // These are exterior sizes (walls included)
         private const int MinRoomSize = 7;
         private const int MaxRoomSize = 10;
-        private const int ExplosionRadius = 1;
+        private const int ExplosionRadius = 2;
 
         private static readonly int? GameSeed = null;
 
@@ -203,7 +203,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 var explosions = this.effectEntities.Where(e => e.Character == '*');
                 if (explosions.Any(e => e.X == player.X && e.Y == player.Y)) {
-                    player.Damage(CalculateDamage(Weapon.MiniMissile));
+                    player.Damage(this.GetExplosionBlastDamage());
                 }
                 
                 // Destroy any effect that hit something (wall/monster/etc.)
@@ -214,8 +214,15 @@ namespace DeenGames.AliTheAndroid.Prototype
                 
                 foreach (var monster in harmedMonsters) {
                     var hitBy = destroyedEffects.Single(e => e.X == monster.X && e.Y == monster.Y);
-                    var type = CharacterToWeapon(hitBy.Character);
-                    var damage = CalculateDamage(type);
+                    var damage = 0;
+                    
+                    if (hitBy.Character == '*') {
+                        damage = this.GetExplosionBlastDamage();
+                    } else {
+                        var type = CharacterToWeapon(hitBy.Character);
+                        damage = CalculateDamage(type);
+                    }
+
                     monster.Damage(damage);
                 }
 
@@ -241,9 +248,16 @@ namespace DeenGames.AliTheAndroid.Prototype
         private void CreateExplosion(int centerX, int centerY) {
             for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++) {
                 for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++) {
-                    this.effectEntities.Add(new Explosion(x, y));
+                    var distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
+                    if (distance <= ExplosionRadius) {
+                        this.effectEntities.Add(new Explosion(x, y));
+                    }
                 }
             }
+        }
+
+        private int GetExplosionBlastDamage() {
+            return (int)Math.Ceiling(this.CalculateDamage(Weapon.MiniMissile) * 0.75); // 1.5x
         }
 
         private int CalculateDamage(Weapon weapon)
