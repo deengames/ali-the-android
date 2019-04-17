@@ -109,31 +109,34 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            var secretRooms = this.GenerateSecretRooms(rooms);
-            foreach (var room in secretRooms) {
-                // Fill the interior with fake walls. Otherwise, FOV gets complicated.
-                // Trim perimeter by 1 tile so we get an interior only
-                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
-                    for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
-                        var wall = this.walls.SingleOrDefault(w => w.X == x && w.Y == y);
+            // TODO: only do this on floor level N+, where N = where you get MiniMissile
+            if (player.Weapons.Contains(Weapon.MiniMissile)) {
+                var secretRooms = this.GenerateSecretRooms(rooms);
+                foreach (var room in secretRooms) {
+                    // Fill the interior with fake walls. Otherwise, FOV gets complicated.
+                    // Trim perimeter by 1 tile so we get an interior only
+                    for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                        for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
+                            var wall = this.walls.SingleOrDefault(w => w.X == x && w.Y == y);
+                            if (wall != null) {
+                                this.walls.Remove(wall);
+                            }
+
+                            // Mark as "secret floor" if not perimeter
+                            this.fakeWalls.Add(new AbstractEntity(x, y, '#', Palette.Blue));
+                        }
+                    }
+
+                    // Hollow out the walls between us and the real room and fill it with fake walls
+                    var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
+                    for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                        var wall = this.walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
                         if (wall != null) {
                             this.walls.Remove(wall);
                         }
 
-                        // Mark as "secret floor" if not perimeter
-                        this.fakeWalls.Add(new AbstractEntity(x, y, '#', Palette.Blue));
+                        this.fakeWalls.Add(new AbstractEntity(secretX, y, '#', Palette.Blue));
                     }
-                }
-
-                // Hollow out the walls between us and the real room and fill it with fake walls
-                var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
-                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
-                    var wall = this.walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
-                    if (wall != null) {
-                        this.walls.Remove(wall);
-                    }
-
-                    this.fakeWalls.Add(new AbstractEntity(secretX, y, '#', Palette.Blue));
                 }
             }
 
