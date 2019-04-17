@@ -30,8 +30,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
+        private readonly List<AbstractEntity> fakeWalls = new List<AbstractEntity>();
         private readonly List<Effect> effectEntities = new List<Effect>();
-        private readonly List<Vector2> secretFloors = new List<Vector2>();
+
 
         private readonly int mapHeight;
 
@@ -62,7 +63,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             var emptySpot = this.FindEmptySpot();
             player.X = (int)emptySpot.X;
             player.Y = (int)emptySpot.Y;
-            Console.WriteLine($"Player is at {player.X}, {player.Y}");
 
             this.RedrawEverything();
 
@@ -111,7 +111,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             var secretRooms = this.GenerateSecretRooms(rooms);
             foreach (var room in secretRooms) {
-                // Tunnel out interior, because it could be touching hallways, etc.
+                // Fill the interior with fake walls. Otherwise, FOV gets complicated.
                 // Trim perimeter by 1 tile so we get an interior only
                 for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
                     for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
@@ -121,7 +121,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                         }
 
                         // Mark as "secret floor" if not perimeter
-                        this.secretFloors.Add(new Vector2(x, y));
+                        this.fakeWalls.Add(new AbstractEntity(x, y, '#', Palette.Blue));
                     }
                 }
 
@@ -133,14 +133,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                         this.walls.Remove(wall);
                     }
 
-                    // Ah, NightBlade, ah. Fake walls are monsters with 1HP and CanMove=false.
-                    // TODO: change to LightGrey, and make a custom entity (not add to monsters) - shows up when adjacent
-                    var secretWall = new Entity("Fake Wall", '#', Palette.Blue, 1, 0, 0);
-                    secretWall.CanMove = false;
-                    secretWall.X = secretX;
-                    secretWall.Y = y;
-
-                    this.monsters.Add(secretWall);
+                    this.fakeWalls.Add(new AbstractEntity(secretX, y, '#', Palette.Blue));
                 }
             }
 
@@ -214,10 +207,24 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
+                // Harm the player from explosions.
                 var explosions = this.effectEntities.Where(e => e.Character == '*');
                 if (explosions.Any(e => e.X == player.X && e.Y == player.Y)) {
                     player.Damage(this.GetExplosionBlastDamage());
                 }
+
+                // Find and destroy fake walls
+                var destroyedFakeWalls = new List<AbstractEntity>();
+                this.fakeWalls.ForEach(f => {
+                    if (explosions.Any(e => e.X == f.X && e.Y == f.Y)) {
+                        destroyedFakeWalls.Add(f);
+                    }
+                });
+
+                if (destroyedFakeWalls.Any()) {
+                    this.latestMessage = "You discovered a secret room!";
+                }
+                this.fakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
                 
                 // Destroy any effect that hit something (wall/monster/etc.)
                 // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
@@ -527,18 +534,19 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            foreach (var wall in this.walls)
+            var allWalls = this.walls.Union(this.fakeWalls);
+
+            foreach (var wall in allWalls)
             {
                 var x = (int)wall.X;
                 var y = (int)wall.Y;
 
                 var colour = Palette.Grey;
-                //if (IsInPlayerFov(x, y))
-                //{
+                if (IsInPlayerFov(x, y))
+                {
                     this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.LightGrey);
-                //}
-                //else 
-                if (IsSeen(x, y))
+                }
+                else if (IsSeen(x, y))
                 {
                     this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.Grey);
                 }
@@ -546,8 +554,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             foreach (var monster in this.monsters)
             {                
-                //if (IsInPlayerFov(monster.X, monster.Y))
-                //{
+                if (IsInPlayerFov(monster.X, monster.Y))
+                {
                     var character = monster.Character;
 
                     this.SetGlyph(monster.X, monster.Y, character, monster.Color);
@@ -555,7 +563,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     if (monster.CurrentHealth < monster.TotalHealth) {
                         this.SetGlyph(monster.X, monster.Y, character, Palette.Orange);
                     }
-                //}
+                }
             }
 
             foreach (var effect in this.effectEntities) {
@@ -609,6 +617,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
+        // Finds an empty spot. Secret-room floors are not considered empty.
         private Vector2 FindEmptySpot()
         {
             int targetX = 0;
@@ -632,6 +641,11 @@ namespace DeenGames.AliTheAndroid.Prototype
         private bool IsWalkable(int x, int y)
         {
             if (this.walls.Any(w => w.X == x && w.Y == y))
+            {
+                return false;
+            }
+
+            if (this.fakeWalls.Any(f => f.X == x && f.Y == y))
             {
                 return false;
             }
