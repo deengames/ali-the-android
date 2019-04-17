@@ -24,7 +24,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int MaxRoomSize = 10;
         private const int ExplosionRadius = 2;
 
-        private static readonly int? GameSeed = null;
+        private static readonly int? GameSeed = 16372221;
 
 
         private readonly Player player;
@@ -96,7 +96,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private ArrayMap<bool> GenerateWalls()
         {
             var map = new ArrayMap<bool>(this.Width, this.mapHeight);
-            var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, MaxRooms, MinRoomSize, MaxRoomSize);
+            var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, GlobalRandom, MaxRooms, MinRoomSize, MaxRoomSize);
             
             for (var y = 0; y < this.mapHeight; y++) {
                 for (var x = 0; x < this.Width; x++) {
@@ -117,6 +117,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                         if (wall != null) {
                             this.walls.Remove(wall);
                         }
+
+                        // Mark as "secret floor" if not perimeter
+                        var e = Entity.CreateFromTemplate("Alien");
+                        e.X = x;
+                        e.Y = y;
+                        this.monsters.Add(e);
                     }
                 }
 
@@ -130,16 +136,14 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                     // Ah, NightBlade, ah. Fake walls are monsters with 1HP and CanMove=false.
                     // TODO: change to LightGrey, and make a custom entity (not add to monsters) - shows up when adjacent
-                    var secretWall = new Entity("Fake Wall", '#', Palette.Blue, 1, 0, 0);
-                    secretWall.CanMove = false;
-                    secretWall.X = secretX;
-                    secretWall.Y = y;
+                    //var secretWall = new Entity("Fake Wall", '#', Palette.Blue, 1, 0, 0);
+                    //secretWall.CanMove = false;
+                    //secretWall.X = secretX;
+                    //secretWall.Y = y;
 
-                    Console.WriteLine($"Added secret wall at {secretX}, {y}");
-                    this.monsters.Add(secretWall);
+                    //Console.WriteLine($"Added secret wall at {secretX}, {y}");
+                    //this.monsters.Add(secretWall);
                 }
-
-                Console.WriteLine($"Created secret room from {room.Rectangle.X}, {room.Rectangle.Y} to {room.Rectangle.X + room.Rectangle.Width}, {room.Rectangle.Y + room.Rectangle.Height}");
             }
 
             return map;
@@ -147,24 +151,32 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private IEnumerable<ConnectedRoom> GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
         {
+            // rooms has a strange invariant. It claims the room is 7x7 even though the interior is 5x5.
+            // Must be because it generates the surrouding walls. Well, we subtract -2 because we just want interior sizes.
+            // This is also why start coordinates sometimes have +1 (like Y) -- that's the interior.
+            // We return candidate rooms that are *just* interior size, inclusive.
             var candidateRooms = new List<ConnectedRoom>();
 
             // All this +1 -1 +2 -2 is to make rooms line up perfectly
             foreach (var room in rooms) {
                 // Check if the space immediately beside (left/right) of the room is vacant (all walls)
                 // If so, hollow it out, and mark the border with fake walls.
-                if (IsAreaWalled(room.X - room.Width + 1, room.Y - 1, room.X - 1, room.Y + room.Height - 2))
+                if (IsAreaWalled(room.X - room.Width + 1, room.Y, room.X - 2, room.Y + room.Height - 2))
                 {
-                    candidateRooms.Add(new ConnectedRoom(room.X - room.Width + 1, room.Y - 1, room.Width - 1, room.Height - 2, false));
+                    candidateRooms.Add(new ConnectedRoom(room.X - room.Width + 1, room.Y + 1, room.Width - 2, room.Height - 2, false, room));
                 }
                 // Else here: don't want two secret rooms from the same one room
-                else if (IsAreaWalled(room.X + room.Width - 1, room.Y + 1, room.X + (room.Width * 2) - 2, room.Y + room.Height - 2))
+                else if (IsAreaWalled(room.X + room.Width, room.Y, room.X + 2 * (room.Width - 2), room.Y + room.Height - 2))
                 {
-                    candidateRooms.Add(new ConnectedRoom(room.X + room.Width - 1, room.Y + 1, room.Width - 2, room.Height - 2, true));
+                    candidateRooms.Add(new ConnectedRoom(room.X + room.Width, room.Y + 1, room.Width - 2, room.Height - 2, true, room));
                 }
             }
 
             var secretRooms = candidateRooms.Take(2);
+
+            foreach (var room in secretRooms) {
+                Console.WriteLine($"Created secret room {(room.ConnectedOnLeft ? "Left" : "Right")} at {room.Rectangle.X}, {room.Rectangle.Y} that's {room.Rectangle.Width}x{room.Rectangle.Height}; original={room.OriginalRoom}");
+            }
             return secretRooms;
         }
 
@@ -653,11 +665,13 @@ namespace DeenGames.AliTheAndroid.Prototype
     {
         public GoRogue.Rectangle Rectangle { get; set; }
         public bool ConnectedOnLeft {get; set;}
+        public Rectangle OriginalRoom { get; }
 
-        public ConnectedRoom(int x, int y, int width, int height, bool connectedOnLeft)
+        public ConnectedRoom(int x, int y, int width, int height, bool connectedOnLeft, Rectangle originalRoom)
         {
             this.Rectangle = new GoRogue.Rectangle(x, y, width, height);
             this.ConnectedOnLeft = connectedOnLeft;
+            this.OriginalRoom = originalRoom;
         }
     }
 }
