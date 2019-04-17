@@ -285,7 +285,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             switch(weapon) {
                 case Weapon.Blaster: return player.Strength;
                 case Weapon.MiniMissile: return player.Strength * 2;
-                case Weapon.ShockZone: return player.Strength * 4;
+                case Weapon.Zapper: return player.Strength * 4;
                 case Weapon.PlasmaCannon: return player.Strength * 3;
                 default: return -1;
             }
@@ -296,7 +296,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case '~': return Weapon.Blaster;
                 case '!': return Weapon.MiniMissile;
                 case '*': return Weapon.MiniMissile; // explosion
-                case '%': return Weapon.ShockZone;
+                case '%': return Weapon.Zapper;
                 case 'o': return Weapon.PlasmaCannon;
             }
             throw new InvalidOperationException($"{display} ???");
@@ -419,15 +419,15 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.CurrentWeapon = Weapon.Blaster;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2))
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2) && player.Weapons.Contains(Weapon.MiniMissile))
             {
                 player.CurrentWeapon = Weapon.MiniMissile;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3))
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3) && player.Weapons.Contains(Weapon.Zapper))
             {
-                player.CurrentWeapon = Weapon.ShockZone;
+                player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4))
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4) && player.Weapons.Contains(Weapon.PlasmaCannon))
             {
                 player.CurrentWeapon = Weapon.PlasmaCannon;
             }
@@ -489,7 +489,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case Weapon.MiniMissile:
                     character = '!';
                     break;
-                case Weapon.ShockZone:
+                case Weapon.Zapper:
                     character = '%';
                     break;
                 case Weapon.PlasmaCannon:

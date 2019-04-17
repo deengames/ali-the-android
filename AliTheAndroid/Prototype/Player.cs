@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Prototype;
@@ -9,8 +10,8 @@ namespace AliTheAndroid.Prototype
     public class Player : Entity
     {
         public Direction DirectionFacing { get; private set; }
-        public bool CanMove {get; private set;} = true;
         public Weapon CurrentWeapon = Weapon.Blaster;
+        public List<Weapon> Weapons = new List<Weapon>() { Weapon.Blaster };
 
         public Player() : base("You", '@', Color.White, 50, 7, 5, 4)
         {
