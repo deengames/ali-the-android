@@ -122,13 +122,19 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
-            var numFakeWalls = 5;
-            while (numFakeWalls > 0) {
+            var numFakeWallClusters = 3;
+            while (numFakeWallClusters > 0) {
                 var spot = this.FindEmptySpot();
                 var numFloors = this.CountAdjacentFloors(spot);
                 if (numFloors <= 4) {
-                    this.fakeWalls.Add(new AbstractEntity((int)spot.X, (int)spot.Y, '#', Palette.LightGrey));
-                    numFakeWalls -= 1;
+                    // Make a plus-shaped cluster. It's cooler.
+                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y, '#', Palette.LightGrey), this.fakeWalls);
+                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X - 1, (int)spot.Y, '#', Palette.LightGrey), this.fakeWalls);
+                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X + 1, (int)spot.Y, '#', Palette.LightGrey), this.fakeWalls);
+                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y - 1, '#', Palette.LightGrey), this.fakeWalls);
+                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y + 1, '#', Palette.LightGrey), this.fakeWalls);
+                    numFakeWallClusters -= 1;
+                    Console.WriteLine("Added cluster to " + spot.X + ", " + spot.Y);
                 }
             }
 
@@ -284,10 +290,10 @@ namespace DeenGames.AliTheAndroid.Prototype
                     if (hitBy.Character == '$') {
                         // Crowded areas can cause multiple bolts on the same monster.
                         // This is not intended. A .Single call above will fail.
-                        this.AddNonDupeEffect(new Bolt(monster.X - 1, monster.Y));
-                        this.AddNonDupeEffect(new Bolt(monster.X + 1, monster.Y));
-                        this.AddNonDupeEffect(new Bolt(monster.X, monster.Y - 1));
-                        this.AddNonDupeEffect(new Bolt(monster.X, monster.Y + 1));
+                        this.AddNonDupeEntity(new Bolt(monster.X - 1, monster.Y), this.effectEntities);
+                        this.AddNonDupeEntity(new Bolt(monster.X + 1, monster.Y), this.effectEntities);
+                        this.AddNonDupeEntity(new Bolt(monster.X, monster.Y - 1), this.effectEntities);
+                        this.AddNonDupeEntity(new Bolt(monster.X, monster.Y + 1), this.effectEntities);
                         
                     }
                 }
@@ -311,9 +317,9 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.RedrawEverything();
         }
 
-        private void AddNonDupeEffect(Effect effect) {
-            if (!effectEntities.Any(e => e.X == effect.X && e.Y == effect.Y)) {
-                this.effectEntities.Add(effect);
+        private void AddNonDupeEntity<T>(T entity, List<T> collection) where T : AbstractEntity {
+            if (!collection.Any(e => e.X == entity.X && e.Y == entity.Y)) {
+                collection.Add(entity);
             }
         }
 
@@ -641,13 +647,15 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var x = (int)wall.X;
                 var y = (int)wall.Y;
 
+                var colour = DebugOptions.ShowFakeWalls && fakeWalls.Contains(wall) ? Palette.Blue : Palette.LightGrey;
+
                 if (IsInPlayerFov(x, y) || DebugOptions.IsOmnisight)
                 {
-                    this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.LightGrey);
+                    this.SetGlyph(wall.X, wall.Y, wall.Character, colour);
                 }
                 else if (IsSeen(x, y))
                 {
-                  this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.Grey);
+                  this.SetGlyph(wall.X, wall.Y, wall.Character, colour);
                 }
             }
 
