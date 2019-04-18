@@ -24,14 +24,17 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int MinRoomSize = 7;
         private const int MaxRoomSize = 10;
         private const int ExplosionRadius = 2;
+        private const int NumberOfLockedDoors = 3;
 
-        private static readonly int? GameSeed = null;
+        private static readonly int? GameSeed = 1213723755;
 
 
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
         private readonly List<AbstractEntity> fakeWalls = new List<AbstractEntity>();
+        private readonly List<Door> doors = new List<Door>();
+
         private readonly List<Effect> effectEntities = new List<Effect>();
 
 
@@ -92,22 +95,11 @@ namespace DeenGames.AliTheAndroid.Prototype
             });
         }
 
-        private Tuple<int, int> FindEmptyLocation(ArrayMap<bool> map, List<Entity> monsters, List<AbstractEntity> walls)
-        {
-            while (true) {
-                var x = PrototypeGameConsole.GlobalRandom.Next(0, map.Width);
-                var y = PrototypeGameConsole.GlobalRandom.Next(0, map.Height);
-
-                if (map[x, y] == false && monsters.All(m => m.X != x || m.Y != y) && walls.All(w => w.X != x || w.Y != y)) {
-                    return new Tuple<int, int>(x, y);
-                }
-            }
-        }
-
         private void GenerateMap() {
             var rooms = this.GenerateWalls();
             this.GenerateFakeWallClusters();
             this.GenerateSecretRooms(rooms);
+            this.GenerateDoors(rooms);
         }
 
         private IEnumerable<GoRogue.Rectangle> GenerateWalls()
@@ -179,20 +171,68 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
+        private void GenerateDoors(IEnumerable<GoRogue.Rectangle> rooms) {
+            // Generate regular doors: any time we have a room, look at the perimeter tiles around that room.
+            // If any of them have <= 4 ground tiles (including tiles with doors on them already), add a door.
+            foreach (var room in rooms) {
+                var startX = room.X;
+                var stopX = room.X + room.Width - 1;
+                var startY = room.Y;
+                var stopY = room.Y + room.Height - 1;
+
+                for (var x = startX; x <= stopX; x++) {
+                    if (this.IsDoorCandidate(x, room.Y - 1)) {
+                        this.doors.Add(new Door(x, room.Y - 1));
+                    }
+                    if (this.IsDoorCandidate(x, room.Y + room.Height - 1)) {
+                        this.doors.Add(new Door(x, room.Y + room.Height - 1));
+                    }
+                }
+
+                for (var y = startY; y <= stopY; y++) {
+                    if (this.IsDoorCandidate(room.X, y)) {
+                        this.doors.Add(new Door(room.X, y));
+                    }
+                }
+
+                for (var y = startY; y <= stopY; y++) {
+                    if (this.IsDoorCandidate(room.X + room.Width - 1, y)) {
+                        this.doors.Add(new Door(room.X + room.Width - 1, y));
+                    }
+                }
+            }
+
+            // Generate locked doors: random spots with only two surrounding ground tiles.
+            var leftToGenerate = NumberOfLockedDoors;
+            while (leftToGenerate > 0) {
+                var spot = this.FindEmptySpot();
+                var numFloors = this.CountAdjacentFloors(spot);
+                if (numFloors == 2) {
+                    this.doors.Add(new Door((int)spot.X, (int)spot.Y, true));
+                    leftToGenerate--;
+                }
+            }
+        }
+
+        private bool IsDoorCandidate(int x, int y) {
+            return this.IsWalkable(x, y) && this.CountAdjacentFloors(new Vector2(x, y)) == 4;
+        }
+
+        // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
         private int CountAdjacentFloors(Vector2 coordinates) {
             int x = (int)coordinates.X;
             int y = (int)coordinates.Y;
             var count = 0;
 
-            if (this.IsWalkable(x - 1, y - 1)) { count += 1; }
-            if (this.IsWalkable(x, y - 1)) { count += 1; }
-            if (this.IsWalkable(x + 1, y - 1)) { count += 1; }
-            if (this.IsWalkable(x - 1, y)) { count += 1; }
-            //if (this.IsWalkable(x, y)) { count += 1; }
-            if (this.IsWalkable(x + 1, y)) { count += 1; }
-            if (this.IsWalkable(x - 1, y + 1)) { count += 1; }
-            if (this.IsWalkable(x, y + 1)) { count += 1; }
-            if (this.IsWalkable(x + 1, y + 1)) { count += 1; }
+            if (this.IsWalkable(x - 1, y - 1, true)) { count += 1; }
+            if (this.IsWalkable(x, y - 1, true)) { count += 1; }
+            if (this.IsWalkable(x + 1, y - 1, true)) { count += 1; }
+            if (this.IsWalkable(x - 1, y, true)) { count += 1; }
+            //if (this.IsWalkable(x, y, true)) { count += 1; }
+            if (this.IsWalkable(x + 1, y, true)) { count += 1; }
+            if (this.IsWalkable(x - 1, y + 1, true)) { count += 1; }
+            if (this.IsWalkable(x, y + 1, true)) { count += 1; }
+            if (this.IsWalkable(x + 1, y + 1, true)) { count += 1; }
 
             return count;
         }
@@ -668,6 +708,22 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
+            
+            foreach (var door in doors)
+            {
+                var x = door.X;
+                var y = door.Y;
+
+                if (IsInPlayerFov(x, y) || DebugOptions.IsOmnisight)
+                {
+                    this.SetGlyph(x, y, door.Character, door.Color);
+                }
+                else if (IsSeen(x, y))
+                {
+                  this.SetGlyph(x, y, door.Character, Palette.Grey);
+                }
+            }
+
             foreach (var monster in this.monsters)
             {                
                 if (IsInPlayerFov(monster.X, monster.Y) || DebugOptions.IsOmnisight)
@@ -754,7 +810,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             return this.monsters.FirstOrDefault(m => m.X == x && m.Y == y);
         }
 
-        private bool IsWalkable(int x, int y)
+        private bool IsWalkable(int x, int y, bool areDoorsWalkable = false)
         {
             if (this.walls.Any(w => w.X == x && w.Y == y))
             {
@@ -763,6 +819,10 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             if (this.fakeWalls.Any(f => f.X == x && f.Y == y))
             {
+                return false;
+            }
+
+            if (!areDoorsWalkable && this.doors.Any(d => d.X == x && d.Y == y && d.IsOpened == false)) {
                 return false;
             }
 

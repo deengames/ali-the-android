@@ -35,9 +35,9 @@ namespace DeenGames.AliTheAndroid.Prototype
     {
         private const int ShotUpdateTimeMs = 100; // 100ms
         private Direction direction;
-        private Func<int, int, bool> isWalkableCheck;
+        private Func<int, int, bool, bool> isWalkableCheck;
 
-        public Shot(int x, int y, char character, Color color, Direction direction, Func<int, int, bool> isWalkable) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
+        public Shot(int x, int y, char character, Color color, Direction direction, Func<int, int, bool, bool> isWalkable) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
         {
             this.direction = direction;
             this.isWalkableCheck = isWalkable;
@@ -45,7 +45,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         override internal void OnAction()
         {
-            if (this.isWalkableCheck(this.X, this.Y))
+            if (this.isWalkableCheck(this.X, this.Y, false))
             {
                 switch (this.direction) {
                     case Direction.Up:
