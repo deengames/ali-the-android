@@ -11,6 +11,7 @@ using DeenGames.AliTheAndroid.Events;
 using Global = SadConsole.Global;
 using AliTheAndroid.Prototype;
 using AliTheAndroid.Enums;
+using static DeenGames.AliTheAndroid.Prototype.Shot;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
@@ -477,40 +478,75 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void FireShot()
         {
-            // Blaster: ~
-            // Missle: !
-            // Shock: $
-            // Plasma: o
             var character = '~';
-            switch (player.CurrentWeapon) {
-                case Weapon.Blaster:
-                    character = '~';
-                    break;
-                case Weapon.MiniMissile:
-                    character = '!';
-                    break;
-                case Weapon.Zapper:
-                    character = '%';
-                    break;
-                case Weapon.PlasmaCannon:
-                    character = 'o';
-                    break;
+
+            if (player.CurrentWeapon != Weapon.Zapper) {
+                // Blaster: ~
+                // Missle: !
+                // Shock: $
+                // Plasma: o
+                switch (player.CurrentWeapon) {
+                    case Weapon.Blaster:
+                        character = '~';
+                        break;
+                    case Weapon.MiniMissile:
+                        character = '!';
+                        break;
+                    case Weapon.PlasmaCannon:
+                        character = 'o';
+                        break;
+                }
+
+                var dx = 0;
+                var dy = 0;
+
+                switch(player.DirectionFacing) {
+                    case Direction.Up: dy = -1; break;
+                    case Direction.Down: dy = 1; break;
+                    case Direction.Left: dx = -1; break;
+                    case Direction.Right: dx = 1; break;
+                    default: throw new InvalidOperationException(nameof(player.DirectionFacing));
+                }
+
+                var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
+                effectEntities.Add(shot);
             }
+            else
+            {
+                // Fires a 3x3 block in front of you. Sort of. My math was a bit off.
+                var dx = 0;
+                var dy = 0;
+                // orthagonal
+                var ox = 0;
+                var oy = 0;
 
-            var dx = 0;
-            var dy = 0;
+                character = '$';
+                var colour = Palette.Blue;
 
-            switch(player.DirectionFacing) {
-                case Direction.Up: dy = -1; break;
-                case Direction.Down: dy = 1; break;
-                case Direction.Left: dx = -1; break;
-                case Direction.Right: dx += 1; break;
-                default: throw new InvalidOperationException(nameof(player.DirectionFacing));
+                switch(player.DirectionFacing) {
+                    case Direction.Up: dy = -1; break;
+                    case Direction.Down: dy = 1; break;
+                    case Direction.Left: dx = -1; break;
+                    case Direction.Right: dx = 1; break;
+                    default: throw new InvalidOperationException(nameof(player.DirectionFacing));
+                }
+
+                ox = player.DirectionFacing == Direction.Up || player.DirectionFacing == Direction.Down ? 1 : 0;
+                oy = player.DirectionFacing == Direction.Left || player.DirectionFacing == Direction.Right ? 1 : 0;
+
+                effectEntities.Add(new Bolt(player.X + dx, player.Y + dy));
+                effectEntities.Add(new Bolt(player.X + 2*dx, player.Y + 2*dy));
+                effectEntities.Add(new Bolt(player.X + 3*dx, player.Y + 3*dy));
+
+                effectEntities.Add(new Bolt(player.X + dx + ox, player.Y + dy + oy));
+                effectEntities.Add(new Bolt(player.X + 2*dx + 2*ox, player.Y + 2*dy + 2*oy));
+                effectEntities.Add(new Bolt(player.X + 3*dx + 3*ox, player.Y + 3*dy + 3*oy));
+
+                effectEntities.Add(new Bolt(player.X + dx - ox, player.Y + dy - oy));
+                effectEntities.Add(new Bolt(player.X + 2*dx - 2*ox, player.Y + 2*dy - 2*oy));
+                effectEntities.Add(new Bolt(player.X + 3*dx - 3*ox, player.Y + 3*dy - 3*oy));
             }
-
-            var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
-            effectEntities.Add(shot);
-
+            
             this.player.Freeze();
         }
 

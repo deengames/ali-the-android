@@ -78,4 +78,13 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.IsAlive = false;
         }
     }
+
+    public class Bolt : Explosion
+    {
+        public Bolt(int x, int y) : base(x, y)
+        {
+            this.Character = '$';
+            this.Color = Palette.Blue;
+        }
+    }
 }
