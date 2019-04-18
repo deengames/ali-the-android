@@ -25,7 +25,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int MaxRoomSize = 10;
         private const int ExplosionRadius = 2;
 
-        private static readonly int? GameSeed = 16372221;
+        private static readonly int? GameSeed = null;
 
 
         private readonly Player player;
@@ -59,7 +59,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.player = new Player();
 
             this.map = this.GenerateWalls();
-            //this.GenerateMonsters();
+            this.GenerateMonsters();
 
             var emptySpot = this.FindEmptySpot();
             player.X = (int)emptySpot.X;
@@ -117,7 +117,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var numFloors = this.CountAdjacentFloors(spot);
                 if (numFloors <= 4) {
                     this.fakeWalls.Add(new AbstractEntity((int)spot.X, (int)spot.Y, '#', Palette.LightGrey));
-                    Console.WriteLine("Added fake wall to " + spot);
                     numFakeWalls -= 1;
                 }
             }
@@ -198,10 +197,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             var secretRooms = candidateRooms.Take(2);
-
-            foreach (var room in secretRooms) {
-                Console.WriteLine($"Created secret room {(room.ConnectedOnLeft ? "Left" : "Right")} at {room.Rectangle.X}, {room.Rectangle.Y} that's {room.Rectangle.Width}x{room.Rectangle.Height}; original={room.OriginalRoom}");
-            }
             return secretRooms;
         }
 
@@ -275,6 +270,14 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
 
                     monster.Damage(damage);
+
+                    // Thunder damage hits adjacent monsters. Spawn more bolts~!
+                    if (hitBy.Character == '$') {
+                        effectEntities.Add(new Bolt(monster.X - 1, monster.Y));
+                        effectEntities.Add(new Bolt(monster.X + 1, monster.Y));
+                        effectEntities.Add(new Bolt(monster.X, monster.Y - 1));
+                        effectEntities.Add(new Bolt(monster.X, monster.Y + 1));
+                    }
                 }
 
                 var missiles = destroyedEffects.Where(e => e.Character == '!');
@@ -326,9 +329,10 @@ namespace DeenGames.AliTheAndroid.Prototype
             switch(display) {
                 case '~': return Weapon.Blaster;
                 case '!': return Weapon.MiniMissile;
-                case '*': return Weapon.MiniMissile; // explosion
-                case '%': return Weapon.Zapper;
+                case '$': return Weapon.Zapper;
                 case 'o': return Weapon.PlasmaCannon;
+
+                case '*': return Weapon.MiniMissile; // explosion
             }
             throw new InvalidOperationException($"{display} ???");
         }
@@ -481,7 +485,6 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 processedInput = true;
                 this.latestMessage = "";
-                Console.WriteLine($"Player is at {player.X}, {player.Y}");
             }
             else if (this.GetMonsterAt(destinationX, destinationY) != null)
             {
@@ -543,7 +546,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
             else
             {
-                // Fires a 3x3 block in front of you. Sort of. My math was a bit off.
+                // Fires a <- shape in front of you.
                 var dx = 0;
                 var dy = 0;
                 // orthagonal
@@ -671,7 +674,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateMonsters()
         {
-            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
+            var numMonsters = 10 * PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
             while (numMonsters-- > 0)
             {
                 var spot = this.FindEmptySpot();
