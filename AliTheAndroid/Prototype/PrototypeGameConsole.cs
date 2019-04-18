@@ -309,6 +309,14 @@ namespace DeenGames.AliTheAndroid.Prototype
                     player.Damage(damage);
                 }
 
+                // Unlock doors hit by bolts
+                foreach (var bolt in backlashes.Where(b => b.Character == '$')) {
+                    foreach (var door in doors.Where(d => d.IsLocked && d.X == bolt.X && d.Y == bolt.Y)) {
+                        door.IsLocked = false;
+                        this.latestMessage = "You unlock the door!";
+                    }
+                }
+
                 // Find and destroy fake walls
                 var destroyedFakeWalls = new List<AbstractEntity>();
                 this.fakeWalls.ForEach(f => {
@@ -571,6 +579,17 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 processedInput = true;
                 this.LatestMessage = "";
+            }
+            else if (this.doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
+            {
+                var door = this.doors.Single(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false);
+                if (!door.IsOpened) {
+                    door.IsOpened = true;
+                    this.LatestMessage = "You open the door.";
+                } else {
+                    player.X = door.X;
+                    player.Y = door.Y;
+                }
             }
             else if (this.GetMonsterAt(destinationX, destinationY) != null)
             {
