@@ -623,7 +623,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 for (var x = 0; x < this.Width; x++)
                 {
-                    if (IsInPlayerFov(x, y))
+                    if (IsInPlayerFov(x, y) || DebugOptions.IsOmnisight)
                     {
                         this.SetGlyph(x, y, '.', Palette.LightGrey);
                     }
@@ -641,7 +641,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var x = (int)wall.X;
                 var y = (int)wall.Y;
 
-                if (IsInPlayerFov(x, y))
+                if (IsInPlayerFov(x, y) || DebugOptions.IsOmnisight)
                 {
                     this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.LightGrey);
                 }
@@ -653,7 +653,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             foreach (var monster in this.monsters)
             {                
-                if (IsInPlayerFov(monster.X, monster.Y))
+                if (IsInPlayerFov(monster.X, monster.Y) || DebugOptions.IsOmnisight)
                 {
                     var character = monster.Character;
 
@@ -666,7 +666,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             foreach (var effect in this.effectEntities) {
-                if (IsInPlayerFov(effect.X, effect.Y)) {
+                if (IsInPlayerFov(effect.X, effect.Y) || DebugOptions.IsOmnisight) {
                     this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
                 }
             }
@@ -705,7 +705,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateMonsters()
         {
-            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
+            var numMonsters = DebugOptions.MonsterMultiplier * PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
             while (numMonsters-- > 0)
             {
                 var spot = this.FindEmptySpot();
