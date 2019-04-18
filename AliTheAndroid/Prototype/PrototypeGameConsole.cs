@@ -49,8 +49,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                 this.latestMessage = value;
             }
         }
-
-        private ArrayMap<bool> map;
         
         // Super hack. Key is "x, y", value is IsDiscovered.
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
@@ -69,7 +67,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.mapHeight = height - 2;
             this.player = new Player();
 
-            this.map = this.GenerateWalls();
+            this.GenerateMap();
             this.GenerateMonsters();
 
             var emptySpot = this.FindEmptySpot();
@@ -106,7 +104,13 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
-        private ArrayMap<bool> GenerateWalls()
+        private void GenerateMap() {
+            var rooms = this.GenerateWalls();
+            this.GenerateFakeWallClusters();
+            this.GenerateSecretRooms(rooms);
+        }
+
+        private IEnumerable<GoRogue.Rectangle> GenerateWalls()
         {
             var map = new ArrayMap<bool>(this.Width, this.mapHeight);
             var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, GlobalRandom, MaxRooms, MinRoomSize, MaxRoomSize);
@@ -121,7 +125,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
+            return rooms;
+        }
+
+        private void GenerateFakeWallClusters()
+        {
+             // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
             var numFakeWallClusters = 3;
             while (numFakeWallClusters > 0) {
                 var spot = this.FindEmptySpot();
@@ -137,8 +146,11 @@ namespace DeenGames.AliTheAndroid.Prototype
                     Console.WriteLine("Added cluster to " + spot.X + ", " + spot.Y);
                 }
             }
+        }
 
-            var secretRooms = this.GenerateSecretRooms(rooms);
+        private void GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
+        {
+            var secretRooms = this.FindPotentialSecretRooms(rooms).Take(2);
             foreach (var room in secretRooms) {
                 // Fill the interior with fake walls. Otherwise, FOV gets complicated.
                 // Trim perimeter by 1 tile so we get an interior only
@@ -165,8 +177,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                     this.fakeWalls.Add(new AbstractEntity(secretX, y, '#', Palette.Blue));
                 }
             }
-
-            return map;
         }
 
         private int CountAdjacentFloors(Vector2 coordinates) {
@@ -187,7 +197,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             return count;
         }
 
-        private IEnumerable<ConnectedRoom> GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
+        private IEnumerable<ConnectedRoom> FindPotentialSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
         {
             // rooms has a strange invariant. It claims the room is 7x7 even though the interior is 5x5.
             // Must be because it generates the surrouding walls. Well, we subtract -2 because we just want interior sizes.
@@ -213,8 +223,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            var secretRooms = candidateRooms.Take(2);
-            return secretRooms;
+            return candidateRooms;
         }
 
         private bool IsAreaWalled(int startX, int startY, int stopX, int stopY) {
