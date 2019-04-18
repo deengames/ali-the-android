@@ -110,6 +110,18 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
+            // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
+            var numFakeWalls = 5;
+            while (numFakeWalls > 0) {
+                var spot = this.FindEmptySpot();
+                var numFloors = this.CountAdjacentFloors(spot);
+                if (numFloors <= 4) {
+                    this.fakeWalls.Add(new AbstractEntity((int)spot.X, (int)spot.Y, '#', Palette.LightGrey));
+                    Console.WriteLine("Added fake wall to " + spot);
+                    numFakeWalls -= 1;
+                }
+            }
+
             var secretRooms = this.GenerateSecretRooms(rooms);
             foreach (var room in secretRooms) {
                 // Fill the interior with fake walls. Otherwise, FOV gets complicated.
@@ -139,6 +151,24 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             return map;
+        }
+
+        private int CountAdjacentFloors(Vector2 coordinates) {
+            int x = (int)coordinates.X;
+            int y = (int)coordinates.Y;
+            var count = 0;
+
+            if (this.IsWalkable(x - 1, y - 1)) { count += 1; }
+            if (this.IsWalkable(x, y - 1)) { count += 1; }
+            if (this.IsWalkable(x + 1, y - 1)) { count += 1; }
+            if (this.IsWalkable(x - 1, y)) { count += 1; }
+            //if (this.IsWalkable(x, y)) { count += 1; }
+            if (this.IsWalkable(x + 1, y)) { count += 1; }
+            if (this.IsWalkable(x - 1, y + 1)) { count += 1; }
+            if (this.IsWalkable(x, y + 1)) { count += 1; }
+            if (this.IsWalkable(x + 1, y + 1)) { count += 1; }
+
+            return count;
         }
 
         private IEnumerable<ConnectedRoom> GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
@@ -420,15 +450,15 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.CurrentWeapon = Weapon.Blaster;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2) && player.Weapons.Contains(Weapon.MiniMissile))
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2))
             {
                 player.CurrentWeapon = Weapon.MiniMissile;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3) && player.Weapons.Contains(Weapon.Zapper))
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3))
             {
                 player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4) && player.Weapons.Contains(Weapon.PlasmaCannon))
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4))
             {
                 player.CurrentWeapon = Weapon.PlasmaCannon;
             }
@@ -577,14 +607,13 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var x = (int)wall.X;
                 var y = (int)wall.Y;
 
-                var colour = Palette.Grey;
                 if (IsInPlayerFov(x, y))
                 {
                     this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.LightGrey);
                 }
                 else if (IsSeen(x, y))
                 {
-                    this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.Grey);
+                  this.SetGlyph(wall.X, wall.Y, wall.Character, Palette.Grey);
                 }
             }
 
