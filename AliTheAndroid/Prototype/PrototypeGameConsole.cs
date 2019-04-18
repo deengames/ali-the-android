@@ -36,13 +36,24 @@ namespace DeenGames.AliTheAndroid.Prototype
 
 
         private readonly int mapHeight;
-
         private string latestMessage = "";
+
+        private string LatestMessage { 
+            get {
+                return this.latestMessage;
+            }
+            set {
+                if (!string.IsNullOrWhiteSpace(value)) {
+                    Console.WriteLine(value);
+                }
+                this.latestMessage = value;
+            }
+        }
+
         private ArrayMap<bool> map;
         
         // Super hack. Key is "x, y", value is IsDiscovered.
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
-
 
         static PrototypeGameConsole() {
             if (!GameSeed.HasValue) {
@@ -70,7 +81,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             EventBus.Instance.AddListener(GameEvent.EntityDeath, (e) => {
                 if (e == player)
                 {
-                    this.latestMessage = "YOU DIE!!!";
+                    this.LatestMessage = "YOU DIE!!!";
                     this.player.Character = '%';
                     this.player.Color = Enums.Palette.DarkBurgandyPurple;
 
@@ -233,22 +244,26 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
-                // Harm the player from explosions.
-                var explosions = this.effectEntities.Where(e => e.Character == '*');
-                if (explosions.Any(e => e.X == player.X && e.Y == player.Y)) {
-                    player.Damage(this.GetExplosionBlastDamage());
+                // Harm the player from explosions/zaps.
+                var backlashes = this.effectEntities.Where(e => e.Character == '*' || e.Character == '$');
+                var playerBacklashes = (backlashes.Where(e => e.X == player.X && e.Y == player.Y));
+
+                foreach (var backlash in playerBacklashes) {
+                    var damage = this.CalculateDamage(backlash.Character);
+                    Console.WriteLine("Player damaged by backlash for " + damage + " damage!");
+                    player.Damage(damage);
                 }
 
                 // Find and destroy fake walls
                 var destroyedFakeWalls = new List<AbstractEntity>();
                 this.fakeWalls.ForEach(f => {
-                    if (explosions.Any(e => e.X == f.X && e.Y == f.Y)) {
+                    if (backlashes.Any(e => e.X == f.X && e.Y == f.Y && e.Character == '*')) {
                         destroyedFakeWalls.Add(f);
                     }
                 });
 
                 if (destroyedFakeWalls.Any()) {
-                    this.latestMessage = "You discovered a secret room!";
+                    this.LatestMessage = "You discovered a secret room!";
                 }
                 this.fakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
                 
@@ -260,23 +275,20 @@ namespace DeenGames.AliTheAndroid.Prototype
                 
                 foreach (var monster in harmedMonsters) {
                     var hitBy = destroyedEffects.Single(e => e.X == monster.X && e.Y == monster.Y);
-                    var damage = 0;
-                    
-                    if (hitBy.Character == '*') {
-                        damage = this.GetExplosionBlastDamage();
-                    } else {
-                        var type = CharacterToWeapon(hitBy.Character);
-                        damage = CalculateDamage(type);
-                    }
+                    var type = CharacterToWeapon(hitBy.Character);
+                    var damage = CalculateDamage(type);
 
                     monster.Damage(damage);
 
                     // Thunder damage hits adjacent monsters. Spawn more bolts~!
                     if (hitBy.Character == '$') {
-                        effectEntities.Add(new Bolt(monster.X - 1, monster.Y));
-                        effectEntities.Add(new Bolt(monster.X + 1, monster.Y));
-                        effectEntities.Add(new Bolt(monster.X, monster.Y - 1));
-                        effectEntities.Add(new Bolt(monster.X, monster.Y + 1));
+                        // Crowded areas can cause multiple bolts on the same monster.
+                        // This is not intended. A .Single call above will fail.
+                        this.AddNonDupeEffect(new Bolt(monster.X - 1, monster.Y));
+                        this.AddNonDupeEffect(new Bolt(monster.X + 1, monster.Y));
+                        this.AddNonDupeEffect(new Bolt(monster.X, monster.Y - 1));
+                        this.AddNonDupeEffect(new Bolt(monster.X, monster.Y + 1));
+                        
                     }
                 }
 
@@ -299,9 +311,17 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.RedrawEverything();
         }
 
+        private void AddNonDupeEffect(Effect effect) {
+            if (!effectEntities.Any(e => e.X == effect.X && e.Y == effect.Y)) {
+                this.effectEntities.Add(effect);
+            }
+        }
+
         private void CreateExplosion(int centerX, int centerY) {
             for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++) {
                 for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++) {
+                    // Skip: don't create an explosion on the epicenter itself. Double damage.
+                    if (x == centerX && y == centerY) { continue; }
                     var distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
                     if (distance <= ExplosionRadius) {
                         this.effectEntities.Add(new Explosion(x, y));
@@ -310,17 +330,28 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
-        private int GetExplosionBlastDamage() {
-            return (int)Math.Ceiling(this.CalculateDamage(Weapon.MiniMissile) * 0.75); // 1.5x
-        }
 
+        private int CalculateDamage(char weaponCharacter)
+        {
+            if (weaponCharacter == '*') {
+                return (int)Math.Ceiling(this.CalculateDamage(Weapon.MiniMissile) * 0.75); // 1.5x
+            }
+
+            switch (weaponCharacter) {
+                case '!': return this.CalculateDamage(Weapon.MiniMissile);
+                case '$': return this.CalculateDamage(Weapon.Zapper);
+                //case 'o': return this.CalculateDamage(Weapon.PlasmaCannon);
+                default: return 0;
+            }
+        }
+        
         private int CalculateDamage(Weapon weapon)
         {
             switch(weapon) {
                 case Weapon.Blaster: return player.Strength;
-                case Weapon.MiniMissile: return player.Strength * 2;
-                case Weapon.Zapper: return player.Strength * 4;
-                case Weapon.PlasmaCannon: return player.Strength * 3;
+                case Weapon.MiniMissile: return player.Strength * 3;
+                case Weapon.Zapper: return player.Strength * 2;
+                case Weapon.PlasmaCannon: return player.Strength * 4;
                 default: return -1;
             }
         }
@@ -357,7 +388,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                         // ATTACK~!
                         var damage = monster.Strength - player.Defense;
                         player.Damage(damage);
-                        this.latestMessage += $" {monster.Name} attacks for {damage} damage!";
+                        this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
                     }
                     else
                     {
@@ -484,7 +515,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
 
                 processedInput = true;
-                this.latestMessage = "";
+                this.LatestMessage = "";
             }
             else if (this.GetMonsterAt(destinationX, destinationY) != null)
             {
@@ -493,7 +524,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 var damage = player.Strength - monster.Defense;
                 monster.Damage(damage);
-                this.latestMessage = $"You hit {monster.Name} for {damage} damage!";
+                this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
             }
             else if (Global.KeyboardState.IsKeyPressed(Keys.OemPeriod) || Global.KeyboardState.IsKeyPressed(Keys.Space))
             {
@@ -503,7 +534,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             if (player.CurrentHealth <= 0)
             {
-                this.latestMessage = "YOU DIE!!!!";
+                this.LatestMessage = "YOU DIE!!!!";
             }
 
             return processedInput;
@@ -645,7 +676,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.DrawLine(new Point(0, this.Height - 2), new Point(this.Width, this.Height - 2), null, Palette.BlackAlmost, ' ');
             this.DrawLine(new Point(0, this.Height - 1), new Point(this.Width, this.Height - 1), null, Palette.BlackAlmost, ' ');
             this.DrawHealthIndicators();
-            this.Print(0, this.Height - 1, this.latestMessage, Palette.White);
+            this.Print(0, this.Height - 1, this.LatestMessage, Palette.White);
         }
 
         private void DrawHealthIndicators()
@@ -674,7 +705,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateMonsters()
         {
-            var numMonsters = 10 * PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
+            var numMonsters = PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
             while (numMonsters-- > 0)
             {
                 var spot = this.FindEmptySpot();
