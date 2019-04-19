@@ -1,3 +1,4 @@
+dist: xenial
 language: csharp
 solution: AliTheAndroid.sln
 mono: none
