@@ -25,15 +25,18 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int MaxRoomSize = 10;
         private const int ExplosionRadius = 2;
         private const int NumberOfLockedDoors = 3;
+        private const float PercentOfFloorFuming = 0.05f; // 0.15 => 15% of non-wall spaces
 
-        private static readonly int? GameSeed = 1213723755;
+        private static readonly int? GameSeed = null; // null = random each time
 
 
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
+        private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
         private readonly List<AbstractEntity> fakeWalls = new List<AbstractEntity>();
         private readonly List<Door> doors = new List<Door>();
+        private readonly List<AbstractEntity> fumes = new List<AbstractEntity>();
 
         private readonly List<Effect> effectEntities = new List<Effect>();
 
@@ -77,6 +80,8 @@ namespace DeenGames.AliTheAndroid.Prototype
             player.X = (int)emptySpot.X;
             player.Y = (int)emptySpot.Y;
 
+            this.GenerateFumes();
+
             this.RedrawEverything();
 
             EventBus.Instance.AddListener(GameEvent.EntityDeath, (e) => {
@@ -95,14 +100,32 @@ namespace DeenGames.AliTheAndroid.Prototype
             });
         }
 
+        private void GenerateFumes()
+        {
+            var suitRoom = this.rooms[GlobalRandom.Next(this.rooms.Count)];
+            for (var y = suitRoom.MinExtentY; y < suitRoom.MaxExtentY; y++) {
+                for (var x = suitRoom.MinExtentX; x < suitRoom.MaxExtentX; x++) {
+                    this.fumes.Add(new AbstractEntity(x, y, (char)240, Palette.LimeGreen)); // 240 = ≡
+                }
+            }
+
+            var numFumes = (int)Math.Round(((this.Width * mapHeight) - this.walls.Count) * PercentOfFloorFuming);
+            while (numFumes > 0) {
+                var location = this.FindEmptySpot();
+                this.fumes.Add(new AbstractEntity((int)location.X, (int)location.Y, (char)240, Palette.LimeGreen));
+                numFumes--;
+                // TODO: create a little cluster of fumes
+            }
+        }
+
         private void GenerateMap() {
-            var rooms = this.GenerateWalls();
+            this.rooms = this.GenerateWalls();
             this.GenerateFakeWallClusters();
             this.GenerateSecretRooms(rooms);
             this.GenerateDoors(rooms);
         }
 
-        private IEnumerable<GoRogue.Rectangle> GenerateWalls()
+        private IList<GoRogue.Rectangle> GenerateWalls()
         {
             var map = new ArrayMap<bool>(this.Width, this.mapHeight);
             var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, GlobalRandom, MaxRooms, MinRoomSize, MaxRoomSize);
@@ -117,7 +140,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            return rooms;
+            return rooms.ToList();
         }
 
         private void GenerateFakeWallClusters()
@@ -135,7 +158,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                     this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y - 1, '#', Palette.LightGrey), this.fakeWalls);
                     this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y + 1, '#', Palette.LightGrey), this.fakeWalls);
                     numFakeWallClusters -= 1;
-                    Console.WriteLine("Added cluster to " + spot.X + ", " + spot.Y);
                 }
             }
         }
@@ -421,7 +443,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private Weapon CharacterToWeapon(char display) {
             switch(display) {
-                case '~': return Weapon.Blaster;
+                case '+': return Weapon.Blaster;
                 case '!': return Weapon.MiniMissile;
                 case '$': return Weapon.Zapper;
                 case 'o': return Weapon.PlasmaCannon;
@@ -616,7 +638,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void FireShot()
         {
-            var character = '~';
+            var character = '+';
 
             if (player.CurrentWeapon != Weapon.Zapper) {
                 // Blaster: ~
@@ -625,7 +647,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 // Plasma: o
                 switch (player.CurrentWeapon) {
                     case Weapon.Blaster:
-                        character = '~';
+                        character = '+';
                         break;
                     case Weapon.MiniMissile:
                         character = '!';
@@ -754,6 +776,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                     if (monster.CurrentHealth < monster.TotalHealth) {
                         this.SetGlyph(monster.X, monster.Y, character, Palette.Orange);
                     }
+                }
+            }
+
+            foreach (var fume in this.fumes) {
+                if (IsInPlayerFov(fume.X, fume.Y) || DebugOptions.IsOmnisight) {
+                    this.SetGlyph(fume.X, fume.Y, fume.Character, fume.Color, Palette.DarkGreen);
                 }
             }
 
