@@ -26,6 +26,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int ExplosionRadius = 2;
         private const int NumberOfLockedDoors = 3;
         private const float PercentOfFloorFuming = 0.05f; // 0.15 => 15% of non-wall spaces
+        private const int FumeDamage = 5;
 
         private static readonly int? GameSeed = null; // null = random each time
 
@@ -37,8 +38,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<AbstractEntity> fakeWalls = new List<AbstractEntity>();
         private readonly List<Door> doors = new List<Door>();
         private readonly List<AbstractEntity> fumes = new List<AbstractEntity>();
-
         private readonly List<Effect> effectEntities = new List<Effect>();
+        
+        private readonly List<TouchableEntity> touchables = new List<TouchableEntity>();
 
 
         private readonly int mapHeight;
@@ -100,12 +102,22 @@ namespace DeenGames.AliTheAndroid.Prototype
             });
         }
 
+        // Also generates the suit
         private void GenerateFumes()
         {
             var suitRoom = this.rooms[GlobalRandom.Next(this.rooms.Count)];
             for (var y = suitRoom.MinExtentY; y < suitRoom.MaxExtentY; y++) {
                 for (var x = suitRoom.MinExtentX; x < suitRoom.MaxExtentX; x++) {
-                    this.fumes.Add(new AbstractEntity(x, y, (char)240, Palette.LimeGreen)); // 240 = ≡
+                    if (x == suitRoom.X + (suitRoom.Width / 2) && y == suitRoom.Y + (suitRoom.Height / 2)) {
+                        var suit = new TouchableEntity(x, y, '?', Color.Cyan);
+                        suit.OnTouch = () => {
+                            player.HasEnvironmentSuit = true;
+                            latestMessage = "You pick up the environment suit.";
+                        };
+                        this.touchables.Add(suit);
+                    } else {
+                        this.fumes.Add(new AbstractEntity(x, y, (char)240, Palette.LimeGreen)); // 240 = ≡
+                    }
                 }
             }
 
@@ -601,6 +613,18 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 processedInput = true;
                 this.LatestMessage = "";
+
+                var touched = this.touchables.Where(t => t.X == destinationX && t.Y == player.Y); // really, only one element here at a time
+                foreach (var t in touched) {
+                    t.OnTouch();
+                }
+                this.touchables.RemoveAll(t => touched.Contains(t));
+
+                if (!player.HasEnvironmentSuit && this.fumes.Any(f => f.X == destinationX && f.Y == destinationY))
+                {
+                    this.player.Damage(FumeDamage);
+                    this.latestMessage = $"You breathe in toxic fumes! {FumeDamage} damage!";
+                }
             }
             else if (this.doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
@@ -730,6 +754,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
+            foreach (var fume in this.fumes) {
+                if (IsInPlayerFov(fume.X, fume.Y) || DebugOptions.IsOmnisight) {
+                    this.SetGlyph(fume.X, fume.Y, fume.Character, fume.Color, Palette.DarkGreen);
+                }
+            }
+
             var allWalls = this.walls.Union(this.fakeWalls);
 
             foreach (var wall in allWalls)
@@ -765,6 +795,13 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
+            foreach (var touchable in touchables) {
+                if (IsInPlayerFov(touchable.X, touchable.Y) || DebugOptions.IsOmnisight)
+                {
+                    this.SetGlyph(touchable.X, touchable.Y, touchable.Character, touchable.Color);
+                }
+            }
+
             foreach (var monster in this.monsters)
             {                
                 if (IsInPlayerFov(monster.X, monster.Y) || DebugOptions.IsOmnisight)
@@ -776,12 +813,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                     if (monster.CurrentHealth < monster.TotalHealth) {
                         this.SetGlyph(monster.X, monster.Y, character, Palette.Orange);
                     }
-                }
-            }
-
-            foreach (var fume in this.fumes) {
-                if (IsInPlayerFov(fume.X, fume.Y) || DebugOptions.IsOmnisight) {
-                    this.SetGlyph(fume.X, fume.Y, fume.Character, fume.Color, Palette.DarkGreen);
                 }
             }
 

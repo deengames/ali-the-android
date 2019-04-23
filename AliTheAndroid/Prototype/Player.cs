@@ -11,6 +11,7 @@ namespace AliTheAndroid.Prototype
     {
         public Direction DirectionFacing { get; private set; }
         public Weapon CurrentWeapon = Weapon.Blaster;
+        public bool HasEnvironmentSuit = false;
 
         public Player() : base("You", '@', Color.White, 50, 7, 5, 4)
         {
