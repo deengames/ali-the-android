@@ -373,8 +373,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                         var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
                         
                         foreach (var fume in tileFumes) {
-                            var flare = new Flare((int)tile.X, (int)tile.Y);
-                            AddNonDupeEntity(flare, this.effectEntities);
+                            // Every fume blooms into a +-shaped flare
+                            var flareTiles = this.GetAdjacentTiles(fume.X, fume.Y);
+                            foreach (var ft in flareTiles) {
+                                var flare = new Flare((int)ft.X, (int)ft.Y);
+                                AddNonDupeEntity(flare, this.effectEntities);
+                            }
                         }
 
                         this.fumes.RemoveAll(f => tileFumes.Contains(f));                        
