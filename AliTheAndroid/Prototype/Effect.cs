@@ -10,7 +10,7 @@ namespace DeenGames.AliTheAndroid.Prototype
     {
         public bool IsAlive {get; set;} = true;
 
-        private int tickEveryMilliseconds = 0;
+        protected int tickEveryMilliseconds = 0;
         private DateTime lastTickOn = DateTime.Now;
 
         public Effect(int x, int y, char character, Color color, int tickEveryMs) : base(x, y, character, color)
@@ -85,6 +85,15 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
             this.Character = '$';
             this.Color = Palette.Blue;
+        }
+    }
+
+    public class Flare : Explosion
+    {        
+        public Flare(int x, int y) : base(x, y)
+        {                        
+            this.Character = '%';
+            this.Color = Palette.Cyan;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const float PercentOfFloorFuming = 0.05f; // 0.15 => 15% of non-wall spaces
         private const int FumeDamage = 5;
 
-        private static readonly int? GameSeed = null; // null = random each time
+        private static readonly int? GameSeed = 798233840; // null = random each time
 
 
         private readonly Player player;
@@ -322,7 +322,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             if (this.effectEntities.Any()) {
-                // Move all effects.
+                // Process all effects.
                 foreach (var effect in this.effectEntities)
                 {
                     effect.OnUpdate();
@@ -363,6 +363,37 @@ namespace DeenGames.AliTheAndroid.Prototype
                     this.LatestMessage = "You discovered a secret room!";
                 }
                 this.fakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
+
+                //// Plasma/gas processing
+                var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o');
+                if (plasmaShot != null) {
+                    // 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
+                    var adjacencies = this.GetAdjacentTiles(plasmaShot.X, plasmaShot.Y);
+                    foreach (var tile in adjacencies) {
+                        var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
+                        
+                        foreach (var fume in tileFumes) {
+                            var flare = new Flare((int)tile.X, (int)tile.Y);
+                            AddNonDupeEntity(flare, this.effectEntities);
+                        }
+
+                        this.fumes.RemoveAll(f => tileFumes.Contains(f));                        
+                    }
+
+                    // 2) For any toxic gas that's adjacent to a flare, turn it into a flare
+                    var newFlares = new List<Flare>();
+
+                    foreach (var flare in this.effectEntities.Where(e => e.Character == '%')) {
+                        var adjacentTiles = this.GetAdjacentTiles(flare.X, flare.Y);
+                        var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
+                        foreach (var fume in adjacentFumes) {
+                            newFlares.Add(new Flare(fume.X, fume.Y));
+                        }
+                        this.fumes.RemoveAll(f => adjacentFumes.Contains(f));
+                    }
+
+                    newFlares.ForEach(f => this.AddNonDupeEntity(f, this.effectEntities));
+                }
                 
                 // Destroy any effect that hit something (wall/monster/etc.)
                 // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
@@ -389,6 +420,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
+                // Missiles explode
                 var missiles = destroyedEffects.Where(e => e.Character == '!');
                 foreach (var missile in missiles) {
                     this.CreateExplosion(missile.X, missile.Y);
@@ -406,6 +438,21 @@ namespace DeenGames.AliTheAndroid.Prototype
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
             // Eg. Program.cs must call Draw on the console; and, changing consoles should work.
             this.RedrawEverything();
+        }
+
+        private List<Vector2> GetAdjacentTiles(int centerX, int centerY) {
+            var toReturn = new List<Vector2>();
+
+            for (var y = centerY - 1; y <= centerY + 1; y++) {
+                for (var x = centerX - 1; x <= centerX + 1; x++) {
+                    if (x >= 0 && y >= 0 && x < this.Width && y < mapHeight && (x == centerX || y == centerY))
+                    {
+                        toReturn.Add(new Vector2(x, y));
+                    }
+                }
+            }
+
+            return toReturn;
         }
 
         private void AddNonDupeEntity<T>(T entity, List<T> collection) where T : AbstractEntity {
@@ -437,7 +484,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             switch (weaponCharacter) {
                 case '!': return this.CalculateDamage(Weapon.MiniMissile);
                 case '$': return this.CalculateDamage(Weapon.Zapper);
-                //case 'o': return this.CalculateDamage(Weapon.PlasmaCannon);
+                case 'o': return this.CalculateDamage(Weapon.PlasmaCannon);
                 default: return 0;
             }
         }
@@ -597,34 +644,8 @@ namespace DeenGames.AliTheAndroid.Prototype
             
             if (this.TryToMove(player, destinationX, destinationY))
             {
-                // This is too late - player already moved. For the prototype, we can live with this.
-                int viewRadius = (int)Math.Ceiling(player.VisionRange / 2.0);
-                for (var y = player.Y - viewRadius; y <= player.Y + viewRadius; y++)
-                {
-                    for (var x = player.X - viewRadius; x <= player.X + viewRadius; x++)
-                    {
-                        // Just to be sure
-                        if (IsInPlayerFov(x, y))
-                        {
-                            this.MarkAsSeen(x, y);
-                        }
-                    }
-                }
-
                 processedInput = true;
-                this.LatestMessage = "";
-
-                var touched = this.touchables.Where(t => t.X == destinationX && t.Y == player.Y); // really, only one element here at a time
-                foreach (var t in touched) {
-                    t.OnTouch();
-                }
-                this.touchables.RemoveAll(t => touched.Contains(t));
-
-                if (!player.HasEnvironmentSuit && this.fumes.Any(f => f.X == destinationX && f.Y == destinationY))
-                {
-                    this.player.Damage(FumeDamage);
-                    this.latestMessage = $"You breathe in toxic fumes! {FumeDamage} damage!";
-                }
+                this.OnPlayerMoved();
             }
             else if (this.doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
@@ -660,12 +681,43 @@ namespace DeenGames.AliTheAndroid.Prototype
             return processedInput;
         }
 
+        private void OnPlayerMoved()
+        {
+            // This is too late - player already moved. For the prototype, we can live with this.
+            int viewRadius = (int)Math.Ceiling(player.VisionRange / 2.0);
+            for (var y = player.Y - viewRadius; y <= player.Y + viewRadius; y++)
+            {
+                for (var x = player.X - viewRadius; x <= player.X + viewRadius; x++)
+                {
+                    // Just to be sure
+                    if (IsInPlayerFov(x, y))
+                    {
+                        this.MarkAsSeen(x, y);
+                    }
+                }
+            }
+
+            this.LatestMessage = "";
+
+            var touched = this.touchables.Where(t => t.X == player.X && t.Y == player.Y); // really, only one element here at a time
+            foreach (var t in touched) {
+                t.OnTouch();
+            }
+            this.touchables.RemoveAll(t => touched.Contains(t));
+
+            if (!player.HasEnvironmentSuit && this.fumes.Any(f => f.X == player.X && f.Y == player.Y))
+            {
+                this.player.Damage(FumeDamage);
+                this.latestMessage = $"You breathe in toxic fumes! {FumeDamage} damage!";
+            }
+        }
+
         private void FireShot()
         {
             var character = '+';
 
             if (player.CurrentWeapon != Weapon.Zapper) {
-                // Blaster: ~
+                // Blaster: +
                 // Missle: !
                 // Shock: $
                 // Plasma: o
