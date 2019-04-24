@@ -107,7 +107,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         override internal void OnAction()
         {
             // Stay alive a bit longer so we spread properly in rooms
-            this.IsAlive = (DateTime.Now - this.createdOn).TotalMilliseconds <= this.tickEveryMilliseconds + 100;
+            this.IsAlive = (DateTime.Now - this.createdOn).TotalMilliseconds <= this.tickEveryMilliseconds * 3;
         }
     }
 }
