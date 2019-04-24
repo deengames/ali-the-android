@@ -27,6 +27,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int NumberOfLockedDoors = 3;
         private const float PercentOfFloorFuming = 0.05f; // 0.15 => 15% of non-wall spaces
         private const int FumeDamage = 5;
+        private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
 
         private static readonly int? GameSeed = 798233840; // null = random each time
 
@@ -44,17 +45,17 @@ namespace DeenGames.AliTheAndroid.Prototype
 
 
         private readonly int mapHeight;
-        private string latestMessage = "";
+        private string lastMessage = "";
 
         private string LatestMessage { 
             get {
-                return this.latestMessage;
+                return this.lastMessage;
             }
             set {
                 if (!string.IsNullOrWhiteSpace(value)) {
                     Console.WriteLine(value);
                 }
-                this.latestMessage = value;
+                this.lastMessage = value;
             }
         }
         
@@ -112,7 +113,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                         var suit = new TouchableEntity(x, y, '?', Color.Cyan);
                         suit.OnTouch = () => {
                             player.HasEnvironmentSuit = true;
-                            latestMessage = "You pick up the environment suit.";
+                            LatestMessage = "You pick up the environment suit.";
                         };
                         this.touchables.Add(suit);
                     } else {
@@ -347,7 +348,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 foreach (var bolt in backlashes.Where(b => b.Character == '$')) {
                     foreach (var door in doors.Where(d => d.IsLocked && d.X == bolt.X && d.Y == bolt.Y)) {
                         door.IsLocked = false;
-                        this.latestMessage = "You unlock the door!";
+                        this.LatestMessage = "You unlock the door!";
                     }
                 }
 
@@ -365,25 +366,31 @@ namespace DeenGames.AliTheAndroid.Prototype
                 this.fakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
 
                 //// Plasma/gas processing
+                var numFlares = 0;
                 var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o');
-                if (plasmaShot != null) {
-                    // 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
-                    var adjacencies = this.GetAdjacentTiles(plasmaShot.X, plasmaShot.Y);
-                    foreach (var tile in adjacencies) {
-                        var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
-                        
-                        foreach (var fume in tileFumes) {
-                            // Every fume blooms into a +-shaped flare
-                            var flareTiles = this.GetAdjacentTiles(fume.X, fume.Y);
-                            foreach (var ft in flareTiles) {
-                                var flare = new Flare((int)ft.X, (int)ft.Y);
-                                AddNonDupeEntity(flare, this.effectEntities);
+                // Process if the player shot a plasma shot. Also process if there are any live flares.
+                if (plasmaShot != null || this.effectEntities.Any(e => e.Character == '%')) {
+
+                    if (plasmaShot != null) {
+                        // 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
+                        var adjacencies = this.GetAdjacentTiles(plasmaShot.X, plasmaShot.Y);
+                        foreach (var tile in adjacencies) {
+                            var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
+                            
+                            foreach (var fume in tileFumes) {
+                                // Every fume blooms into a +-shaped flare
+                                var flareTiles = this.GetAdjacentTiles(fume.X, fume.Y);
+                                foreach (var ft in flareTiles) {
+                                    var flare = new Flare((int)ft.X, (int)ft.Y);
+                                    AddNonDupeEntity(flare, this.effectEntities);
+                                    numFlares += 1;
+                                }
                             }
+
+                            this.fumes.RemoveAll(f => tileFumes.Contains(f));                        
                         }
-
-                        this.fumes.RemoveAll(f => tileFumes.Contains(f));                        
                     }
-
+                    
                     // 2) For any toxic gas that's adjacent to a flare, turn it into a flare
                     var newFlares = new List<Flare>();
 
@@ -395,12 +402,29 @@ namespace DeenGames.AliTheAndroid.Prototype
                             var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
                             foreach (var fume in adjacentFumes) {
                                 newFlares.Add(new Flare(fume.X, fume.Y));
+                                numFlares += 1;
                             }
                             this.fumes.RemoveAll(f => adjacentFumes.Contains(f));
                         }
                     }
 
                     newFlares.ForEach(f => this.AddNonDupeEntity(f, this.effectEntities));
+                }
+                if (numFlares > 0) {
+                    this.LatestMessage = $"{numFlares} gases burst into flames!";
+                }
+
+                foreach (var flare in this.effectEntities.Where(e => e.Character == '%')) {
+                    if (player.X == flare.X && player.Y == flare.Y) {
+                        player.Damage(FlareDamage);
+                        this.LatestMessage = $"A flare burns you for {FlareDamage} damage!";
+                    }
+
+                    var monster = monsters.SingleOrDefault(m => m.X == flare.X && m.Y == flare.Y);
+                    if (monster != null) {
+                        monster.Damage(FlareDamage);
+                        this.LatestMessage = $"A {monster.Name} burns in the flare! {FlareDamage} damage!";
+                    }
                 }
                 
                 // Destroy any effect that hit something (wall/monster/etc.)
@@ -716,7 +740,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             if (!player.HasEnvironmentSuit && this.fumes.Any(f => f.X == player.X && f.Y == player.Y))
             {
                 this.player.Damage(FumeDamage);
-                this.latestMessage = $"You breathe in toxic fumes! {FumeDamage} damage!";
+                this.LatestMessage = $"You breathe in toxic fumes! {FumeDamage} damage!";
             }
         }
 

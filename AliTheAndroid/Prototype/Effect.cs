@@ -11,11 +11,15 @@ namespace DeenGames.AliTheAndroid.Prototype
         public bool IsAlive {get; set;} = true;
 
         protected int tickEveryMilliseconds = 0;
+        protected DateTime createdOn;
+
         private DateTime lastTickOn = DateTime.Now;
+        
 
         public Effect(int x, int y, char character, Color color, int tickEveryMs) : base(x, y, character, color)
         {
             this.tickEveryMilliseconds = tickEveryMs;
+            this.createdOn = DateTime.Now;
         }
 
         // Returns true if we updated
@@ -93,11 +97,17 @@ namespace DeenGames.AliTheAndroid.Prototype
     }
 
     public class Flare : Explosion
-    {        
+    {
         public Flare(int x, int y) : base(x, y)
-        {                        
+        {
             this.Character = '%';
             this.Color = Palette.Cyan;
+        }
+
+        override internal void OnAction()
+        {
+            // Stay alive a bit longer so we spread properly in rooms
+            this.IsAlive = (DateTime.Now - this.createdOn).TotalMilliseconds <= this.tickEveryMilliseconds + 100;
         }
     }
 }
