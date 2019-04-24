@@ -328,7 +328,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     effect.OnUpdate();
                     // For out-of-sight effects, accelerate to the point that they destroy.
                     // This prevents the player from waiting, frozen, for out-of-sight shots.
-                    if (!this.IsInPlayerFov(effect.X, effect.Y)) {
+                    if (!this.IsInPlayerFov(effect.X, effect.Y) && !DebugOptions.IsOmnisight) {
                         effect.OnAction();
                     }
                 }
@@ -388,12 +388,16 @@ namespace DeenGames.AliTheAndroid.Prototype
                     var newFlares = new List<Flare>();
 
                     foreach (var flare in this.effectEntities.Where(e => e.Character == '%')) {
-                        var adjacentTiles = this.GetAdjacentTiles(flare.X, flare.Y);
-                        var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
-                        foreach (var fume in adjacentFumes) {
-                            newFlares.Add(new Flare(fume.X, fume.Y));
+                        // Checks if the flare wasn't updated in ~100ms and only move forward if so.
+                        // This prevents everything from happening instantaneously. In theory.
+                        if (flare.OnUpdate()) {
+                            var adjacentTiles = this.GetAdjacentTiles(flare.X, flare.Y);
+                            var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
+                            foreach (var fume in adjacentFumes) {
+                                newFlares.Add(new Flare(fume.X, fume.Y));
+                            }
+                            this.fumes.RemoveAll(f => adjacentFumes.Contains(f));
                         }
-                        this.fumes.RemoveAll(f => adjacentFumes.Contains(f));
                     }
 
                     newFlares.ForEach(f => this.AddNonDupeEntity(f, this.effectEntities));

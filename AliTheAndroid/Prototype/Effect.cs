@@ -18,13 +18,17 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.tickEveryMilliseconds = tickEveryMs;
         }
 
-        public void OnUpdate()
+        // Returns true if we updated
+        public bool OnUpdate()
         {
             var now = DateTime.Now;
             var elapsed = now - this.lastTickOn;
             if (elapsed.TotalMilliseconds >= this.tickEveryMilliseconds) {
                 this.OnAction();
                 this.lastTickOn = now;
+                return true;
+            } else {
+                return false;
             }
         }
 
