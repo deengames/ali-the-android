@@ -42,6 +42,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<Effect> effectEntities = new List<Effect>();
         
         private readonly List<TouchableEntity> touchables = new List<TouchableEntity>();
+        private readonly List<AbstractEntity> plasmaResidue = new List<AbstractEntity>();
 
 
         private readonly int mapHeight;
@@ -367,12 +368,40 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 //// Plasma/gas processing
                 var numFlares = 0;
-                var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o');
+                var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o') as Shot;
+                var flares = this.effectEntities.Where(e => e.Character == '%');
+
                 // Process if the player shot a plasma shot. Also process if there are any live flares.
                 if (plasmaShot != null || this.effectEntities.Any(e => e.Character == '%')) {
 
                     if (plasmaShot != null) {
-                        // 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
+                        // If we moved, make sure there's a flare behind us
+                        if (plasmaShot.HasMoved) {
+                            var previousX = plasmaShot.X;
+                            var previousY = plasmaShot.Y;
+
+                            switch (plasmaShot.Direction) {
+                                case Direction.Up:
+                                    previousY += 1;
+                                    break;
+                                case Direction.Right:
+                                    previousX -= 1;
+                                    break;
+                                case Direction.Down:
+                                    previousY -= 1;
+                                    break;
+                                case Direction.Left:
+                                    previousX += 1;
+                                    break;
+                            }
+
+                            if (!plasmaResidue.Any(f => f.X == previousX && f.Y == previousY))
+                            {
+                                this.plasmaResidue.Add(new AbstractEntity(previousX, previousY, '.', Palette.LightRed));
+                            }
+                        }
+
+                        // Flares, part 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
                         var adjacencies = this.GetAdjacentTiles(plasmaShot.X, plasmaShot.Y);
                         foreach (var tile in adjacencies) {
                             var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
@@ -391,10 +420,10 @@ namespace DeenGames.AliTheAndroid.Prototype
                         }
                     }
                     
-                    // 2) For any toxic gas that's adjacent to a flare, turn it into a flare
+                    // Flares, part 2) For any toxic gas that's adjacent to a flare, turn it into a flare
                     var newFlares = new List<Flare>();
 
-                    foreach (var flare in this.effectEntities.Where(e => e.Character == '%')) {
+                    foreach (var flare in flares) {
                         // Checks if the flare wasn't updated in ~100ms and only move forward if so.
                         // This prevents everything from happening instantaneously. In theory.
                         if (flare.OnUpdate()) {
@@ -414,7 +443,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     this.LatestMessage = $"{numFlares} gases burst into flames!";
                 }
 
-                foreach (var flare in this.effectEntities.Where(e => e.Character == '%')) {
+                foreach (var flare in flares) {
                     if (player.X == flare.X && player.Y == flare.Y) {
                         player.Damage(FlareDamage);
                         this.LatestMessage = $"A flare burns you for {FlareDamage} damage!";
@@ -835,6 +864,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                     {
                         this.SetGlyph(x, y, '.', Palette.Grey);
                     }
+                }
+            }
+
+            foreach (var residue in this.plasmaResidue) {
+                if (IsInPlayerFov(residue.X, residue.Y) || DebugOptions.IsOmnisight) {
+                    this.SetGlyph(residue.X, residue.Y, residue.Character, residue.Color);
                 }
             }
 

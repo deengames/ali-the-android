@@ -11,7 +11,6 @@ namespace DeenGames.AliTheAndroid.Prototype
         public bool IsAlive {get; set;} = true;
 
         protected int tickEveryMilliseconds = 0;
-        protected DateTime createdOn;
 
         private DateTime lastTickOn = DateTime.Now;
         
@@ -19,7 +18,6 @@ namespace DeenGames.AliTheAndroid.Prototype
         public Effect(int x, int y, char character, Color color, int tickEveryMs) : base(x, y, character, color)
         {
             this.tickEveryMilliseconds = tickEveryMs;
-            this.createdOn = DateTime.Now;
         }
 
         // Returns true if we updated
@@ -41,21 +39,26 @@ namespace DeenGames.AliTheAndroid.Prototype
 
     public class Shot : Effect
     {
+        public Direction Direction { get; private set; }
         private const int ShotUpdateTimeMs = 100; // 100ms
-        private Direction direction;
         private Func<int, int, bool, bool> isWalkableCheck;
+        private Vector2 createdOnTile;
+
+        // Not technically correct, but since shots only go one-way, this will never rebound to be false
+        public bool HasMoved { get { return  this.X != createdOnTile.X || this.Y != createdOnTile.Y; }}
 
         public Shot(int x, int y, char character, Color color, Direction direction, Func<int, int, bool, bool> isWalkable) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
         {
-            this.direction = direction;
+            this.Direction = direction;
             this.isWalkableCheck = isWalkable;
+            this.createdOnTile = new Vector2(x, y);
         }
 
         override internal void OnAction()
         {
             if (this.isWalkableCheck(this.X, this.Y, false))
             {
-                switch (this.direction) {
+                switch (this.Direction) {
                     case Direction.Up:
                         this.Y -= 1;
                         break;
@@ -98,10 +101,13 @@ namespace DeenGames.AliTheAndroid.Prototype
 
     public class Flare : Explosion
     {
+        protected DateTime createdOn;
+
         public Flare(int x, int y) : base(x, y)
         {
             this.Character = '%';
             this.Color = Palette.Cyan;
+            this.createdOn = DateTime.Now;
         }
 
         override internal void OnAction()
@@ -110,4 +116,5 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.IsAlive = (DateTime.Now - this.createdOn).TotalMilliseconds <= this.tickEveryMilliseconds * 3;
         }
     }
+
 }
