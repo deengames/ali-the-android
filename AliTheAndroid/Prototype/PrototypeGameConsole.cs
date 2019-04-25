@@ -28,6 +28,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const float PercentOfFloorFuming = 0.05f; // 0.15 => 15% of non-wall spaces
         private const int FumeDamage = 5;
         private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
+        private const int GravityRadius = 3;
 
         private static readonly int? GameSeed = null; // null = random each time
         private const char GravityCannonShot = (char)247; 
@@ -108,28 +109,30 @@ namespace DeenGames.AliTheAndroid.Prototype
         // Also generates the suit
         private void GenerateFumes()
         {
-            var suitRoom = this.rooms[GlobalRandom.Next(this.rooms.Count)];
-            for (var y = suitRoom.MinExtentY; y < suitRoom.MaxExtentY; y++) {
-                for (var x = suitRoom.MinExtentX; x < suitRoom.MaxExtentX; x++) {
-                    if (x == suitRoom.X + (suitRoom.Width / 2) && y == suitRoom.Y + (suitRoom.Height / 2)) {
-                        var suit = new TouchableEntity(x, y, '?', Color.Cyan);
-                        suit.OnTouch = () => {
-                            player.HasEnvironmentSuit = true;
-                            LatestMessage = "You pick up the environment suit.";
-                        };
-                        this.touchables.Add(suit);
-                    } else {
-                        this.fumes.Add(new AbstractEntity(x, y, (char)240, Palette.LimeGreen)); // 240 = ≡
+            if (DebugOptions.EnablePlasmaCannon) {
+                var suitRoom = this.rooms[GlobalRandom.Next(this.rooms.Count)];
+                for (var y = suitRoom.MinExtentY; y < suitRoom.MaxExtentY; y++) {
+                    for (var x = suitRoom.MinExtentX; x < suitRoom.MaxExtentX; x++) {
+                        if (x == suitRoom.X + (suitRoom.Width / 2) && y == suitRoom.Y + (suitRoom.Height / 2)) {
+                            var suit = new TouchableEntity(x, y, '?', Color.Cyan);
+                            suit.OnTouch = () => {
+                                player.HasEnvironmentSuit = true;
+                                LatestMessage = "You pick up the environment suit.";
+                            };
+                            this.touchables.Add(suit);
+                        } else {
+                            this.fumes.Add(new AbstractEntity(x, y, (char)240, Palette.LimeGreen)); // 240 = ≡
+                        }
                     }
                 }
-            }
 
-            var numFumes = (int)Math.Round(((this.Width * mapHeight) - this.walls.Count) * PercentOfFloorFuming);
-            while (numFumes > 0) {
-                var location = this.FindEmptySpot();
-                this.fumes.Add(new AbstractEntity((int)location.X, (int)location.Y, (char)240, Palette.LimeGreen));
-                numFumes--;
-                // TODO: create a little cluster of fumes
+                var numFumes = (int)Math.Round(((this.Width * mapHeight) - this.walls.Count) * PercentOfFloorFuming);
+                while (numFumes > 0) {
+                    var location = this.FindEmptySpot();
+                    this.fumes.Add(new AbstractEntity((int)location.X, (int)location.Y, (char)240, Palette.LimeGreen));
+                    numFumes--;
+                    // TODO: create a little cluster of fumes
+                }
             }
         }
 
@@ -483,6 +486,24 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
+                // Find destroyed gravity waves and perturb stuff appropriately
+                var gravityWave = destroyedEffects.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
+                if (gravityWave != null) {                    
+                    foreach (var monster in this.monsters) {
+                        var distance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(monster.X - gravityWave.X, 2) + Math.Pow(monster.Y - gravityWave.Y, 2)));
+                        if (distance <= GravityRadius) {
+                            int moveBy = GravityRadius - distance;
+                            this.ApplyKnockbacks(monster, gravityWave.X, gravityWave.Y, moveBy, gravityWave.Direction);
+                        }
+                    }
+
+                    var playerDistance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(player.X - gravityWave.X, 2) + Math.Pow(player.Y - gravityWave.Y, 2)));
+                    if (playerDistance <= GravityRadius) {
+                        int moveBy = GravityRadius - playerDistance;
+                        this.ApplyKnockbacks(player, (int)gravityWave.X, (int)gravityWave.Y, moveBy, gravityWave.Direction);
+                    }
+                }
+
                 // Missiles explode
                 var missiles = destroyedEffects.Where(e => e.Character == '!');
                 foreach (var missile in missiles) {
@@ -501,6 +522,46 @@ namespace DeenGames.AliTheAndroid.Prototype
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
             // Eg. Program.cs must call Draw on the console; and, changing consoles should work.
             this.RedrawEverything();
+        }
+        
+        public void ApplyKnockbacks(Entity entity, int centerX, int centerY, int distance, Direction optionalDirection)
+        {
+            // Primary knockback in the direction of entity => cemter
+            var dx = entity.X - centerX;
+            var dy = entity.Y - centerY;
+            if (dx == 0 && dy == 0) {
+                // Special case of sorts: gravity shot hit dead-center on the entity; use directtion.
+                switch (optionalDirection) {
+                    case Direction.Down: dy += 1; break;
+                    case Direction.Right: dx += 1; break;
+                    case Direction.Up: dy -= 1; break;
+                    case Direction.Left: dx -= 1; break;
+                }
+            }
+            
+            int startX = entity.X;
+            int startY = entity.Y;
+            int stopX = startX + distance * Math.Sign(dx);
+            int stopY = startY + distance * Math.Sign(dy);
+
+            // Horrible method but iterates in one direction only, guaranteed
+            var minX = Math.Min(startX, stopX);
+            var maxX = Math.Max(startX, stopX);
+            var minY = Math.Min(startY, stopY);
+            var maxY = Math.Max(startY, stopY);
+
+            // Move if spaces are clear
+            for (var y = minY; y <= maxY; y++) {
+                for (var x = minX; x <= maxX; x++) {
+                    // Check all spaces and move the entity one by one if the space is empty.
+                    if (this.IsWalkable(entity.X + dx, entity.Y + dy))
+                    {
+                        // One of these is zero so we're really just moving in one direction.
+                        entity.X += dx;                            
+                        entity.Y += dy;
+                    }
+                }
+            }
         }
 
         private List<Vector2> GetAdjacentTiles(int centerX, int centerY) {
@@ -560,7 +621,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case Weapon.MiniMissile: return player.Strength * 3;
                 case Weapon.Zapper: return player.Strength * 2;
                 case Weapon.PlasmaCannon: return player.Strength * 4;
-                case Weapon.GravityCannon: return player.Strength * 4;
+                case Weapon.GravityCannon: return player.Strength * 0;
                 default: return -1;
             }
         }
