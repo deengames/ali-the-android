@@ -30,6 +30,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
 
         private static readonly int? GameSeed = 798233840; // null = random each time
+        private const char GravityCannonShot = (char)247; 
 
 
         private readonly Player player;
@@ -366,96 +367,98 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
                 this.fakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
 
-                //// Plasma/gas processing
-                var numFlares = 0;
-                var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o') as Shot;
-                var flares = this.effectEntities.Where(e => e.Character == '%');
+                if (DebugOptions.EnablePlasmaCannon) {
+                    //// Plasma/gas processing
+                    var numFlares = 0;
+                    var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o') as Shot;
+                    var flares = this.effectEntities.Where(e => e.Character == '%');
 
-                // Process if the player shot a plasma shot. Also process if there are any live flares.
-                if (plasmaShot != null || this.effectEntities.Any(e => e.Character == '%')) {
+                    // Process if the player shot a plasma shot. Also process if there are any live flares.
+                    if (plasmaShot != null || this.effectEntities.Any(e => e.Character == '%')) {
 
-                    if (plasmaShot != null) {
-                        // If we moved, make sure there's a flare behind us
-                        if (plasmaShot.HasMoved) {
-                            var previousX = plasmaShot.X;
-                            var previousY = plasmaShot.Y;
+                        if (plasmaShot != null) {
+                            // If we moved, make sure there's a flare behind us
+                            if (plasmaShot.HasMoved) {
+                                var previousX = plasmaShot.X;
+                                var previousY = plasmaShot.Y;
 
-                            switch (plasmaShot.Direction) {
-                                case Direction.Up:
-                                    previousY += 1;
-                                    break;
-                                case Direction.Right:
-                                    previousX -= 1;
-                                    break;
-                                case Direction.Down:
-                                    previousY -= 1;
-                                    break;
-                                case Direction.Left:
-                                    previousX += 1;
-                                    break;
-                            }
+                                switch (plasmaShot.Direction) {
+                                    case Direction.Up:
+                                        previousY += 1;
+                                        break;
+                                    case Direction.Right:
+                                        previousX -= 1;
+                                        break;
+                                    case Direction.Down:
+                                        previousY -= 1;
+                                        break;
+                                    case Direction.Left:
+                                        previousX += 1;
+                                        break;
+                                }
 
-                            if (!plasmaResidue.Any(f => f.X == previousX && f.Y == previousY))
-                            {
-                                this.plasmaResidue.Add(new AbstractEntity(previousX, previousY, '.', Palette.LightRed));
-                            }
-                        }
-
-                        // Flares, part 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
-                        var adjacencies = this.GetAdjacentTiles(plasmaShot.X, plasmaShot.Y);
-                        foreach (var tile in adjacencies) {
-                            var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
-                            
-                            foreach (var fume in tileFumes) {
-                                // Every fume blooms into a +-shaped flare
-                                var flareTiles = this.GetAdjacentTiles(fume.X, fume.Y);
-                                foreach (var ft in flareTiles) {
-                                    var flare = new Flare((int)ft.X, (int)ft.Y);
-                                    AddNonDupeEntity(flare, this.effectEntities);
-                                    numFlares += 1;
+                                if (!plasmaResidue.Any(f => f.X == previousX && f.Y == previousY))
+                                {
+                                    this.plasmaResidue.Add(new AbstractEntity(previousX, previousY, '.', Palette.LightRed));
                                 }
                             }
 
-                            this.fumes.RemoveAll(f => tileFumes.Contains(f));                        
+                            // Flares, part 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
+                            var adjacencies = this.GetAdjacentTiles(plasmaShot.X, plasmaShot.Y);
+                            foreach (var tile in adjacencies) {
+                                var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
+                                
+                                foreach (var fume in tileFumes) {
+                                    // Every fume blooms into a +-shaped flare
+                                    var flareTiles = this.GetAdjacentTiles(fume.X, fume.Y);
+                                    foreach (var ft in flareTiles) {
+                                        var flare = new Flare((int)ft.X, (int)ft.Y);
+                                        AddNonDupeEntity(flare, this.effectEntities);
+                                        numFlares += 1;
+                                    }
+                                }
+
+                                this.fumes.RemoveAll(f => tileFumes.Contains(f));                        
+                            }
                         }
+                        
+                        // Flares, part 2) For any toxic gas that's adjacent to a flare, turn it into a flare
+                        var newFlares = new List<Flare>();
+
+                        foreach (var flare in flares) {
+                            // Checks if the flare wasn't updated in ~100ms and only move forward if so.
+                            // This prevents everything from happening instantaneously. In theory.
+                            if (flare.OnUpdate()) {
+                                var adjacentTiles = this.GetAdjacentTiles(flare.X, flare.Y);
+                                var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
+                                foreach (var fume in adjacentFumes) {
+                                    newFlares.Add(new Flare(fume.X, fume.Y));
+                                    numFlares += 1;
+                                }
+                                this.fumes.RemoveAll(f => adjacentFumes.Contains(f));
+                            }
+                        }
+
+                        newFlares.ForEach(f => this.AddNonDupeEntity(f, this.effectEntities));
                     }
-                    
-                    // Flares, part 2) For any toxic gas that's adjacent to a flare, turn it into a flare
-                    var newFlares = new List<Flare>();
+                    if (numFlares > 0) {
+                        this.LatestMessage = $"{numFlares} gases burst into flames!";
+                    }
 
                     foreach (var flare in flares) {
-                        // Checks if the flare wasn't updated in ~100ms and only move forward if so.
-                        // This prevents everything from happening instantaneously. In theory.
-                        if (flare.OnUpdate()) {
-                            var adjacentTiles = this.GetAdjacentTiles(flare.X, flare.Y);
-                            var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
-                            foreach (var fume in adjacentFumes) {
-                                newFlares.Add(new Flare(fume.X, fume.Y));
-                                numFlares += 1;
-                            }
-                            this.fumes.RemoveAll(f => adjacentFumes.Contains(f));
+                        if (player.X == flare.X && player.Y == flare.Y) {
+                            player.Damage(FlareDamage);
+                            this.LatestMessage = $"A flare burns you for {FlareDamage} damage!";
+                        }
+
+                        var monster = monsters.SingleOrDefault(m => m.X == flare.X && m.Y == flare.Y);
+                        if (monster != null) {
+                            monster.Damage(FlareDamage);
+                            this.LatestMessage = $"A {monster.Name} burns in the flare! {FlareDamage} damage!";
                         }
                     }
-
-                    newFlares.ForEach(f => this.AddNonDupeEntity(f, this.effectEntities));
-                }
-                if (numFlares > 0) {
-                    this.LatestMessage = $"{numFlares} gases burst into flames!";
                 }
 
-                foreach (var flare in flares) {
-                    if (player.X == flare.X && player.Y == flare.Y) {
-                        player.Damage(FlareDamage);
-                        this.LatestMessage = $"A flare burns you for {FlareDamage} damage!";
-                    }
-
-                    var monster = monsters.SingleOrDefault(m => m.X == flare.X && m.Y == flare.Y);
-                    if (monster != null) {
-                        monster.Damage(FlareDamage);
-                        this.LatestMessage = $"A {monster.Name} burns in the flare! {FlareDamage} damage!";
-                    }
-                }
-                
                 // Destroy any effect that hit something (wall/monster/etc.)
                 // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
                 var destroyedEffects = this.effectEntities.Where((e) => !e.IsAlive || !this.IsWalkable(e.X, e.Y)).ToList();
@@ -546,6 +549,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case '!': return this.CalculateDamage(Weapon.MiniMissile);
                 case '$': return this.CalculateDamage(Weapon.Zapper);
                 case 'o': return this.CalculateDamage(Weapon.PlasmaCannon);
+                case GravityCannonShot: return this.CalculateDamage(Weapon.GravityCannon);
                 default: return 0;
             }
         }
@@ -557,6 +561,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case Weapon.MiniMissile: return player.Strength * 3;
                 case Weapon.Zapper: return player.Strength * 2;
                 case Weapon.PlasmaCannon: return player.Strength * 4;
+                case Weapon.GravityCannon: return player.Strength * 4;
                 default: return -1;
             }
         }
@@ -567,6 +572,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case '!': return Weapon.MiniMissile;
                 case '$': return Weapon.Zapper;
                 case 'o': return Weapon.PlasmaCannon;
+                case GravityCannonShot: return Weapon.GravityCannon;
 
                 case '*': return Weapon.MiniMissile; // explosion
             }
@@ -702,6 +708,10 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.CurrentWeapon = Weapon.PlasmaCannon;
             }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad5))
+            {
+                player.CurrentWeapon = Weapon.GravityCannon;
+            }
             
             if (this.TryToMove(player, destinationX, destinationY))
             {
@@ -791,6 +801,9 @@ namespace DeenGames.AliTheAndroid.Prototype
                         break;
                     case Weapon.PlasmaCannon:
                         character = 'o';
+                        break;
+                    case Weapon.GravityCannon:
+                        character = GravityCannonShot;
                         break;
                 }
 

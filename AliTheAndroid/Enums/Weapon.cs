@@ -4,6 +4,7 @@ namespace DeenGames.AliTheAndroid.Enums
         Blaster,
         MiniMissile,
         Zapper,
-        PlasmaCannon
+        PlasmaCannon, // Defunct
+        GravityCannon,
     }
 }
