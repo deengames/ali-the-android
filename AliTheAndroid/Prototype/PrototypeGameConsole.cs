@@ -29,7 +29,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int FumeDamage = 5;
         private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
 
-        private static readonly int? GameSeed = 798233840; // null = random each time
+        private static readonly int? GameSeed = null; // null = random each time
         private const char GravityCannonShot = (char)247; 
 
 
@@ -480,7 +480,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                         this.AddNonDupeEntity(new Bolt(monster.X + 1, monster.Y), this.effectEntities);
                         this.AddNonDupeEntity(new Bolt(monster.X, monster.Y - 1), this.effectEntities);
                         this.AddNonDupeEntity(new Bolt(monster.X, monster.Y + 1), this.effectEntities);
-                        
                     }
                 }
 
