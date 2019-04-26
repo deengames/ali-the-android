@@ -30,10 +30,12 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
         private const int GravityRadius = 3;
 
-        private static readonly int? GameSeed = null; // null = random each time
-        private const char GravityCannonShot = (char)247; 
+        private static readonly int? GameSeed = 63392576; // null = random each time
+        private const char GravityCannonShot = (char)246; 
+        private const int MinimumDistanceFromPlayerToStairs = 10;
 
 
+        private Vector2 stairsLocation = new Vector2(0, 0);
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
@@ -76,19 +78,9 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         public PrototypeGameConsole(int width, int height) : base(width, height)
         {
-            this.mapHeight = height - 2;
             this.player = new Player();
-
+            this.mapHeight = height - 2;
             this.GenerateMap();
-            this.GenerateMonsters();
-
-            var emptySpot = this.FindEmptySpot();
-            player.X = (int)emptySpot.X;
-            player.Y = (int)emptySpot.Y;
-
-            this.GenerateFumes();
-
-            this.RedrawEverything();
 
             EventBus.Instance.AddListener(GameEvent.EntityDeath, (e) => {
                 if (e == player)
@@ -136,7 +128,35 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
-        private void GenerateMap() {
+        private void GenerateMap()
+        {
+            this.GenerateMapRooms();
+            this.GenerateMonsters();
+
+            var emptySpot = this.FindEmptySpot();
+            player.X = (int)emptySpot.X;
+            player.Y = (int)emptySpot.Y;
+
+            this.GenerateFumes();
+            this.GenerateStairs();
+
+            this.RedrawEverything();
+        }
+
+        private void GenerateStairs()
+        {
+            var spot = new Vector2(player.X, player.Y);
+            var distance = 0d;
+
+            do {
+                spot = this.FindEmptySpot();
+                distance = Math.Sqrt(Math.Pow(spot.X - player.X, 2)  + Math.Pow(spot.Y - player.Y, 2));
+            } while (distance <= MinimumDistanceFromPlayerToStairs);
+
+            this.stairsLocation = spot;
+        }
+
+        private void GenerateMapRooms() {
             this.rooms = this.GenerateWalls();
             this.GenerateFakeWallClusters();
             this.GenerateSecretRooms(rooms);
@@ -937,7 +957,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 for (var x = 0; x < this.Width; x++)
                 {
-                    if (IsInPlayerFov(x, y) || DebugOptions.IsOmnisight)
+                    if (IsInPlayerFov(x, y))
                     {
                         this.SetGlyph(x, y, '.', Palette.LightGrey);
                     }
@@ -949,13 +969,13 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             foreach (var residue in this.plasmaResidue) {
-                if (IsInPlayerFov(residue.X, residue.Y) || DebugOptions.IsOmnisight) {
+                if (IsInPlayerFov(residue.X, residue.Y)) {
                     this.SetGlyph(residue.X, residue.Y, residue.Character, residue.Color);
                 }
             }
 
             foreach (var fume in this.fumes) {
-                if (IsInPlayerFov(fume.X, fume.Y) || DebugOptions.IsOmnisight) {
+                if (IsInPlayerFov(fume.X, fume.Y)) {
                     this.SetGlyph(fume.X, fume.Y, fume.Character, fume.Color, Palette.DarkGreen);
                 }
             }
@@ -969,7 +989,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 var colour = DebugOptions.ShowFakeWalls && fakeWalls.Contains(wall) ? Palette.Blue : Palette.LightGrey;
 
-                if (IsInPlayerFov(x, y) || DebugOptions.IsOmnisight)
+                if (IsInPlayerFov(x, y))
                 {
                     this.SetGlyph(wall.X, wall.Y, wall.Character, colour);
                 }
@@ -985,7 +1005,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var x = door.X;
                 var y = door.Y;
 
-                if (IsInPlayerFov(x, y) || DebugOptions.IsOmnisight)
+                if (IsInPlayerFov(x, y))
                 {
                     this.SetGlyph(x, y, door.Character, door.Color);
                 }
@@ -996,7 +1016,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             foreach (var touchable in touchables) {
-                if (IsInPlayerFov(touchable.X, touchable.Y) || DebugOptions.IsOmnisight)
+                if (IsInPlayerFov(touchable.X, touchable.Y))
                 {
                     this.SetGlyph(touchable.X, touchable.Y, touchable.Character, touchable.Color);
                 }
@@ -1004,7 +1024,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             foreach (var monster in this.monsters)
             {                
-                if (IsInPlayerFov(monster.X, monster.Y) || DebugOptions.IsOmnisight)
+                if (IsInPlayerFov(monster.X, monster.Y))
                 {
                     var character = monster.Character;
 
@@ -1017,9 +1037,15 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             foreach (var effect in this.effectEntities) {
-                if (IsInPlayerFov(effect.X, effect.Y) || DebugOptions.IsOmnisight) {
+                if (IsInPlayerFov(effect.X, effect.Y)) {
                     this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
                 }
+            }
+
+            int stairsX = (int)this.stairsLocation.X;
+            int stairsY = (int)this.stairsLocation.Y;
+            if (IsInPlayerFov(stairsX, stairsY) || this.IsSeen(stairsX, stairsY)) {
+                this.SetGlyph(stairsX, stairsY, '>', this.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
             }
 
             this.SetGlyph(player.X, player.Y, player.Character, player.Color);
@@ -1053,6 +1079,10 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private bool IsInPlayerFov(int x, int y)
         {
+            if (DebugOptions.IsOmnisight) {
+                return true;
+            }
+
             // Doesn't use LoS calculations, just simple range check
             var distance = Math.Sqrt(Math.Pow(player.X - x, 2) + Math.Pow(player.Y - y, 2));
             return distance <= player.VisionRange;
@@ -1115,6 +1145,10 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             if (this.player.X == x && this.player.Y == y)
             {
+                return false;
+            }
+
+            if (x == this.stairsLocation.X && y == this.stairsLocation.Y) {
                 return false;
             }
 
