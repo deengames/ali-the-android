@@ -748,10 +748,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.TurnClockwise();
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.F))
-            {
-                this.FireShot();
-            }
             else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad1))
             {
                 player.CurrentWeapon = Weapon.Blaster;
@@ -777,6 +773,14 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 processedInput = true;
                 this.OnPlayerMoved();
+            }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.F) && (player.CurrentWeapon != Weapon.GravityCannon || player.CanFireGravityCannon))
+            {
+                // If gravity cannon wasn't fireable, but it's not equipped, make it fireable. This allows us to fire gravity/rocket/gravity/blaster/etc.
+                if (player.CurrentWeapon != Weapon.GravityCannon && !player.CanFireGravityCannon) {
+                    player.CanFireGravityCannon = true;
+                }
+                this.FireShot();
             }
             else if (this.doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
@@ -814,6 +818,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void OnPlayerMoved()
         {
+            player.CanFireGravityCannon = true;
             // This is too late - player already moved. For the prototype, we can live with this.
             int viewRadius = (int)Math.Ceiling(player.VisionRange / 2.0);
             for (var y = player.Y - viewRadius; y <= player.Y + viewRadius; y++)
@@ -879,6 +884,9 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
 
                 var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
+                if (character == GravityCannonShot) {
+                    player.CanFireGravityCannon = false;
+                }
                 effectEntities.Add(shot);
             }
             else
@@ -1024,7 +1032,11 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void DrawHealthIndicators()
         {
-            string message = $"You: {player.CurrentHealth}/{player.TotalHealth} (facing {player.DirectionFacing.ToString()}) Equipped: {player.CurrentWeapon}";
+            var weaponString = $"{player.CurrentWeapon}";
+            if (player.CurrentWeapon == Weapon.GravityCannon && !player.CanFireGravityCannon) {
+                weaponString += " (charging)";
+            }
+            string message = $"You: {player.CurrentHealth}/{player.TotalHealth} (facing {player.DirectionFacing.ToString()}) Equipped: {weaponString}";
             
             foreach (var monster in this.monsters)
             {
