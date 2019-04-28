@@ -117,4 +117,26 @@ namespace DeenGames.AliTheAndroid.Prototype
         }
     }
 
+    public class TeleporterShot : Shot
+    {
+        public int Life = 3; // Moves three squares
+
+        public int PreviousX { get; private set; } = 0;
+        public int PreviousY { get; private set; } = 0;
+        public TeleporterShot(int x, int y, Direction direction, Func<int, int, bool, bool> isWalkable) : base(x, y, '?', Palette.Cyan, direction, isWalkable)
+        {
+        }
+
+        override internal void OnAction()
+        {
+            this.PreviousX = this.X;
+            this.PreviousY = this.Y;
+            base.OnAction();
+            Life -= 1;
+            if (Life == 0) {
+                this.IsAlive = false;
+            }
+        }
+    }
+
 }

@@ -4,7 +4,8 @@ namespace DeenGames.AliTheAndroid.Enums
         Blaster,
         MiniMissile,
         Zapper,
-        PlasmaCannon, // Defunct
+        PlasmaCannon, // Defunct - removes the need for toxic suit
         GravityCannon,
+        InstaTeleporter, // Not really a weapon
     }
 }

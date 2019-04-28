@@ -14,7 +14,7 @@ namespace AliTheAndroid.Prototype
         public bool HasEnvironmentSuit = false;
         public bool CanFireGravityCannon { get; set; } = true;
 
-        public Player() : base("You", '@', Color.White, 50, 7, 5, 4)
+        public Player() : base("You", '@', Color.White, 50, 70, 5, 4)
         {
             this.DirectionFacing = Direction.Up;
         }

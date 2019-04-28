@@ -32,6 +32,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private static readonly int? GameSeed = 63392576; // null = random each time
         private const char GravityCannonShot = (char)246; 
+        private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10;
 
 
@@ -506,22 +507,29 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
-                // Find destroyed gravity waves and perturb stuff appropriately
-                var gravityWave = destroyedEffects.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
-                if (gravityWave != null) {                    
+                // Find destroyed gravity shots and perturb stuff appropriately
+                var gravityShot = destroyedEffects.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
+                if (gravityShot != null) {                    
                     foreach (var monster in this.monsters) {
-                        var distance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(monster.X - gravityWave.X, 2) + Math.Pow(monster.Y - gravityWave.Y, 2)));
+                        var distance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(monster.X - gravityShot.X, 2) + Math.Pow(monster.Y - gravityShot.Y, 2)));
                         if (distance <= GravityRadius) {
                             int moveBy = GravityRadius - distance;
-                            this.ApplyKnockbacks(monster, gravityWave.X, gravityWave.Y, moveBy, gravityWave.Direction);
+                            this.ApplyKnockbacks(monster, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
                         }
                     }
 
-                    var playerDistance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(player.X - gravityWave.X, 2) + Math.Pow(player.Y - gravityWave.Y, 2)));
+                    var playerDistance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(player.X - gravityShot.X, 2) + Math.Pow(player.Y - gravityShot.Y, 2)));
                     if (playerDistance <= GravityRadius) {
                         int moveBy = GravityRadius - playerDistance;
-                        this.ApplyKnockbacks(player, (int)gravityWave.X, (int)gravityWave.Y, moveBy, gravityWave.Direction);
+                        this.ApplyKnockbacks(player, (int)gravityShot.X, (int)gravityShot.Y, moveBy, gravityShot.Direction);
                     }
+                }
+
+                var teleporterShot = destroyedEffects.SingleOrDefault(s => s.Character == InstaTeleporterShot);
+                if (teleporterShot != null) {
+                    var ts = teleporterShot as TeleporterShot;
+                    player.X = ts.PreviousX;
+                    player.Y = ts.PreviousY;
                 }
 
                 // Missiles explode
@@ -630,6 +638,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case '$': return this.CalculateDamage(Weapon.Zapper);
                 case 'o': return this.CalculateDamage(Weapon.PlasmaCannon);
                 case GravityCannonShot: return this.CalculateDamage(Weapon.GravityCannon);
+                case InstaTeleporterShot: return this.CalculateDamage(Weapon.InstaTeleporter);
                 default: return 0;
             }
         }
@@ -641,7 +650,8 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case Weapon.MiniMissile: return player.Strength * 3;
                 case Weapon.Zapper: return player.Strength * 2;
                 case Weapon.PlasmaCannon: return player.Strength * 4;
-                case Weapon.GravityCannon: return player.Strength * 0;
+                case Weapon.GravityCannon: return player.Strength * 4;
+                case Weapon.InstaTeleporter: return 0;
                 default: return -1;
             }
         }
@@ -652,6 +662,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 case '!': return Weapon.MiniMissile;
                 case '$': return Weapon.Zapper;
                 case 'o': return Weapon.PlasmaCannon;
+                case InstaTeleporterShot: return Weapon.InstaTeleporter;
                 case GravityCannonShot: return Weapon.GravityCannon;
 
                 case '*': return Weapon.MiniMissile; // explosion
@@ -788,6 +799,10 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.CurrentWeapon = Weapon.GravityCannon;
             }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.T))
+            {
+                player.CurrentWeapon = Weapon.InstaTeleporter;
+            }
             
             if (this.TryToMove(player, destinationX, destinationY))
             {
@@ -890,6 +905,9 @@ namespace DeenGames.AliTheAndroid.Prototype
                     case Weapon.GravityCannon:
                         character = GravityCannonShot;
                         break;
+                    case Weapon.InstaTeleporter:
+                        character = InstaTeleporterShot;
+                        break;
                 }
 
                 var dx = 0;
@@ -903,7 +921,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                     default: throw new InvalidOperationException(nameof(player.DirectionFacing));
                 }
 
-                var shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
+                Shot shot;
+                if (player.CurrentWeapon == Weapon.InstaTeleporter) {
+                    shot = new TeleporterShot(player.X + dx, player.Y + dy, player.DirectionFacing, this.IsWalkable);
+                } else {
+                    shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
+                }
                 if (character == GravityCannonShot) {
                     player.CanFireGravityCannon = false;
                 }
