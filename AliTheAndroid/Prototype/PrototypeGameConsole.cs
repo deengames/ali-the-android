@@ -108,13 +108,13 @@ namespace DeenGames.AliTheAndroid.Prototype
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(stairsLocation.X, stairsLocation.Y), true);
-            var playerRoom = this.FindRoomEnclosingPoint(new GoRogue.Coord(player.X, player.Y));
+            var playerRoom = this.rooms.Single(r => r.Contains(new GoRogue.Coord(player.X, player.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
 
             foreach (var step in path.StepsWithStart)
             {
-                var stepRoom = this.FindRoomEnclosingPoint(step);
+                var stepRoom = this.rooms.SingleOrDefault(r => r.Contains(step));
                 if (stepRoom != GoRogue.Rectangle.EMPTY && stepRoom != playerRoom && !roomsInPath.Contains(stepRoom)) {
                     roomsInPath.Add(stepRoom);
                 }
@@ -130,10 +130,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             // TODO: consider add a smattering of gravity waves randomly elsewhere
-        }
-
-        private GoRogue.Rectangle FindRoomEnclosingPoint(GoRogue.Coord point) {
-            return this.rooms.SingleOrDefault(r => point.X >= r.X && point.X <= r.X + r.Width && point.Y >= r.Y && point.Y <= r.Y + r.Height);
         }
 
         // Also generates the suit
@@ -546,6 +542,8 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
+                // TODO: move anyone stuck in a gravity wave.
+
                 // Find destroyed gravity shots and perturb stuff appropriately
                 var gravityShot = destroyedEffects.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
                 if (gravityShot != null) {                    
@@ -561,6 +559,13 @@ namespace DeenGames.AliTheAndroid.Prototype
                     if (playerDistance <= GravityRadius) {
                         int moveBy = GravityRadius - playerDistance;
                         this.ApplyKnockbacks(player, (int)gravityShot.X, (int)gravityShot.Y, moveBy, gravityShot.Direction);
+                    }
+
+                    // If we have a gravity shot that hit a gravity wave, remove all gravity waves in that room
+                    var room = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
+                    if (room != GoRogue.Rectangle.EMPTY) {
+                        var waves = this.gravityWaves.Where(g => room.Contains(new GoRogue.Coord(g.X, g.Y)));
+                        this.gravityWaves.RemoveAll(w => waves.Contains(w));
                     }
                 }
 
