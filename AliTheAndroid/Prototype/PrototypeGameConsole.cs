@@ -12,6 +12,7 @@ using Global = SadConsole.Global;
 using AliTheAndroid.Prototype;
 using AliTheAndroid.Enums;
 using static DeenGames.AliTheAndroid.Prototype.Shot;
+using GoRogue.Pathing;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
@@ -33,10 +34,11 @@ namespace DeenGames.AliTheAndroid.Prototype
         private static readonly int? GameSeed = 63392576; // null = random each time
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
-        private const int MinimumDistanceFromPlayerToStairs = 10;
+        private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
+        
 
 
-        private Vector2 stairsLocation = new Vector2(0, 0);
+        private GoRogue.Coord stairsLocation = new GoRogue.Coord();
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
@@ -48,7 +50,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         
         private readonly List<TouchableEntity> touchables = new List<TouchableEntity>();
         private readonly List<AbstractEntity> plasmaResidue = new List<AbstractEntity>();
+        private readonly List<AbstractEntity> gravityWaves = new List<AbstractEntity>();
 
+        private ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
 
         private readonly int mapHeight;
         private string lastMessage = "";
@@ -99,6 +103,39 @@ namespace DeenGames.AliTheAndroid.Prototype
             });
         }
 
+        private void GenerateGravityWaves()
+        {
+            // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.
+            var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(stairsLocation.X, stairsLocation.Y), true);
+            var playerRoom = this.FindRoomEnclosingPoint(new GoRogue.Coord(player.X, player.Y));
+
+            var roomsInPath = new List<GoRogue.Rectangle>();
+
+            foreach (var step in path.StepsWithStart)
+            {
+                var stepRoom = this.FindRoomEnclosingPoint(step);
+                if (stepRoom != GoRogue.Rectangle.EMPTY && stepRoom != playerRoom && !roomsInPath.Contains(stepRoom)) {
+                    roomsInPath.Add(stepRoom);
+                }
+            }
+
+            // Guaranteed not to be the player room. If there's only one room between these two, could be the exit room.
+            var gravityRoom = roomsInPath[GlobalRandom.Next(roomsInPath.Count)];
+
+            for (var y = gravityRoom.MinExtentY; y <= gravityRoom.MaxExtentY; y++) {
+                for (var x = gravityRoom.MinExtentX; x <= gravityRoom.MaxExtentX; x++) {
+                    this.gravityWaves.Add(new AbstractEntity(x, y, (char)247, Palette.LightLilacPink));
+                }
+            }
+
+            // TODO: consider add a smattering of gravity waves randomly elsewhere
+        }
+
+        private GoRogue.Rectangle FindRoomEnclosingPoint(GoRogue.Coord point) {
+            return this.rooms.SingleOrDefault(r => point.X >= r.X && point.X <= r.X + r.Width && point.Y >= r.Y && point.Y <= r.Y + r.Height);
+        }
+
         // Also generates the suit
         private void GenerateFumes()
         {
@@ -141,12 +178,15 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.GenerateFumes();
             this.GenerateStairs();
 
+            // After setting player coordinates and stairs, because generates path between them
+            this.GenerateGravityWaves();
+
             this.RedrawEverything();
         }
 
         private void GenerateStairs()
         {
-            var spot = new Vector2(player.X, player.Y);
+            var spot = new GoRogue.Coord(player.X, player.Y);
             var distance = 0d;
 
             do {
@@ -166,14 +206,13 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private IList<GoRogue.Rectangle> GenerateWalls()
         {
-            var map = new ArrayMap<bool>(this.Width, this.mapHeight);
+            this.map = new ArrayMap<bool>(this.Width, this.mapHeight);
+            // true = passable, check GoRogue docs.
             var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, GlobalRandom, MaxRooms, MinRoomSize, MaxRoomSize);
             
             for (var y = 0; y < this.mapHeight; y++) {
                 for (var x = 0; x < this.Width; x++) {
-                    // Invert. We want an internal cave surrounded by walls.
-                    map[x, y] = !map[x, y];
-                    if (map[x, y]) {
+                    if (!map[x, y]) {
                         this.walls.Add(new AbstractEntity(x, y, '#', Palette.LightGrey)); // FOV determines colour
                     }
                 }
@@ -276,11 +315,11 @@ namespace DeenGames.AliTheAndroid.Prototype
         }
 
         private bool IsDoorCandidate(int x, int y) {
-            return this.IsWalkable(x, y) && this.CountAdjacentFloors(new Vector2(x, y)) == 4;
+            return this.IsWalkable(x, y) && this.CountAdjacentFloors(new GoRogue.Coord(x, y)) == 4;
         }
 
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
-        private int CountAdjacentFloors(Vector2 coordinates) {
+        private int CountAdjacentFloors(GoRogue.Coord coordinates) {
             int x = (int)coordinates.X;
             int y = (int)coordinates.Y;
             var count = 0;
@@ -1059,6 +1098,12 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
+            foreach (var wave in this.gravityWaves) {
+                if (IsInPlayerFov(wave.X, wave.Y)) {
+                    this.SetGlyph(wave.X, wave.Y, wave.Character, wave.Color);
+                }
+            }
+
             foreach (var effect in this.effectEntities) {
                 if (IsInPlayerFov(effect.X, effect.Y)) {
                     this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
@@ -1125,7 +1170,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         }
 
         // Finds an empty spot. Secret-room floors are not considered empty.
-        private Vector2 FindEmptySpot()
+        private GoRogue.Coord FindEmptySpot()
         {
             int targetX = 0;
             int targetY = 0;
@@ -1136,7 +1181,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 targetY = PrototypeGameConsole.GlobalRandom.Next(0, this.mapHeight);
             } while (!this.IsWalkable(targetX, targetY));
 
-            return new Vector2(targetX, targetY);
+            return new GoRogue.Coord(targetX, targetY);
         }
 
         private Entity GetMonsterAt(int x, int y)
