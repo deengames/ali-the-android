@@ -32,14 +32,12 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int GravityRadius = 3;
         private const int ExtraGravityWaveRooms = 1;
 
-        private static readonly int? GameSeed = 63392576; // null = random each time
+        private static readonly int? GameSeed = 1193643709; // null = random each time
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
         private Random random = new Random(); // for gravity perturbances and non-generative random
         
-
-
         private GoRogue.Coord stairsLocation = new GoRogue.Coord();
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
@@ -53,6 +51,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<TouchableEntity> touchables = new List<TouchableEntity>();
         private readonly List<AbstractEntity> plasmaResidue = new List<AbstractEntity>();
         private readonly List<AbstractEntity> gravityWaves = new List<AbstractEntity>();
+        private readonly List<AbstractEntity> chasms = new  List<AbstractEntity>();
 
         private ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
 
@@ -110,7 +109,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(stairsLocation.X, stairsLocation.Y), true);
-            var playerRoom = this.rooms.Single(r => r.Contains(new GoRogue.Coord(player.X, player.Y)));
+            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(player.X, player.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
 
@@ -191,8 +190,68 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             // After setting player coordinates and stairs, because generates path between them
             this.GenerateGravityWaves();
+            this.GenerateChasms();
 
             this.RedrawEverything();
+        }
+
+        private void GenerateChasms()
+        {
+            // Generates one that blocks the player from reaching the stairs
+            var midX = (player.X + stairsLocation.X) / 2;
+            var midY = (player.Y + stairsLocation.Y) / 2;
+
+            var isHorizontal = GlobalRandom.NextBoolean();
+            if (isHorizontal) {
+                this.GenerateChasm(0, midY, this.Width - 1, midY, true);
+            }
+            else
+            {
+                this.GenerateChasm(midX, 0, midX, this.mapHeight - 1, false);
+            }
+            
+            // // Generates a random one
+            // var centerX = player.X;
+            // var centerY = player.Y;
+
+            // // Assuming width of three, make sure we're not in the player's X or Y
+            // if (Math.Abs(centerX - player.X) <= 5 || Math.Abs(centerY - player.Y) <= 5) {
+            //     centerX = GlobalRandom.Next(this.Width);
+            //     centerY = GlobalRandom.Next(this.Height);
+            // }
+
+            // isHorizontal = GlobalRandom.NextBoolean();
+            // if (isHorizontal) {
+            //     this.GenerateChasm(0, centerY, this.Width - 1, centerY, true);
+            // } else {
+            //     this.GenerateChasm(centerX, 0, centerX, this.mapHeight - 1, false);
+            // }
+        }
+
+        // Generates a roughly 3-tile wide/high chasm. In reality, it's not X and Y iteration, just one.
+        private void GenerateChasm(int startX, int startY, int endX, int endY, bool isHorizontal)
+        {
+            for (var y = startY; y <= endY; y++) {
+                for (var x = startX; x <= endX; x++) {                
+                    this.chasms.Add(new AbstractEntity(x, y, ' ', Palette.BlackAlmost));
+
+                    if (isHorizontal) {
+                        if (GlobalRandom.NextBoolean()) {
+                            this.chasms.Add(new AbstractEntity(x, y - 1, ' ', Palette.BlackAlmost));
+                        }
+                        if (GlobalRandom.NextBoolean()) {
+                            this.chasms.Add(new AbstractEntity(x, y + 1, ' ', Palette.BlackAlmost));
+                        }
+                    } else {
+                        if (GlobalRandom.NextBoolean()) {
+                            this.chasms.Add(new AbstractEntity(x + 1, y, ' ', Palette.BlackAlmost));
+                        }
+                        if (GlobalRandom.NextBoolean()) {
+                            this.chasms.Add(new AbstractEntity(x - 1, y, ' ', Palette.BlackAlmost));
+                        }
+                    }
+                }
+            }
         }
 
         private void GenerateStairs()
@@ -1110,6 +1169,14 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
+            foreach (var chasm in chasms) {
+                if (IsInPlayerFov(chasm.X, chasm.Y)) {
+                    this.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color);
+                } else if (IsSeen(chasm.X, chasm.Y)) {
+                    this.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
+                }
+            }
+
             
             foreach (var door in doors)
             {
@@ -1250,6 +1317,10 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             if (this.fakeWalls.Any(f => f.X == x && f.Y == y))
             {
+                return false;
+            }
+
+            if (this.chasms.Any(c => c.X == x && c.Y == y)) {
                 return false;
             }
 
