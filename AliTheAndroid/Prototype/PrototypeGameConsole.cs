@@ -35,6 +35,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
+        private Random random = new Random(); // for gravity perturbances and non-generative random
         
 
 
@@ -542,8 +543,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
-                // TODO: move anyone stuck in a gravity wave.
-
                 // Find destroyed gravity shots and perturb stuff appropriately
                 var gravityShot = destroyedEffects.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
                 if (gravityShot != null) {                    
@@ -717,6 +716,37 @@ namespace DeenGames.AliTheAndroid.Prototype
         private void ConsumePlayerTurn()
         {
                 this.ProcessMonsterTurns();
+                this.ProcessGravityPerturbances();
+        }
+
+        private void ProcessGravityPerturbances()
+        {
+            var perturbedMonsters = this.monsters.Where(m => this.gravityWaves.Any(g => g.X == m.X && g.Y == m.Y));
+            foreach (var monster in perturbedMonsters) {
+                var moves = this.WhereCanIMove(monster);
+                var move = moves[random.Next(moves.Count)];
+                monster.X = move.X;
+                monster.Y = move.Y;
+            }
+
+            if (this.gravityWaves.SingleOrDefault(w => w.X == player.X && w.Y == player.Y) != null) {
+                var moves = this.WhereCanIMove(player);
+                var move = moves[random.Next(moves.Count)];
+                player.X = move.X;
+                player.Y = move.Y;
+            }
+        }
+
+        private List<GoRogue.Coord> WhereCanIMove(Entity e)
+        {
+            var toReturn = new List<GoRogue.Coord>();
+
+            if (IsWalkable(e.X - 1, e.Y)) { toReturn.Add(new GoRogue.Coord(e.X - 1, e.Y)); }
+            if (IsWalkable(e.X +1, e.Y)) { toReturn.Add(new GoRogue.Coord(e.X + 1, e.Y)); }
+            if (IsWalkable(e.X, e.Y - 1)) { toReturn.Add(new GoRogue.Coord(e.X, e.Y - 1)); }
+            if (IsWalkable(e.X, e.Y + 1)) { toReturn.Add(new GoRogue.Coord(e.X, e.Y + 1)); }
+
+            return toReturn;
         }
 
         private void ProcessMonsterTurns()
@@ -1089,6 +1119,13 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
+            
+            foreach (var wave in this.gravityWaves) {
+                if (IsInPlayerFov(wave.X, wave.Y)) {
+                    this.SetGlyph(wave.X, wave.Y, wave.Character, wave.Color);
+                }
+            }
+
             foreach (var monster in this.monsters)
             {                
                 if (IsInPlayerFov(monster.X, monster.Y))
@@ -1103,11 +1140,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            foreach (var wave in this.gravityWaves) {
-                if (IsInPlayerFov(wave.X, wave.Y)) {
-                    this.SetGlyph(wave.X, wave.Y, wave.Character, wave.Color);
-                }
-            }
 
             foreach (var effect in this.effectEntities) {
                 if (IsInPlayerFov(effect.X, effect.Y)) {
