@@ -30,6 +30,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int FumeDamage = 5;
         private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
         private const int GravityRadius = 3;
+        private const int ExtraGravityWaveRooms = 1;
 
         private static readonly int? GameSeed = 63392576; // null = random each time
         private const char GravityCannonShot = (char)246; 
@@ -123,14 +124,27 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             // Guaranteed not to be the player room. If there's only one room between these two, could be the exit room.
             var gravityRoom = roomsInPath[GlobalRandom.Next(roomsInPath.Count)];
+            this.FillWithGravity(gravityRoom);            
 
-            for (var y = gravityRoom.MinExtentY; y <= gravityRoom.MaxExtentY; y++) {
-                for (var x = gravityRoom.MinExtentX; x <= gravityRoom.MaxExtentX; x++) {
+            var extraRooms = ExtraGravityWaveRooms;
+            var candidateRooms = rooms.Where(r => r != gravityRoom).ToList();
+
+            while (extraRooms > 0) {
+                var nextRoom = candidateRooms[GlobalRandom.Next(candidateRooms.Count)];
+                if (!nextRoom.Contains(new GoRogue.Coord(player.X, player.Y))) {
+                    this.FillWithGravity(nextRoom);
+                    candidateRooms.Remove(nextRoom);
+                    extraRooms -= 1;
+                }
+            }
+        }
+
+        private void FillWithGravity(GoRogue.Rectangle room) {
+            for (var y = room.MinExtentY; y <= room.MaxExtentY; y++) {
+                for (var x = room.MinExtentX; x <= room.MaxExtentX; x++) {
                     this.gravityWaves.Add(new AbstractEntity(x, y, (char)247, Palette.LightLilacPink));
                 }
             }
-
-            // TODO: consider add a smattering of gravity waves randomly elsewhere
         }
 
         // Also generates the suit
