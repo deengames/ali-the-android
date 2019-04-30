@@ -107,6 +107,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateGravityWaves()
         {
+            this.gravityWaves.Clear();
+
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(stairsLocation.X, stairsLocation.Y), true);
@@ -150,6 +152,8 @@ namespace DeenGames.AliTheAndroid.Prototype
         // Also generates the suit
         private void GenerateFumes()
         {
+            this.fumes.Clear();
+
             if (DebugOptions.EnablePlasmaCannon) {
                 var suitRoom = this.rooms[GlobalRandom.Next(this.rooms.Count)];
                 for (var y = suitRoom.MinExtentY; y < suitRoom.MaxExtentY; y++) {
@@ -198,6 +202,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateChasms()
         {
+            this.chasms.Clear();
+            
             // Pick three/N hallways and fill them with chasms
             var hallwayTiles = new List<GoRogue.Coord>();
             for (var y = 0; y < mapHeight; y++) {
@@ -241,6 +247,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private IList<GoRogue.Rectangle> GenerateWalls()
         {
+            this.walls.Clear();
             this.map = new ArrayMap<bool>(this.Width, this.mapHeight);
             // true = passable, check GoRogue docs.
             var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, GlobalRandom, MaxRooms, MinRoomSize, MaxRoomSize);
@@ -258,6 +265,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateFakeWallClusters()
         {
+            this.fakeWalls.Clear();
+
              // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
             var numFakeWallClusters = 3;
             while (numFakeWallClusters > 0) {
@@ -307,6 +316,8 @@ namespace DeenGames.AliTheAndroid.Prototype
         }
 
         private void GenerateDoors(IEnumerable<GoRogue.Rectangle> rooms) {
+            this.doors.Clear();
+
             // Generate regular doors: any time we have a room, look at the perimeter tiles around that room.
             // If any of them have <= 4 ground tiles (including tiles with doors on them already), add a door.
             foreach (var room in rooms) {
@@ -918,6 +929,10 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.CurrentWeapon = Weapon.InstaTeleporter;
             }
+            else if (Global.KeyboardState.IsKeyPressed(Keys.OemPeriod) && player.X == stairsLocation.X && player.Y == stairsLocation.Y)
+            {
+                this.GenerateMap();
+            }
             
             if (this.TryToMove(player, destinationX, destinationY))
             {
@@ -1243,6 +1258,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateMonsters()
         {
+            this.monsters.Clear();
+
             var numMonsters = DebugOptions.MonsterMultiplier * PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
             while (numMonsters-- > 0)
             {
@@ -1302,10 +1319,6 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             if (this.player.X == x && this.player.Y == y)
             {
-                return false;
-            }
-
-            if (x == this.stairsLocation.X && y == this.stairsLocation.Y) {
                 return false;
             }
 
