@@ -33,10 +33,12 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
 
-        private static readonly int? GameSeed = null; // null = random each time
+        private static readonly int? GameSeed = 740970391; // null = random each time
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
+        private const int MinimumChasmDistance = 10;
+
         private Random random = new Random(); // for gravity perturbances and non-generative random
         
         private GoRogue.Coord stairsLocation = new GoRogue.Coord();
@@ -207,7 +209,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
             this.chasms.Clear();
             
-            // Pick three/N hallways and fill them with chasms
+            // Pick three/N hallways and fill them with chasms. Make sure they're far from each other.
             var hallwayTiles = new List<GoRogue.Coord>();
             for (var y = 0; y < mapHeight; y++) {
                 for (var x = 0; x < this.Width; x++) {
@@ -219,12 +221,34 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            var candidates = hallwayTiles.Where(h => CountAdjacentFloors(h) == 2).OrderBy(c => GlobalRandom.Next()).Take(NumChasms);
-            foreach (var candidate in candidates) {
-                this.chasms.Add(new AbstractEntity(candidate.X, candidate.Y, ' ', Palette.BlackAlmost));
-                foreach (var adjacency in this.GetAdjacentFloors(candidate)) {
-                    this.chasms.Add(new AbstractEntity(adjacency.X, adjacency.Y, ' ', Palette.BlackAlmost));
+            var numGenerated = 0;
+            var iterations = 0;
+            
+            // Make sure we don't generate chasms too close to each other. This can make hallways impossible to traverse.
+            // https://trello.com/c/HxpLSDMt/3-map-generates-a-stuck-map-seed-740970391
+            do {
+                var candidate = hallwayTiles.Where(h => this.CountAdjacentFloors(h) == 2).OrderBy(c => GlobalRandom.Next()).FirstOrDefault();
+                if (candidate != null) {
+                    if (!this.chasms.Any()) {
+                        this.GenerateChasmAt(candidate);
+                        numGenerated++;
+                    } else {
+                        // Calculate the distance to the closest chasm, and make sure it's distant enough.
+                        var minDistance = this.chasms.Select(c => Math.Sqrt(Math.Pow(c.X - candidate.X, 2) + Math.Pow(c.Y - candidate.Y, 2))).Min();
+                        if (minDistance >= MinimumChasmDistance) {
+                            this.GenerateChasmAt(candidate);
+                            numGenerated++;
+                        }
+                    }
                 }
+            // Iterations because: hard to tell if we ran out of hallway tiles.
+            } while (iterations++ < 1000 && numGenerated < NumChasms);
+        }
+
+        private void GenerateChasmAt(GoRogue.Coord location) {
+            this.chasms.Add(new AbstractEntity(location.X, location.Y, ' ', Palette.BlackAlmost));
+            foreach (var adjacency in this.GetAdjacentFloors(location)) {
+                this.chasms.Add(new AbstractEntity(adjacency.X, adjacency.Y, ' ', Palette.BlackAlmost));
             }
         }
 
