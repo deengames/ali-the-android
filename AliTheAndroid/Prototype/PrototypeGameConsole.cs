@@ -230,20 +230,23 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             var numGenerated = 0;
             var iterations = 0;
+            var candidates = hallwayTiles.Where(h => this.CountAdjacentFloors(h) == 2).OrderBy(c => GlobalRandom.Next()).ToList();
             
             // Make sure we don't generate chasms too close to each other. This can make hallways impossible to traverse.
             // https://trello.com/c/HxpLSDMt/3-map-generates-a-stuck-map-seed-740970391
             do {
-                var candidate = hallwayTiles.Where(h => this.CountAdjacentFloors(h) == 2).OrderBy(c => GlobalRandom.Next()).FirstOrDefault();
+                var candidate = candidates.FirstOrDefault();
                 if (candidate != null) {
                     if (!this.chasms.Any()) {
                         this.GenerateChasmAt(candidate);
+                        candidates.Remove(candidate);
                         numGenerated++;
                     } else {
                         // Calculate the distance to the closest chasm, and make sure it's distant enough.
                         var minDistance = this.chasms.Select(c => Math.Sqrt(Math.Pow(c.X - candidate.X, 2) + Math.Pow(c.Y - candidate.Y, 2))).Min();
                         if (minDistance >= MinimumChasmDistance) {
                             this.GenerateChasmAt(candidate);
+                            candidates.Remove(candidate);
                             numGenerated++;
                         }
                     }
@@ -404,21 +407,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         }
 
         private List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
-            int x = (int)coordinates.X;
-            int y = (int)coordinates.Y;
-            var toReturn = new List<GoRogue.Coord>();
-
-            if (this.IsWalkable(x - 1, y - 1, true)) { toReturn.Add(new GoRogue.Coord(x - 1, y - 1)); }
-            if (this.IsWalkable(x, y - 1, true)) { toReturn.Add(new GoRogue.Coord(x, y - 1)); }
-            if (this.IsWalkable(x + 1, y - 1, true)) { toReturn.Add(new GoRogue.Coord(x + 1, y - 1)); }
-            if (this.IsWalkable(x - 1, y, true)) { toReturn.Add(new GoRogue.Coord(x - 1, y)); }
-            // (x, y) is ignored
-            if (this.IsWalkable(x + 1, y, true)) { toReturn.Add(new GoRogue.Coord(x + 1, y)); }
-            if (this.IsWalkable(x - 1, y + 1, true)) { toReturn.Add(new GoRogue.Coord(x - 1, y + 1)); }
-            if (this.IsWalkable(x, y + 1, true)) { toReturn.Add(new GoRogue.Coord(x, y + 1)); }
-            if (this.IsWalkable(x + 1, y + 1, true)) { toReturn.Add(new GoRogue.Coord(x + 1, y + 1)); }
-
-            return toReturn;
+            return this.GetAdjacentFloors(coordinates.X, coordinates.Y);
         }
 
         private IEnumerable<ConnectedRoom> FindPotentialSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
@@ -551,13 +540,13 @@ namespace DeenGames.AliTheAndroid.Prototype
                             }
 
                             // Flares, part 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
-                            var adjacencies = this.GetAdjacentTiles(plasmaShot.X, plasmaShot.Y);
+                            var adjacencies = this.GetAdjacentFloors(plasmaShot.X, plasmaShot.Y);
                             foreach (var tile in adjacencies) {
                                 var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
                                 
                                 foreach (var fume in tileFumes) {
                                     // Every fume blooms into a +-shaped flare
-                                    var flareTiles = this.GetAdjacentTiles(fume.X, fume.Y);
+                                    var flareTiles = this.GetAdjacentFloors(fume.X, fume.Y);
                                     foreach (var ft in flareTiles) {
                                         var flare = new Flare((int)ft.X, (int)ft.Y);
                                         AddNonDupeEntity(flare, this.effectEntities);
@@ -576,7 +565,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                             // Checks if the flare wasn't updated in ~100ms and only move forward if so.
                             // This prevents everything from happening instantaneously. In theory.
                             if (flare.OnUpdate()) {
-                                var adjacentTiles = this.GetAdjacentTiles(flare.X, flare.Y);
+                                var adjacentTiles = this.GetAdjacentFloors(flare.X, flare.Y);
                                 var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
                                 foreach (var fume in adjacentFumes) {
                                     newFlares.Add(new Flare(fume.X, fume.Y));
@@ -721,14 +710,14 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
-        private List<Vector2> GetAdjacentTiles(int centerX, int centerY) {
-            var toReturn = new List<Vector2>();
+        private List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY) {
+            var toReturn = new List<GoRogue.Coord>();
 
             for (var y = centerY - 1; y <= centerY + 1; y++) {
                 for (var x = centerX - 1; x <= centerX + 1; x++) {
-                    if (x >= 0 && y >= 0 && x < this.Width && y < mapHeight && (x == centerX || y == centerY))
+                    if (x != centerX && y != centerY && IsWalkable(x, y))
                     {
-                        toReturn.Add(new Vector2(x, y));
+                        toReturn.Add(new GoRogue.Coord(x, y));
                     }
                 }
             }
@@ -1295,14 +1284,44 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
             this.monsters.Clear();
 
-            var numMonsters = DebugOptions.MonsterMultiplier * PrototypeGameConsole.GlobalRandom.Next(8, 9); // 8-9
-            while (numMonsters-- > 0)
+            var numZugs = DebugOptions.MonsterMultiplier * GlobalRandom.Next(1, 3); // 1-2
+            var numSlinks = DebugOptions.MonsterMultiplier * GlobalRandom.Next(2, 5); // 2-4            
+            var numMonsters = DebugOptions.MonsterMultiplier * GlobalRandom.Next(8, 9); // 8-9 aliens
+
+            while (numMonsters > 0)
             {
                 var spot = this.FindEmptySpot();
-                var monster = Entity.CreateFromTemplate("Alien");
-                monster.X = (int)spot.X;
-                monster.Y = (int)spot.Y;
+
+                var template = "";
+                if (numZugs > 0) {
+                    template = "Zug";
+                    numZugs--;
+                } else if (numSlinks > 0) {
+                    template = "Slink";
+                    numSlinks--;
+                } else {
+                    template = "Alien";
+                    numMonsters--;
+                }
+
+                var monster = Entity.CreateFromTemplate(template);
+                monster.X = spot.X;
+                monster.Y = spot.Y;
                 this.monsters.Add(monster);
+
+                // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
+                if (template == "Slink") {
+                    var numSubSlinks = GlobalRandom.Next(3, 7); // 3-6
+                    var spots = this.GetAdjacentFloors(spot);
+                    var spotsToUse = spots.OrderBy(s => GlobalRandom.Next()).Take(Math.Min(spots.Count, numSubSlinks));
+
+                    foreach (var slinkSpot in spotsToUse) {
+                        monster = Entity.CreateFromTemplate(template);
+                        monster.X = slinkSpot.X;
+                        monster.Y = slinkSpot.Y;
+                        this.monsters.Add(monster);
+                    }
+                }
             }
         }
 
@@ -1329,6 +1348,10 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private bool IsWalkable(int x, int y, bool areDoorsWalkable = false)
         {
+            if (x < 0 || y < 0 || x >= this.Width || y >= mapHeight) {
+                return false;
+            }
+
             if (this.walls.Any(w => w.X == x && w.Y == y))
             {
                 return false;
