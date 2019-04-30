@@ -119,7 +119,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
     public class TeleporterShot : Shot
     {
-        public int Life = 3; // Moves three squares
+        public int Life = 4; // Moves three squares
 
         public int PreviousX { get; private set; } = 0;
         public int PreviousY { get; private set; } = 0;

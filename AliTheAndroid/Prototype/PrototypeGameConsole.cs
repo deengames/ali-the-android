@@ -31,6 +31,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
         private const int GravityRadius = 3;
         private const int ExtraGravityWaveRooms = 1;
+        private const int NumChasms = 5;
 
         private static readonly int? GameSeed = 1193643709; // null = random each time
         private const char GravityCannonShot = (char)246; 
@@ -197,59 +198,23 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateChasms()
         {
-            // Generates one that blocks the player from reaching the stairs
-            var midX = (player.X + stairsLocation.X) / 2;
-            var midY = (player.Y + stairsLocation.Y) / 2;
-
-            var isHorizontal = GlobalRandom.NextBoolean();
-            if (isHorizontal) {
-                this.GenerateChasm(0, midY, this.Width - 1, midY, true);
-            }
-            else
-            {
-                this.GenerateChasm(midX, 0, midX, this.mapHeight - 1, false);
-            }
-            
-            // // Generates a random one
-            // var centerX = player.X;
-            // var centerY = player.Y;
-
-            // // Assuming width of three, make sure we're not in the player's X or Y
-            // if (Math.Abs(centerX - player.X) <= 5 || Math.Abs(centerY - player.Y) <= 5) {
-            //     centerX = GlobalRandom.Next(this.Width);
-            //     centerY = GlobalRandom.Next(this.Height);
-            // }
-
-            // isHorizontal = GlobalRandom.NextBoolean();
-            // if (isHorizontal) {
-            //     this.GenerateChasm(0, centerY, this.Width - 1, centerY, true);
-            // } else {
-            //     this.GenerateChasm(centerX, 0, centerX, this.mapHeight - 1, false);
-            // }
-        }
-
-        // Generates a roughly 3-tile wide/high chasm. In reality, it's not X and Y iteration, just one.
-        private void GenerateChasm(int startX, int startY, int endX, int endY, bool isHorizontal)
-        {
-            for (var y = startY; y <= endY; y++) {
-                for (var x = startX; x <= endX; x++) {                
-                    this.chasms.Add(new AbstractEntity(x, y, ' ', Palette.BlackAlmost));
-
-                    if (isHorizontal) {
-                        if (GlobalRandom.NextBoolean()) {
-                            this.chasms.Add(new AbstractEntity(x, y - 1, ' ', Palette.BlackAlmost));
-                        }
-                        if (GlobalRandom.NextBoolean()) {
-                            this.chasms.Add(new AbstractEntity(x, y + 1, ' ', Palette.BlackAlmost));
-                        }
-                    } else {
-                        if (GlobalRandom.NextBoolean()) {
-                            this.chasms.Add(new AbstractEntity(x + 1, y, ' ', Palette.BlackAlmost));
-                        }
-                        if (GlobalRandom.NextBoolean()) {
-                            this.chasms.Add(new AbstractEntity(x - 1, y, ' ', Palette.BlackAlmost));
-                        }
+            // Pick three/N hallways and fill them with chasms
+            var hallwayTiles = new List<GoRogue.Coord>();
+            for (var y = 0; y < mapHeight; y++) {
+                for (var x = 0; x < this.Width; x++) {
+                    // Not 100% accurate since we have monsters, ec.
+                    var coordinates = new GoRogue.Coord(x, y);
+                    if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates))) {
+                        hallwayTiles.Add(coordinates);
                     }
+                }
+            }
+
+            var candidates = hallwayTiles.Where(h => CountAdjacentFloors(h) == 2).OrderBy(c => GlobalRandom.Next()).Take(NumChasms);
+            foreach (var candidate in candidates) {
+                this.chasms.Add(new AbstractEntity(candidate.X, candidate.Y, ' ', Palette.BlackAlmost));
+                foreach (var adjacency in this.GetAdjacentFloors(candidate)) {
+                    this.chasms.Add(new AbstractEntity(adjacency.X, adjacency.Y, ' ', Palette.BlackAlmost));
                 }
             }
         }
@@ -390,21 +355,25 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
         private int CountAdjacentFloors(GoRogue.Coord coordinates) {
+            return GetAdjacentFloors(coordinates).Count;
+        }
+
+        private List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
             int x = (int)coordinates.X;
             int y = (int)coordinates.Y;
-            var count = 0;
+            var toReturn = new List<GoRogue.Coord>();
 
-            if (this.IsWalkable(x - 1, y - 1, true)) { count += 1; }
-            if (this.IsWalkable(x, y - 1, true)) { count += 1; }
-            if (this.IsWalkable(x + 1, y - 1, true)) { count += 1; }
-            if (this.IsWalkable(x - 1, y, true)) { count += 1; }
-            //if (this.IsWalkable(x, y, true)) { count += 1; }
-            if (this.IsWalkable(x + 1, y, true)) { count += 1; }
-            if (this.IsWalkable(x - 1, y + 1, true)) { count += 1; }
-            if (this.IsWalkable(x, y + 1, true)) { count += 1; }
-            if (this.IsWalkable(x + 1, y + 1, true)) { count += 1; }
+            if (this.IsWalkable(x - 1, y - 1, true)) { toReturn.Add(new GoRogue.Coord(x - 1, y - 1)); }
+            if (this.IsWalkable(x, y - 1, true)) { toReturn.Add(new GoRogue.Coord(x, y - 1)); }
+            if (this.IsWalkable(x + 1, y - 1, true)) { toReturn.Add(new GoRogue.Coord(x + 1, y - 1)); }
+            if (this.IsWalkable(x - 1, y, true)) { toReturn.Add(new GoRogue.Coord(x - 1, y)); }
+            // (x, y) is ignored
+            if (this.IsWalkable(x + 1, y, true)) { toReturn.Add(new GoRogue.Coord(x + 1, y)); }
+            if (this.IsWalkable(x - 1, y + 1, true)) { toReturn.Add(new GoRogue.Coord(x - 1, y + 1)); }
+            if (this.IsWalkable(x, y + 1, true)) { toReturn.Add(new GoRogue.Coord(x, y + 1)); }
+            if (this.IsWalkable(x + 1, y + 1, true)) { toReturn.Add(new GoRogue.Coord(x + 1, y + 1)); }
 
-            return count;
+            return toReturn;
         }
 
         private IEnumerable<ConnectedRoom> FindPotentialSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
@@ -641,11 +610,10 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
 
-                var teleporterShot = destroyedEffects.SingleOrDefault(s => s.Character == InstaTeleporterShot);
-                if (teleporterShot != null) {
-                    var ts = teleporterShot as TeleporterShot;
-                    player.X = ts.PreviousX;
-                    player.Y = ts.PreviousY;
+                var teleporterShot = destroyedEffects.SingleOrDefault(s => s.Character == InstaTeleporterShot) as TeleporterShot;
+                if (teleporterShot != null && IsWalkable(teleporterShot.PreviousX, teleporterShot.PreviousY)) {
+                    player.X = teleporterShot.PreviousX;
+                    player.Y = teleporterShot.PreviousY;
                 }
 
                 // Missiles explode
@@ -1220,7 +1188,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                     }
                 }
             }
-
 
             foreach (var effect in this.effectEntities) {
                 if (IsInPlayerFov(effect.X, effect.Y)) {
