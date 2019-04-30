@@ -33,7 +33,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
 
-        private static readonly int? GameSeed = 1193643709; // null = random each time
+        private static readonly int? GameSeed = null; // null = random each time
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
@@ -53,6 +53,8 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<AbstractEntity> plasmaResidue = new List<AbstractEntity>();
         private readonly List<AbstractEntity> gravityWaves = new List<AbstractEntity>();
         private readonly List<AbstractEntity> chasms = new  List<AbstractEntity>();
+
+        private int currentFloorNum = 0;
 
         private ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
 
@@ -183,6 +185,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void GenerateMap()
         {
+            this.currentFloorNum++;
             this.GenerateMapRooms();
             this.GenerateMonsters();
 
@@ -917,7 +920,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4))
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4) && DebugOptions.EnablePlasmaCannon)
             {
                 player.CurrentWeapon = Weapon.PlasmaCannon;
             }
@@ -1222,6 +1225,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.DrawLine(new Point(0, this.Height - 1), new Point(this.Width, this.Height - 1), null, Palette.BlackAlmost, ' ');
             this.DrawHealthIndicators();
             this.Print(0, this.Height - 1, this.LatestMessage, Palette.White);
+            this.Print(this.Width - 4, this.Height - 2, $"B{this.currentFloorNum}", Palette.White);
         }
 
         private void DrawHealthIndicators()
