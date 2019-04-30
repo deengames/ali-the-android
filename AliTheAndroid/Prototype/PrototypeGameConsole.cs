@@ -33,7 +33,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
 
-        private static readonly int? GameSeed = 782704796; // null = random each time
+        private static readonly int? GameSeed = null; // null = random each time
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
