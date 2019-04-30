@@ -635,8 +635,11 @@ namespace DeenGames.AliTheAndroid.Prototype
                         int moveBy = GravityRadius - playerDistance;
                         this.ApplyKnockbacks(player, (int)gravityShot.X, (int)gravityShot.Y, moveBy, gravityShot.Direction);
                     }
-
-                    // If we have a gravity shot that hit a gravity wave, remove all gravity waves in that room
+                }
+                
+                // Find active gravity shots and destroy rooms full of gravity waves appropriately
+                gravityShot = effectEntities.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
+                if (gravityShot != null) {
                     var room = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
                     if (room != GoRogue.Rectangle.EMPTY) {
                         var waves = this.gravityWaves.Where(g => room.Contains(new GoRogue.Coord(g.X, g.Y)));
