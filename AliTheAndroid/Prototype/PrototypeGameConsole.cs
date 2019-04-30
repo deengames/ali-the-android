@@ -33,7 +33,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
 
-        private static readonly int? GameSeed = 740970391; // null = random each time
+        private static readonly int? GameSeed = 782704796; // null = random each time
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
@@ -113,7 +113,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
             this.gravityWaves.Clear();
 
-            // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.
+            // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(stairsLocation.X, stairsLocation.Y), true);
             var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(player.X, player.Y)));
@@ -128,9 +128,16 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            // Guaranteed not to be the player room. If there's only one room between these two, could be the exit room.
-            var gravityRoom = roomsInPath[GlobalRandom.Next(roomsInPath.Count)];
-            this.FillWithGravity(gravityRoom);            
+            // If there are no rooms between us (stairs is in a hallway), we don't generate this room.
+            // If there's just one room - the stairs room - it will be full of gravity.
+            // If there are two or more, pick one and gravity-fill it.
+            GoRogue.Rectangle gravityRoom = Rectangle.Empty;
+
+            if (roomsInPath.Any()) {
+                // Guaranteed not to be the player room. If there's only one room between these two, could be the exit room.
+                gravityRoom = roomsInPath[GlobalRandom.Next(roomsInPath.Count)];
+                this.FillWithGravity(gravityRoom);            
+            }
 
             var extraRooms = ExtraGravityWaveRooms;
             var candidateRooms = rooms.Where(r => r != gravityRoom).ToList();
