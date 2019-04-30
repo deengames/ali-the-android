@@ -56,6 +56,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<AbstractEntity> gravityWaves = new List<AbstractEntity>();
         private readonly List<AbstractEntity> chasms = new  List<AbstractEntity>();
 
+        // Super hack. Key is "x, y", value is IsDiscovered.
+        private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
+
         private int currentFloorNum = 0;
 
         private ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
@@ -75,9 +78,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
         
-        // Super hack. Key is "x, y", value is IsDiscovered.
-        private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
-
         static PrototypeGameConsole() {
             if (!GameSeed.HasValue) {
                 GameSeed = new Random().Next();
@@ -195,6 +195,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         private void GenerateMap()
         {
             this.currentFloorNum++;
+            this.lastMessage = "";
+            this.isTileDiscovered.Clear();
+            
             this.GenerateMapRooms();
             this.GenerateMonsters();
 
