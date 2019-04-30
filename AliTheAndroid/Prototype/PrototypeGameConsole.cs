@@ -799,16 +799,20 @@ namespace DeenGames.AliTheAndroid.Prototype
             var perturbedMonsters = this.monsters.Where(m => this.gravityWaves.Any(g => g.X == m.X && g.Y == m.Y));
             foreach (var monster in perturbedMonsters) {
                 var moves = this.WhereCanIMove(monster);
-                var move = moves[random.Next(moves.Count)];
-                monster.X = move.X;
-                monster.Y = move.Y;
+                if (moves.Any()) {
+                    var move = moves[random.Next(moves.Count)];
+                    monster.X = move.X;
+                    monster.Y = move.Y;
+                }
             }
 
             if (this.gravityWaves.SingleOrDefault(w => w.X == player.X && w.Y == player.Y) != null) {
                 var moves = this.WhereCanIMove(player);
-                var move = moves[random.Next(moves.Count)];
-                player.X = move.X;
-                player.Y = move.Y;
+                if (moves.Any()) {
+                    var move = moves[random.Next(moves.Count)];
+                    player.X = move.X;
+                    player.Y = move.Y;
+                }
             }
         }
 
