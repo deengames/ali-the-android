@@ -197,7 +197,9 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.currentFloorNum++;
             this.lastMessage = "";
             this.isTileDiscovered.Clear();
-            
+            this.touchables.Clear();
+            this.plasmaResidue.Clear();
+
             this.GenerateMapRooms();
             this.GenerateMonsters();
 
