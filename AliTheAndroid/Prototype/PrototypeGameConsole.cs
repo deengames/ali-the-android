@@ -563,7 +563,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 // Destroy any effect that hit something (wall/monster/etc.)
                 // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
-                var destroyedEffects = this.effectEntities.Where((e) => !e.IsAlive || !this.IsWalkable(e.X, e.Y)).ToList();
+                var destroyedEffects = this.effectEntities.Where((e) => !e.IsAlive || (!(e is TeleporterShot) && !this.IsWalkable(e.X, e.Y))).ToList();
                 // If they hit a monster, damage it.
                 var harmedMonsters = this.monsters.Where(m => destroyedEffects.Any(e => e.X == m.X && e.Y == m.Y)).ToArray(); // Create copy to prevent concurrent modification exception
                 
@@ -611,9 +611,9 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
 
                 var teleporterShot = destroyedEffects.SingleOrDefault(s => s.Character == InstaTeleporterShot) as TeleporterShot;
-                if (teleporterShot != null && IsWalkable(teleporterShot.PreviousX, teleporterShot.PreviousY)) {
-                    player.X = teleporterShot.PreviousX;
-                    player.Y = teleporterShot.PreviousY;
+                if (teleporterShot != null) {
+                    player.X = teleporterShot.TeleportTo.X;
+                    player.Y = teleporterShot.TeleportTo.Y;
                 }
 
                 // Missiles explode
@@ -1038,7 +1038,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 Shot shot;
                 if (player.CurrentWeapon == Weapon.InstaTeleporter) {
-                    shot = new TeleporterShot(player.X + dx, player.Y + dy, player.DirectionFacing, this.IsWalkable);
+                    shot = new TeleporterShot(player.X, player.Y, player.DirectionFacing, this.IsWalkable);
                 } else {
                     shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
                 }

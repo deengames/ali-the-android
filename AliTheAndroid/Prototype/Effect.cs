@@ -121,17 +121,29 @@ namespace DeenGames.AliTheAndroid.Prototype
     {
         public int Life = 4; // Moves three squares
 
-        public int PreviousX { get; private set; } = 0;
-        public int PreviousY { get; private set; } = 0;
-        public TeleporterShot(int x, int y, Direction direction, Func<int, int, bool, bool> isWalkable) : base(x, y, '?', Palette.Cyan, direction, isWalkable)
+        public GoRogue.Coord TeleportTo { get; private set; }
+
+        private Func<int, int, bool, bool> realIsWalkable;
+
+        public TeleporterShot(int x, int y, Direction direction, Func<int, int, bool, bool> isWalkable) : base(x, y, '?', Palette.Cyan, direction, AlwaysWalkable)
         {
+            this.TeleportTo = new GoRogue.Coord(x, y);
+            this.realIsWalkable = isWalkable;
+        }
+
+        private static bool AlwaysWalkable(int x, int y, bool areDoorsWalkable)
+        {
+            return true;
         }
 
         override internal void OnAction()
         {
-            this.PreviousX = this.X;
-            this.PreviousY = this.Y;
             base.OnAction();
+
+            // We only want to track the previous spot if it was walkable. This way, we teleport to the last walkable spot we saw.
+            if (this.realIsWalkable(this.X, this.Y, false)) {
+                this.TeleportTo = new GoRogue.Coord(this.X, this.Y);
+            }
             Life -= 1;
             if (Life == 0) {
                 this.IsAlive = false;
