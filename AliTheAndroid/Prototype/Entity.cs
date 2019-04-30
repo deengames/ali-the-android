@@ -25,11 +25,11 @@ namespace DeenGames.AliTheAndroid.Prototype
             // This code makes me cry.
             switch (name.ToLower()) {
                 // Regular enemy. Takes a bit of skill to kill.
-                case "alien": return new Entity("Alien", 'a', Palette.Blue, 35, 9, 3);
+                case "alien": return new Entity("Alien", 'a', Palette.Blue, 42, 9, 4);
                 // Fodder. Generates in big groups, though.
-                case "slink": return new Entity("Slink", 's', Palette.DarkBlueMuted, 20, 6, 2);
+                case "slink": return new Entity("Slink", 's', Palette.DarkBlueMuted, 33, 6, 2);
                 // Tank. REALLY hard to kill (I hope).
-                case "zug":  return new Entity("Zug", 'z', Palette.Red, 80, 15, 6);
+                case "zug":  return new Entity("Zug", 'z', Palette.Red, 90, 18, 8);
                 default: throw new InvalidOperationException($"Not sure how to create a {name} template entity");
             }
         }
