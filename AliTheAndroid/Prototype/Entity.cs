@@ -68,14 +68,4 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         public bool IsDead { get { return this.CurrentHealth <= 0; } }
     }
-
-    public class TouchableEntity : AbstractEntity
-    {
-
-        public Action OnTouch;
-
-        public TouchableEntity(int x, int y, char character, Color color) : base(x, y, character, color)
-        {
-        }
-    }
 }

@@ -26,8 +26,6 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int ExplosionRadius = 2;
         private const int NumberOfLockedDoors = 3;
         private const float PercentOfFloorFuming = 0.05f; // 0.15 => 15% of non-wall spaces
-        private const int FumeDamage = 5;
-        private const int FlareDamage = 15; // Should be high enough that a poorly-planned plasma shot (almost) kills you
         private const int GravityRadius = 3;
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
@@ -47,10 +45,8 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
         private readonly List<AbstractEntity> fakeWalls = new List<AbstractEntity>();
         private readonly List<Door> doors = new List<Door>();
-        private readonly List<AbstractEntity> fumes = new List<AbstractEntity>();
         private readonly List<Effect> effectEntities = new List<Effect>();
         
-        private readonly List<TouchableEntity> touchables = new List<TouchableEntity>();
         private readonly List<AbstractEntity> plasmaResidue = new List<AbstractEntity>();
         private readonly List<AbstractEntity> gravityWaves = new List<AbstractEntity>();
         private readonly List<AbstractEntity> chasms = new  List<AbstractEntity>();
@@ -159,44 +155,11 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
         }
 
-        // Also generates the suit
-        private void GenerateFumes()
-        {
-            this.fumes.Clear();
-
-            if (DebugOptions.EnablePlasmaCannon) {
-                var suitRoom = this.rooms[GlobalRandom.Next(this.rooms.Count)];
-                for (var y = suitRoom.MinExtentY; y < suitRoom.MaxExtentY; y++) {
-                    for (var x = suitRoom.MinExtentX; x < suitRoom.MaxExtentX; x++) {
-                        if (x == suitRoom.X + (suitRoom.Width / 2) && y == suitRoom.Y + (suitRoom.Height / 2)) {
-                            var suit = new TouchableEntity(x, y, '?', Color.Cyan);
-                            suit.OnTouch = () => {
-                                player.HasEnvironmentSuit = true;
-                                LatestMessage = "You pick up the environment suit.";
-                            };
-                            this.touchables.Add(suit);
-                        } else {
-                            this.fumes.Add(new AbstractEntity(x, y, (char)240, Palette.LimeGreen)); // 240 = ≡
-                        }
-                    }
-                }
-
-                var numFumes = (int)Math.Round(((this.Width * mapHeight) - this.walls.Count) * PercentOfFloorFuming);
-                while (numFumes > 0) {
-                    var location = this.FindEmptySpot();
-                    this.fumes.Add(new AbstractEntity((int)location.X, (int)location.Y, (char)240, Palette.LimeGreen));
-                    numFumes--;
-                    // TODO: create a little cluster of fumes
-                }
-            }
-        }
-
         private void GenerateMap()
         {
             this.currentFloorNum++;
             this.lastMessage = "";
             this.isTileDiscovered.Clear();
-            this.touchables.Clear();
             this.plasmaResidue.Clear();
 
             this.GenerateMapRooms();
@@ -206,7 +169,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             player.X = (int)emptySpot.X;
             player.Y = (int)emptySpot.Y;
 
-            this.GenerateFumes();
             this.GenerateStairs();
 
             // After setting player coordinates and stairs, because generates path between them
@@ -507,94 +469,32 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
                 this.fakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
 
-                if (DebugOptions.EnablePlasmaCannon) {
-                    //// Plasma/gas processing
-                    var numFlares = 0;
-                    var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o') as Shot;
-                    var flares = this.effectEntities.Where(e => e.Character == '%');
+                // Process if the player shot a plasma shot. 
+                var plasmaShot = this.effectEntities.SingleOrDefault(e => e.Character == 'o') as Shot;
+                if (plasmaShot != null) {
+                    // If we moved, make sure there's plasma residue behind us
+                    if (plasmaShot.HasMoved) {
+                        var previousX = plasmaShot.X;
+                        var previousY = plasmaShot.Y;
 
-                    // Process if the player shot a plasma shot. Also process if there are any live flares.
-                    if (plasmaShot != null || this.effectEntities.Any(e => e.Character == '%')) {
-
-                        if (plasmaShot != null) {
-                            // If we moved, make sure there's a flare behind us
-                            if (plasmaShot.HasMoved) {
-                                var previousX = plasmaShot.X;
-                                var previousY = plasmaShot.Y;
-
-                                switch (plasmaShot.Direction) {
-                                    case Direction.Up:
-                                        previousY += 1;
-                                        break;
-                                    case Direction.Right:
-                                        previousX -= 1;
-                                        break;
-                                    case Direction.Down:
-                                        previousY -= 1;
-                                        break;
-                                    case Direction.Left:
-                                        previousX += 1;
-                                        break;
-                                }
-
-                                if (!plasmaResidue.Any(f => f.X == previousX && f.Y == previousY))
-                                {
-                                    this.plasmaResidue.Add(new AbstractEntity(previousX, previousY, '.', Palette.LightRed));
-                                }
-                            }
-
-                            // Flares, part 1) If the player shot plasma, and it's on a toxic tile, turn that tile + surrounding into a flare (white '%')
-                            var adjacencies = this.GetAdjacentFloors(plasmaShot.X, plasmaShot.Y);
-                            foreach (var tile in adjacencies) {
-                                var tileFumes = this.fumes.Where(f => f.X == tile.X && f.Y == tile.Y);
-                                
-                                foreach (var fume in tileFumes) {
-                                    // Every fume blooms into a +-shaped flare
-                                    var flareTiles = this.GetAdjacentFloors(fume.X, fume.Y);
-                                    foreach (var ft in flareTiles) {
-                                        var flare = new Flare((int)ft.X, (int)ft.Y);
-                                        AddNonDupeEntity(flare, this.effectEntities);
-                                        numFlares += 1;
-                                    }
-                                }
-
-                                this.fumes.RemoveAll(f => tileFumes.Contains(f));                        
-                            }
-                        }
-                        
-                        // Flares, part 2) For any toxic gas that's adjacent to a flare, turn it into a flare
-                        var newFlares = new List<Flare>();
-
-                        foreach (var flare in flares) {
-                            // Checks if the flare wasn't updated in ~100ms and only move forward if so.
-                            // This prevents everything from happening instantaneously. In theory.
-                            if (flare.OnUpdate()) {
-                                var adjacentTiles = this.GetAdjacentFloors(flare.X, flare.Y);
-                                var adjacentFumes = this.fumes.Where(f => adjacentTiles.Any(a => f.X == a.X && f.Y == a.Y));
-                                foreach (var fume in adjacentFumes) {
-                                    newFlares.Add(new Flare(fume.X, fume.Y));
-                                    numFlares += 1;
-                                }
-                                this.fumes.RemoveAll(f => adjacentFumes.Contains(f));
-                            }
+                        switch (plasmaShot.Direction) {
+                            case Direction.Up:
+                                previousY += 1;
+                                break;
+                            case Direction.Right:
+                                previousX -= 1;
+                                break;
+                            case Direction.Down:
+                                previousY -= 1;
+                                break;
+                            case Direction.Left:
+                                previousX += 1;
+                                break;
                         }
 
-                        newFlares.ForEach(f => this.AddNonDupeEntity(f, this.effectEntities));
-                    }
-                    if (numFlares > 0) {
-                        this.LatestMessage = $"{numFlares} gases burst into flames!";
-                    }
-
-                    foreach (var flare in flares) {
-                        if (player.X == flare.X && player.Y == flare.Y) {
-                            player.Damage(FlareDamage);
-                            this.LatestMessage = $"A flare burns you for {FlareDamage} damage!";
-                        }
-
-                        var monster = monsters.SingleOrDefault(m => m.X == flare.X && m.Y == flare.Y);
-                        if (monster != null) {
-                            monster.Damage(FlareDamage);
-                            this.LatestMessage = $"A {monster.Name} burns in the flare! {FlareDamage} damage!";
+                        if (!plasmaResidue.Any(f => f.X == previousX && f.Y == previousY))
+                        {
+                            this.plasmaResidue.Add(new AbstractEntity(previousX, previousY, '.', Palette.LightRed));
                         }
                     }
                 }
@@ -952,7 +852,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             {
                 player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4) && DebugOptions.EnablePlasmaCannon)
+            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4))
             {
                 player.CurrentWeapon = Weapon.PlasmaCannon;
             }
@@ -1034,18 +934,6 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             this.LatestMessage = "";
-
-            var touched = this.touchables.Where(t => t.X == player.X && t.Y == player.Y); // really, only one element here at a time
-            foreach (var t in touched) {
-                t.OnTouch();
-            }
-            this.touchables.RemoveAll(t => touched.Contains(t));
-
-            if (!player.HasEnvironmentSuit && this.fumes.Any(f => f.X == player.X && f.Y == player.Y))
-            {
-                this.player.Damage(FumeDamage);
-                this.LatestMessage = $"You breathe in toxic fumes! {FumeDamage} damage!";
-            }
         }
 
         private void FireShot()
@@ -1162,12 +1050,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            foreach (var fume in this.fumes) {
-                if (IsInPlayerFov(fume.X, fume.Y)) {
-                    this.SetGlyph(fume.X, fume.Y, fume.Character, fume.Color, Palette.DarkGreen);
-                }
-            }
-
             var allWalls = this.walls.Union(this.fakeWalls);
 
             foreach (var wall in allWalls)
@@ -1210,14 +1092,6 @@ namespace DeenGames.AliTheAndroid.Prototype
                   this.SetGlyph(x, y, door.Character, Palette.Grey);
                 }
             }
-
-            foreach (var touchable in touchables) {
-                if (IsInPlayerFov(touchable.X, touchable.Y))
-                {
-                    this.SetGlyph(touchable.X, touchable.Y, touchable.Character, touchable.Color);
-                }
-            }
-
             
             foreach (var wave in this.gravityWaves) {
                 if (IsInPlayerFov(wave.X, wave.Y)) {
