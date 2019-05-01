@@ -1,9 +1,9 @@
-using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Prototype.Enums;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace DeenGames.AliTheAndroid.Events {
+namespace DeenGames.AliTheAndroid.Prototype {
     public class EventBus
     {
         private IDictionary<GameEvent, List<Action<object>>> eventListeners = new Dictionary<GameEvent, List<Action<object>>>();

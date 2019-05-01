@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace DeenGames.AliTheAndroid.Enums
+namespace DeenGames.AliTheAndroid.Prototype.Enums
 {
     // Values from Fleja palette: https://lospec.com/palette-list/fleja-master-palette
     public static class Palette

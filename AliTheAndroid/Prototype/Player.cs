@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AliTheAndroid.Enums;
-using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Prototype.Enums;
 using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
 

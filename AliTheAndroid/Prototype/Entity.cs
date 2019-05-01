@@ -1,6 +1,5 @@
 using System;
-using DeenGames.AliTheAndroid.Enums;
-using DeenGames.AliTheAndroid.Events;
+using DeenGames.AliTheAndroid.Prototype.Enums;
 using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
 
