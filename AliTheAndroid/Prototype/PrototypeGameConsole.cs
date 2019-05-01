@@ -656,6 +656,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 if (teleporterShot != null) {
                     player.X = teleporterShot.TeleportTo.X;
                     player.Y = teleporterShot.TeleportTo.Y;
+                    this.OnPlayerMoved();
                 }
 
                 // Missiles explode
