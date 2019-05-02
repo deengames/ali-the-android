@@ -25,7 +25,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const int MaxRoomSize = 10;
         private const int ExplosionRadius = 2;
         private const int NumberOfLockedDoors = 3;
-        private const float PercentOfFloorFuming = 0.05f; // 0.15 => 15% of non-wall spaces
+        private const int PlasmaResidueDamage = 10;
         private const int GravityRadius = 3;
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
@@ -494,7 +494,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                         if (!plasmaResidue.Any(f => f.X == previousX && f.Y == previousY))
                         {
-                            this.plasmaResidue.Add(new AbstractEntity(previousX, previousY, '.', Palette.LightRed));
+                            this.AddNonDupeEntity(new AbstractEntity(previousX, previousY, '.', Palette.LightRed), this.plasmaResidue);
                         }
                     }
                 }
@@ -738,6 +738,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         private void ProcessMonsterTurns()
         {
+            var plasmaBurnedMonsters = new List<Entity>();
+
             foreach (var monster in this.monsters.Where(m => m.CanMove))
             {
                 var distance = Math.Sqrt(Math.Pow(player.X - monster.X, 2) + Math.Pow(player.Y - monster.Y, 2));
@@ -759,16 +761,32 @@ namespace DeenGames.AliTheAndroid.Prototype
                         var dx = player.X - monster.X;
                         var dy = player.Y - monster.Y;
                         var tryHorizontallyFirst = PrototypeGameConsole.GlobalRandom.Next(0, 100) <= 50;
+                        var moved = false;
+
                         if (tryHorizontallyFirst && dx != 0)
                         {
-                            this.TryToMove(monster, monster.X + Math.Sign(dx), monster.Y);
+                            moved = this.TryToMove(monster, monster.X + Math.Sign(dx), monster.Y);
                         }
                         else
                         {
-                            this.TryToMove(monster, monster.X, monster.Y + Math.Sign(dy));
+                            moved = this.TryToMove(monster, monster.X, monster.Y + Math.Sign(dy));
+                        }
+
+                        if (moved) {
+                            var plasma = this.plasmaResidue.SingleOrDefault(p => p.X == monster.X && p.Y == monster.Y);
+                            if (plasma != null) {
+                                // Damaging here may cause the monsters collection to modify while iterating over it
+                                plasmaBurnedMonsters.Add(monster);
+                                this.plasmaResidue.Remove(plasma);
+                            }
                         }
                     }
                 }
+            }
+
+            foreach (var monster in plasmaBurnedMonsters) {
+                monster.Damage(PlasmaResidueDamage);
+                this.LatestMessage = $"{monster.Name} steps on plasma and burns!";
             }
         }
 
@@ -934,6 +952,14 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             this.LatestMessage = "";
+
+            // Damaged by plasma residue
+            var plasmaUnderPlayer = this.plasmaResidue.SingleOrDefault(p => p.X == player.X && p.Y == player.Y);
+            if (plasmaUnderPlayer != null) {
+                this.LatestMessage = $"The plasma burns through your suit! {PlasmaResidueDamage} damage!";
+                player.Damage(PlasmaResidueDamage);
+                this.plasmaResidue.Remove(plasmaUnderPlayer);
+            }
         }
 
         private void FireShot()
