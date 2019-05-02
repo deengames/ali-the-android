@@ -47,7 +47,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly List<Door> doors = new List<Door>();
         private readonly List<Effect> effectEntities = new List<Effect>();
         
-        private readonly List<AbstractEntity> plasmaResidue = new List<AbstractEntity>();
+        private readonly List<Plasma> plasmaResidue = new List<Plasma>();
         private readonly List<AbstractEntity> gravityWaves = new List<AbstractEntity>();
         private readonly List<AbstractEntity> chasms = new  List<AbstractEntity>();
 
@@ -494,7 +494,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                         if (!plasmaResidue.Any(f => f.X == previousX && f.Y == previousY))
                         {
-                            this.AddNonDupeEntity(new AbstractEntity(previousX, previousY, '.', Palette.LightRed), this.plasmaResidue);
+                            this.AddNonDupeEntity(new Plasma(previousX, previousY), this.plasmaResidue);
                         }
                     }
                 }
@@ -700,6 +700,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
                 this.ProcessMonsterTurns();
                 this.ProcessGravityPerturbances();
+                
+                var deadPlasma = this.plasmaResidue.Where(p => !p.IsAlive);
+                this.plasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
         }
 
         private void ProcessGravityPerturbances()
@@ -960,6 +963,8 @@ namespace DeenGames.AliTheAndroid.Prototype
                 player.Damage(PlasmaResidueDamage);
                 this.plasmaResidue.Remove(plasmaUnderPlayer);
             }
+
+            this.plasmaResidue.ForEach(p => p.Degenerate());
         }
 
         private void FireShot()
