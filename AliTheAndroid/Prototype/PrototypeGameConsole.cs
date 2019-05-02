@@ -501,7 +501,7 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 // Destroy any effect that hit something (wall/monster/etc.)
                 // Force copy via ToList so we evaluate now. If we evaluate after damage, this is empty on monster kill.
-                var destroyedEffects = this.effectEntities.Where((e) => !e.IsAlive || (!(e is TeleporterShot) && !this.IsWalkable(e.X, e.Y))).ToList();
+                var destroyedEffects = this.effectEntities.Where((e) => !e.IsAlive || (!(e is TeleporterShot) && !this.IsFlyable(e.X, e.Y))).ToList();
                 // If they hit a monster, damage it.
                 var harmedMonsters = this.monsters.Where(m => destroyedEffects.Any(e => e.X == m.X && e.Y == m.Y)).ToArray(); // Create copy to prevent concurrent modification exception
                 
@@ -1007,9 +1007,9 @@ namespace DeenGames.AliTheAndroid.Prototype
 
                 Shot shot;
                 if (player.CurrentWeapon == Weapon.InstaTeleporter) {
-                    shot = new TeleporterShot(player.X, player.Y, player.DirectionFacing, this.IsWalkable);
+                    shot = new TeleporterShot(player.X, player.Y, player.DirectionFacing, this.IsFlyable);
                 } else {
-                    shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsWalkable);
+                    shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsFlyable);
                 }
                 if (character == GravityCannonShot) {
                     player.CanFireGravityCannon = false;
@@ -1263,8 +1263,9 @@ namespace DeenGames.AliTheAndroid.Prototype
             return this.monsters.FirstOrDefault(m => m.X == x && m.Y == y);
         }
 
-        private bool IsWalkable(int x, int y, bool areDoorsWalkable = false)
-        {
+        // Can a projectile "fly" over a spot? True if empty or a chasm; false if occupied by anything
+        // (walls, fake walls, doors, monsters, player, etc.)
+        private bool IsFlyable(int x, int y) {
             if (x < 0 || y < 0 || x >= this.Width || y >= mapHeight) {
                 return false;
             }
@@ -1279,11 +1280,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 return false;
             }
 
-            if (this.chasms.Any(c => c.X == x && c.Y == y)) {
-                return false;
-            }
-
-            if (!areDoorsWalkable && this.doors.Any(d => d.X == x && d.Y == y && d.IsOpened == false)) {
+             if (this.doors.Any(d => d.X == x && d.Y == y && d.IsOpened == false)) {
                 return false;
             }
 
@@ -1298,6 +1295,14 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
 
             return true;
+        }
+        private bool IsWalkable(int x, int y)
+        {
+            if (this.chasms.Any(c => c.X == x && c.Y == y)) {
+                return false;
+            }
+
+            return this.IsFlyable(x, y);
         }
 
         private bool IsSeen(int x, int y)

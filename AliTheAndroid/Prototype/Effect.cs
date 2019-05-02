@@ -41,22 +41,23 @@ namespace DeenGames.AliTheAndroid.Prototype
     {
         public Direction Direction { get; private set; }
         private const int ShotUpdateTimeMs = 100; // 100ms
-        private Func<int, int, bool, bool> isWalkableCheck;
-        private Vector2 createdOnTile;
+        private Func<int, int, bool> isMovableCheck;
+        private GoRogue.Coord createdOnTile;
 
         // Not technically correct, but since shots only go one-way, this will never rebound to be false
         public bool HasMoved { get { return  this.X != createdOnTile.X || this.Y != createdOnTile.Y; }}
 
-        public Shot(int x, int y, char character, Color color, Direction direction, Func<int, int, bool, bool> isWalkable) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
+        public Shot(int x, int y, char character, Color color, Direction direction, Func<int, int, bool> isMovable) : base(x, y, character, Palette.Red, ShotUpdateTimeMs)
         {
             this.Direction = direction;
-            this.isWalkableCheck = isWalkable;
-            this.createdOnTile = new Vector2(x, y);
+            this.isMovableCheck = isMovable;
+            this.createdOnTile = new GoRogue.Coord(x, y);
+            Console.WriteLine($"Shot at {this.createdOnTile}");
         }
 
         override internal void OnAction()
         {
-            if (this.isWalkableCheck(this.X, this.Y, false))
+            if (this.isMovableCheck(this.X, this.Y))
             {
                 switch (this.Direction) {
                     case Direction.Up:
@@ -123,15 +124,15 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         public GoRogue.Coord TeleportTo { get; private set; }
 
-        private Func<int, int, bool, bool> realIsWalkable;
+        private Func<int, int, bool> realIsMovable;
 
-        public TeleporterShot(int x, int y, Direction direction, Func<int, int, bool, bool> isWalkable) : base(x, y, '?', Palette.Cyan, direction, AlwaysWalkable)
+        public TeleporterShot(int x, int y, Direction direction, Func<int, int, bool> isMovable) : base(x, y, '?', Palette.Cyan, direction, AlwaysMovable)
         {
             this.TeleportTo = new GoRogue.Coord(x, y);
-            this.realIsWalkable = isWalkable;
+            this.realIsMovable = isMovable;
         }
 
-        private static bool AlwaysWalkable(int x, int y, bool areDoorsWalkable)
+        private static bool AlwaysMovable(int x, int y)
         {
             return true;
         }
@@ -141,7 +142,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             base.OnAction();
 
             // We only want to track the previous spot if it was walkable. This way, we teleport to the last walkable spot we saw.
-            if (this.realIsWalkable(this.X, this.Y, false)) {
+            if (this.realIsMovable(this.X, this.Y)) {
                 this.TeleportTo = new GoRogue.Coord(this.X, this.Y);
             }
             Life -= 1;
