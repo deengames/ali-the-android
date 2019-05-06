@@ -1,4 +1,7 @@
+using System;
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Prototype.Enums;
 using Microsoft.Xna.Framework;
 using NUnit.Framework;
 
@@ -14,19 +17,26 @@ namespace DeenGames.AliTheAndroid.Tests.Entities {
             var y = 2;
             var character = '6';
             var color = Color.AliceBlue;
-            var entity = new EmptyEntity(x, y, character, color);
+            var entity = new AbstractEntity(x, y, character, color);
 
             Assert.That(entity.X, Is.EqualTo(x));
             Assert.That(entity.Y, Is.EqualTo(y));
             Assert.That(entity.Character, Is.EqualTo(character));
             Assert.That(entity.Color, Is.EqualTo(color));
         }
-    }
 
-    public class EmptyEntity : AbstractEntity
-    {
-        public EmptyEntity(int x, int y, char character, Color color) : base(x, y, character, color)
+        [TestCase(SimpleEntity.Chasm, ' ')]
+        [TestCase(SimpleEntity.Wall, '#')]
+        public void CreateCreatesKnownEntities(SimpleEntity type, char expectedCharacter)
         {
+            var actual = AbstractEntity.Create(type, 0, 0);
+            Assert.That(actual.Character, Is.EqualTo(expectedCharacter));
+        }
+
+        public void CreateThrowsForUnknownSimpleEntityValues()
+        {
+            var unknown = (SimpleEntity)137;
+            Assert.Throws<ArgumentException>(() => AbstractEntity.Create(unknown, 0, 0));
         }
     }
 }
