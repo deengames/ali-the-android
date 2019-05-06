@@ -1,4 +1,4 @@
-using DeenGames.AliTheAndroid.Entities;
+using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Prototype.Enums;
 using Microsoft.Xna.Framework;
 

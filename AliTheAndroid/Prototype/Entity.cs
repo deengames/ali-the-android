@@ -2,7 +2,7 @@ using System;
 using DeenGames.AliTheAndroid.Prototype.Enums;
 using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
-using DeenGames.AliTheAndroid.Entities;
+using DeenGames.AliTheAndroid.Model.Entities;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {

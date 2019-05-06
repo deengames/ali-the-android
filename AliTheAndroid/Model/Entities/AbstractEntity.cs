@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace DeenGames.AliTheAndroid.Entities
+namespace DeenGames.AliTheAndroid.Model.Entities
 {
     /// <summary>
     /// The most basic form of an entity: coordinates, and a visual representation (character/colour).

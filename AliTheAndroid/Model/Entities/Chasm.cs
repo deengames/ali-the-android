@@ -1,6 +1,6 @@
 using DeenGames.AliTheAndroid.Prototype.Enums;
 
-namespace DeenGames.AliTheAndroid.Entities
+namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class Chasm : Wall
     {

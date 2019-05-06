@@ -12,7 +12,7 @@ using AliTheAndroid.Prototype;
 using AliTheAndroid.Enums;
 using static DeenGames.AliTheAndroid.Prototype.Shot;
 using GoRogue.Pathing;
-using DeenGames.AliTheAndroid.Entities;
+using DeenGames.AliTheAndroid.Model.Entities;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
