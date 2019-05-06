@@ -12,6 +12,7 @@ using AliTheAndroid.Prototype;
 using AliTheAndroid.Enums;
 using static DeenGames.AliTheAndroid.Prototype.Shot;
 using GoRogue.Pathing;
+using DeenGames.AliTheAndroid.Entities;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
@@ -1221,9 +1222,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     numMonsters--;
                 }
 
-                var monster = Entity.CreateFromTemplate(template);
-                monster.X = spot.X;
-                monster.Y = spot.Y;
+                var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
                 this.monsters.Add(monster);
 
                 // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
@@ -1233,9 +1232,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     var spotsToUse = spots.OrderBy(s => GlobalRandom.Next()).Take(Math.Min(spots.Count, numSubSlinks));
 
                     foreach (var slinkSpot in spotsToUse) {
-                        monster = Entity.CreateFromTemplate(template);
-                        monster.X = slinkSpot.X;
-                        monster.Y = slinkSpot.Y;
+                        monster = Entity.CreateFromTemplate(template, slinkSpot.X, slinkSpot.Y);
                         this.monsters.Add(monster);
                     }
                 }
