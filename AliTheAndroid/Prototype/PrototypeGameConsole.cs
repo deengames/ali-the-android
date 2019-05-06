@@ -43,14 +43,14 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
-        private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
-        private readonly List<AbstractEntity> fakeWalls = new List<AbstractEntity>();
+        private readonly List<Wall> walls = new List<Wall>();
+        private readonly List<FakeWall> fakeWalls = new List<FakeWall>();
         private readonly List<Door> doors = new List<Door>();
         private readonly List<Effect> effectEntities = new List<Effect>();
         
         private readonly List<Plasma> plasmaResidue = new List<Plasma>();
-        private readonly List<AbstractEntity> gravityWaves = new List<AbstractEntity>();
-        private readonly List<AbstractEntity> chasms = new  List<AbstractEntity>();
+        private readonly List<GravityWave> gravityWaves = new List<GravityWave>();
+        private readonly List<Chasm> chasms = new  List<Chasm>();
 
         // Super hack. Key is "x, y", value is IsDiscovered.
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
@@ -151,7 +151,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private void FillWithGravity(GoRogue.Rectangle room) {
             for (var y = room.MinExtentY; y <= room.MaxExtentY; y++) {
                 for (var x = room.MinExtentX; x <= room.MaxExtentX; x++) {
-                    this.gravityWaves.Add(new AbstractEntity(x, y, (char)247, Palette.LightLilacPink));
+                    this.gravityWaves.Add(new GravityWave(x, y));
                 }
             }
         }
@@ -167,8 +167,8 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.GenerateMonsters();
 
             var emptySpot = this.FindEmptySpot();
-            player.X = (int)emptySpot.X;
-            player.Y = (int)emptySpot.Y;
+            player.X = emptySpot.X;
+            player.Y = emptySpot.Y;
 
             this.GenerateStairs();
 
@@ -223,9 +223,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         }
 
         private void GenerateChasmAt(GoRogue.Coord location) {
-            this.chasms.Add(new AbstractEntity(location.X, location.Y, ' ', Palette.BlackAlmost));
+            this.chasms.Add(new Chasm(location.X, location.Y));
             foreach (var adjacency in this.GetAdjacentFloors(location)) {
-                this.chasms.Add(new AbstractEntity(adjacency.X, adjacency.Y, ' ', Palette.BlackAlmost));
+                this.chasms.Add(new Chasm(adjacency.X, adjacency.Y));
             }
         }
 
@@ -259,7 +259,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             for (var y = 0; y < this.mapHeight; y++) {
                 for (var x = 0; x < this.Width; x++) {
                     if (!map[x, y]) {
-                        this.walls.Add(new AbstractEntity(x, y, '#', Palette.LightGrey)); // FOV determines colour
+                        this.walls.Add(new Wall(x, y));
                     }
                 }
             }
@@ -278,11 +278,11 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var numFloors = this.CountAdjacentFloors(spot);
                 if (numFloors <= 4) {
                     // Make a plus-shaped cluster. It's cooler.
-                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y, '#', Palette.LightGrey), this.fakeWalls);
-                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X - 1, (int)spot.Y, '#', Palette.LightGrey), this.fakeWalls);
-                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X + 1, (int)spot.Y, '#', Palette.LightGrey), this.fakeWalls);
-                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y - 1, '#', Palette.LightGrey), this.fakeWalls);
-                    this.AddNonDupeEntity(new AbstractEntity((int)spot.X, (int)spot.Y + 1, '#', Palette.LightGrey), this.fakeWalls);
+                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.fakeWalls);
+                    this.AddNonDupeEntity(new FakeWall(spot.X - 1, spot.Y), this.fakeWalls);
+                    this.AddNonDupeEntity(new FakeWall(spot.X + 1, spot.Y), this.fakeWalls);
+                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y - 1), this.fakeWalls);
+                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.fakeWalls);
                     numFakeWallClusters -= 1;
                 }
             }
@@ -302,7 +302,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                         }
 
                         // Mark as "secret floor" if not perimeter
-                        this.fakeWalls.Add(new AbstractEntity(x, y, '#', Palette.Blue));
+                        this.fakeWalls.Add(new FakeWall(x, y));
                     }
                 }
 
@@ -314,7 +314,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                         this.walls.Remove(wall);
                     }
 
-                    this.fakeWalls.Add(new AbstractEntity(secretX, y, '#', Palette.Blue));
+                    this.fakeWalls.Add(new FakeWall(secretX, y));
                 }
             }
         }
@@ -358,7 +358,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var spot = this.FindEmptySpot();
                 var numFloors = this.CountAdjacentFloors(spot);
                 if (numFloors == 2) {
-                    this.doors.Add(new Door((int)spot.X, (int)spot.Y, true));
+                    this.doors.Add(new Door(spot.X, spot.Y, true));
                     leftToGenerate--;
                 }
             }
@@ -538,7 +538,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     var playerDistance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(player.X - gravityShot.X, 2) + Math.Pow(player.Y - gravityShot.Y, 2)));
                     if (playerDistance <= GravityRadius) {
                         int moveBy = GravityRadius - playerDistance;
-                        this.ApplyKnockbacks(player, (int)gravityShot.X, (int)gravityShot.Y, moveBy, gravityShot.Direction);
+                        this.ApplyKnockbacks(player, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
                     }
                 }
                 
@@ -1086,8 +1086,8 @@ namespace DeenGames.AliTheAndroid.Prototype
 
             foreach (var wall in allWalls)
             {
-                var x = (int)wall.X;
-                var y = (int)wall.Y;
+                var x = wall.X;
+                var y = wall.Y;
 
                 var colour = DebugOptions.ShowFakeWalls && fakeWalls.Contains(wall) ? Palette.Blue : Palette.LightGrey;
 
@@ -1151,8 +1151,8 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            int stairsX = (int)this.stairsLocation.X;
-            int stairsY = (int)this.stairsLocation.Y;
+            int stairsX = this.stairsLocation.X;
+            int stairsY = this.stairsLocation.Y;
             if (IsInPlayerFov(stairsX, stairsY) || this.IsSeen(stairsX, stairsY)) {
                 this.SetGlyph(stairsX, stairsY, '>', this.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
             }

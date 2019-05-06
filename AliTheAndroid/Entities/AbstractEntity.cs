@@ -5,7 +5,8 @@ namespace DeenGames.AliTheAndroid.Entities
     /// <summary>
     /// The most basic form of an entity: coordinates, and a visual representation (character/colour).
     /// </summary>
-    public class AbstractEntity {
+    public abstract class AbstractEntity
+    {
         public Color Color { get; set; }
         public char Character { get; set; }
         public int X { get; set; }
