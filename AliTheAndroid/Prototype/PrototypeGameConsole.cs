@@ -13,6 +13,7 @@ using AliTheAndroid.Enums;
 using static DeenGames.AliTheAndroid.Prototype.Shot;
 using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Enums;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
@@ -43,14 +44,14 @@ namespace DeenGames.AliTheAndroid.Prototype
         private readonly Player player;
         private readonly List<Entity> monsters = new List<Entity>();
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
-        private readonly List<Wall> walls = new List<Wall>();
+        private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
         private readonly List<FakeWall> fakeWalls = new List<FakeWall>();
         private readonly List<Door> doors = new List<Door>();
         private readonly List<Effect> effectEntities = new List<Effect>();
         
         private readonly List<Plasma> plasmaResidue = new List<Plasma>();
         private readonly List<GravityWave> gravityWaves = new List<GravityWave>();
-        private readonly List<Chasm> chasms = new  List<Chasm>();
+        private readonly List<AbstractEntity> chasms = new  List<AbstractEntity>();
 
         // Super hack. Key is "x, y", value is IsDiscovered.
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
@@ -223,9 +224,9 @@ namespace DeenGames.AliTheAndroid.Prototype
         }
 
         private void GenerateChasmAt(GoRogue.Coord location) {
-            this.chasms.Add(new Chasm(location.X, location.Y));
+            this.chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, location.X, location.Y));
             foreach (var adjacency in this.GetAdjacentFloors(location)) {
-                this.chasms.Add(new Chasm(adjacency.X, adjacency.Y));
+                this.chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, adjacency.X, adjacency.Y));
             }
         }
 
@@ -259,7 +260,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             for (var y = 0; y < this.mapHeight; y++) {
                 for (var x = 0; x < this.Width; x++) {
                     if (!map[x, y]) {
-                        this.walls.Add(new Wall(x, y));
+                        this.walls.Add(AbstractEntity.Create(SimpleEntity.Wall, x, y));
                     }
                 }
             }

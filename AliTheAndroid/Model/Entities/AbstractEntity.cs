@@ -1,3 +1,6 @@
+using System;
+using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Prototype.Enums;
 using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
@@ -5,7 +8,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     /// <summary>
     /// The most basic form of an entity: coordinates, and a visual representation (character/colour).
     /// </summary>
-    public abstract class AbstractEntity
+    public class AbstractEntity
     {
         public Color Color { get; set; }
         public char Character { get; set; }
@@ -18,6 +21,20 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.Y = y;
             this.Character = character;
             this.Color = color;
+        }
+
+        public static AbstractEntity Create(SimpleEntity type, int x, int y)
+        {
+            switch (type)
+            {
+                case SimpleEntity.Chasm:
+                    return new AbstractEntity(x, y, ' ', Palette.BlackAlmost);
+                case SimpleEntity.Wall:
+                    // Values duplicated in FakeWall constructor
+                    return new AbstractEntity(x, y, '#', Palette.LightGrey);
+                default:
+                    throw new ArgumentException($"Not sure how to create a '{type}' entity");
+            }
         }
     }
 }
