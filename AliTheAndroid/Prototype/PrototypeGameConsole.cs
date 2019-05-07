@@ -14,6 +14,7 @@ using static DeenGames.AliTheAndroid.Prototype.Shot;
 using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.EventData;
 
 namespace DeenGames.AliTheAndroid.Prototype
 {
@@ -37,12 +38,10 @@ namespace DeenGames.AliTheAndroid.Prototype
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
         private const int MinimumChasmDistance = 10;
-
-        private Random random = new Random(); // for gravity perturbances and non-generative random
         
         private GoRogue.Coord stairsLocation = new GoRogue.Coord();
         private readonly Player player;
-        private readonly List<Entity> monsters = new List<Entity>();
+        private readonly IList<Entity> monsters = new List<Entity>();
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
         private readonly List<AbstractEntity> walls = new List<AbstractEntity>();
         private readonly List<FakeWall> fakeWalls = new List<FakeWall>();
@@ -90,7 +89,13 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.mapHeight = height - 2;
             this.GenerateMap();
 
-            EventBus.Instance.AddListener(GameEvent.EntityDeath, (e) => {
+            var eventBus = EventBus.Instance;
+
+            eventBus.AddListener(GameEvent.PlayerTookTurn, (data) => {
+                this.PlayerTookTurn();
+            });
+
+            eventBus.AddListener(GameEvent.EntityDeath, (e) => {
                 if (e == player)
                 {
                     this.LatestMessage = "YOU DIE!!!";
@@ -128,7 +133,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             // If there are no rooms between us (stairs is in a hallway), we don't generate this room.
             // If there's just one room - the stairs room - it will be full of gravity.
             // If there are two or more, pick one and gravity-fill it.
-            GoRogue.Rectangle gravityRoom = Rectangle.Empty;
+            GoRogue.Rectangle gravityRoom = GoRogue.Rectangle.EMPTY;
 
             if (roomsInPath.Any()) {
                 // Guaranteed not to be the player room. If there's only one room between these two, could be the exit room.
@@ -152,7 +157,7 @@ namespace DeenGames.AliTheAndroid.Prototype
         private void FillWithGravity(GoRogue.Rectangle room) {
             for (var y = room.MinExtentY; y <= room.MaxExtentY; y++) {
                 for (var x = room.MinExtentX; x <= room.MaxExtentX; x++) {
-                    this.gravityWaves.Add(new GravityWave(x, y));
+                    this.gravityWaves.Add(new GravityWave(x, y, this.IsWalkable));
                 }
             }
         }
@@ -421,11 +426,11 @@ namespace DeenGames.AliTheAndroid.Prototype
 
         public override void Update(System.TimeSpan delta)
         {
-            bool playerPressedKey = this.ProcessPlayerInput();
+            bool playerTookTurn = this.ProcessPlayerInput();
 
-            if (playerPressedKey)
+            if (playerTookTurn)
             {
-                this.ConsumePlayerTurn();
+                EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(player, monsters));
             }
 
             if (this.effectEntities.Any()) {
@@ -572,7 +577,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             
             if (!this.player.CanMove && !this.effectEntities.Any()) {
                 this.player.Unfreeze();
-                this.ConsumePlayerTurn();
+                EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(player, monsters));
             }
 
             // TODO: override Draw and put this in there. And all the infrastructure that requires.
@@ -698,47 +703,12 @@ namespace DeenGames.AliTheAndroid.Prototype
             throw new InvalidOperationException($"{display} ???");
         }
 
-        private void ConsumePlayerTurn()
+        private void PlayerTookTurn()
         {
-                this.ProcessMonsterTurns();
-                this.ProcessGravityPerturbances();
-                
-                var deadPlasma = this.plasmaResidue.Where(p => !p.IsAlive);
-                this.plasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
-        }
-
-        private void ProcessGravityPerturbances()
-        {
-            var perturbedMonsters = this.monsters.Where(m => this.gravityWaves.Any(g => g.X == m.X && g.Y == m.Y));
-            foreach (var monster in perturbedMonsters) {
-                var moves = this.WhereCanIMove(monster);
-                if (moves.Any()) {
-                    var move = moves[random.Next(moves.Count)];
-                    monster.X = move.X;
-                    monster.Y = move.Y;
-                }
-            }
-
-            if (this.gravityWaves.SingleOrDefault(w => w.X == player.X && w.Y == player.Y) != null) {
-                var moves = this.WhereCanIMove(player);
-                if (moves.Any()) {
-                    var move = moves[random.Next(moves.Count)];
-                    player.X = move.X;
-                    player.Y = move.Y;
-                }
-            }
-        }
-
-        private List<GoRogue.Coord> WhereCanIMove(Entity e)
-        {
-            var toReturn = new List<GoRogue.Coord>();
-
-            if (IsWalkable(e.X - 1, e.Y)) { toReturn.Add(new GoRogue.Coord(e.X - 1, e.Y)); }
-            if (IsWalkable(e.X +1, e.Y)) { toReturn.Add(new GoRogue.Coord(e.X + 1, e.Y)); }
-            if (IsWalkable(e.X, e.Y - 1)) { toReturn.Add(new GoRogue.Coord(e.X, e.Y - 1)); }
-            if (IsWalkable(e.X, e.Y + 1)) { toReturn.Add(new GoRogue.Coord(e.X, e.Y + 1)); }
-
-            return toReturn;
+            this.ProcessMonsterTurns();
+            
+            var deadPlasma = this.plasmaResidue.Where(p => !p.IsAlive);
+            this.plasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
         }
 
         private void ProcessMonsterTurns()

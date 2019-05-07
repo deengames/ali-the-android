@@ -4,7 +4,7 @@ using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
 using DeenGames.AliTheAndroid.Model.Entities;
 
-namespace DeenGames.AliTheAndroid.Prototype
+namespace DeenGames.AliTheAndroid.Model.Entities
 {
     /// <summary>
     /// A living, breathing entity.

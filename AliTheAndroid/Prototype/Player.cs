@@ -4,6 +4,7 @@ using AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Prototype.Enums;
 using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
+using DeenGames.AliTheAndroid.Model.Entities;
 
 namespace AliTheAndroid.Prototype
 {
