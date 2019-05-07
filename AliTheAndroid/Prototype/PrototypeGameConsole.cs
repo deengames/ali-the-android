@@ -130,33 +130,33 @@ namespace DeenGames.AliTheAndroid.Prototype
                 }
             }
 
-            int stairsX = this.this.dungeon.CurrentFloor.StairsLocation.X;
-            int stairsY = this.this.dungeon.CurrentFloor.stairsLocation.Y;
+            int stairsX = this.dungeon.CurrentFloor.StairsLocation.X;
+            int stairsY = this.dungeon.CurrentFloor.StairsLocation.Y;
 
             if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                this.SetGlyph(stairsX, stairsY, '>', this.this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                this.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
             }
 
-            this.SetGlyph(player.X, player.Y, player.Character, player.Color);
+            this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
 
             this.DrawLine(new Point(0, this.dungeon.Height - 2), new Point(this.dungeon.Width, this.dungeon.Height - 2), null, Palette.BlackAlmost, ' ');
             this.DrawLine(new Point(0, this.dungeon.Height - 1), new Point(this.dungeon.Width, this.dungeon.Height - 1), null, Palette.BlackAlmost, ' ');
             this.DrawHealthIndicators();
             this.Print(0, this.dungeon.Height - 1, this.LatestMessage, Palette.White);
-            this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.currentFloorNum}", Palette.White);
+            this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloor}", Palette.White);
         }
 
         private void DrawHealthIndicators()
         {
-            var weaponString = $"{player.CurrentWeapon}";
-            if (player.CurrentWeapon == Weapon.GravityCannon && !player.CanFireGravityCannon) {
+            var weaponString = $"{this.dungeon.Player.CurrentWeapon}";
+            if (this.dungeon.Player.CurrentWeapon == Weapon.GravityCannon && !this.dungeon.Player.CanFireGravityCannon) {
                 weaponString += " (charging)";
             }
-            string message = $"You: {player.CurrentHealth}/{player.TotalHealth} (facing {player.DirectionFacing.ToString()}) Equipped: {weaponString}";
+            string message = $"You: {this.dungeon.Player.CurrentHealth}/{this.dungeon.Player.TotalHealth} (facing {this.dungeon.Player.DirectionFacing.ToString()}) Equipped: {weaponString}";
             
-            foreach (var monster in this.monsters)
+            foreach (var monster in this.Monsters)
             {
-                var distance = Math.Sqrt(Math.Pow(monster.X - player.X, 2) + Math.Pow(monster.Y - player.Y, 2));
+                var distance = Math.Sqrt(Math.Pow(monster.X - this.dungeon.Player.X, 2) + Math.Pow(monster.Y - this.dungeon.Player.Y, 2));
                 if (distance <= 1)
                 {
                     // compact

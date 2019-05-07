@@ -25,7 +25,7 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Walls = new List<AbstractEntity>();
         public readonly List<FakeWall> FakeWalls = new List<FakeWall>();
         public readonly List<Door> Doors = new List<Door>();
-        public GoRogue.Coord stairsLocation = new GoRogue.Coord();
+        public GoRogue.Coord StairsLocation = new GoRogue.Coord();
         public readonly List<Effect> EffectEntities = new List<Effect>();
         public readonly List<GravityWave> GravityWaves = new List<GravityWave>();
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
@@ -51,7 +51,6 @@ namespace DeenGames.AliTheAndroid.Model
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
         private const int MinimumChasmDistance = 10;
         
-        private readonly Player player;
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
         // Super hack. Key is "x, y", value is IsDiscovered.
@@ -291,7 +290,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(stairsLocation.X, stairsLocation.Y), true);
+            var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(StairsLocation.X, StairsLocation.Y), true);
             var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(player.X, player.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
@@ -416,7 +415,7 @@ namespace DeenGames.AliTheAndroid.Model
                 distance = Math.Sqrt(Math.Pow(spot.X - player.X, 2)  + Math.Pow(spot.Y - player.Y, 2));
             } while (distance <= MinimumDistanceFromPlayerToStairs);
 
-            this.stairsLocation = spot;
+            this.StairsLocation = spot;
         }
 
         private void GenerateMapRooms() {
@@ -867,7 +866,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.OemPeriod) && player.X == stairsLocation.X && player.Y == stairsLocation.Y)
+            else if (Global.KeyboardState.IsKeyPressed(Keys.OemPeriod) && player.X == StairsLocation.X && player.Y == StairsLocation.Y)
             {
                 this.GenerateMap();
             }
