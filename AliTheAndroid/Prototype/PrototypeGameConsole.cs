@@ -554,6 +554,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                     var room = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
                     if (room != GoRogue.Rectangle.EMPTY) {
                         var waves = this.gravityWaves.Where(g => room.Contains(new GoRogue.Coord(g.X, g.Y)));
+                        waves.ToList().ForEach(w => w.Dispose());
                         this.gravityWaves.RemoveAll(w => waves.Contains(w));
                     }
                 }

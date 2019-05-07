@@ -35,5 +35,13 @@ namespace DeenGames.AliTheAndroid.Prototype {
                 }
             }
         }
+
+        public void RemoveListener(GameEvent eventName, Action<object> eventListener)
+        {
+            if (this.eventListeners.ContainsKey(eventName))
+            {
+                this.eventListeners[eventName].Remove(eventListener);
+            }
+        }
     }
 }
