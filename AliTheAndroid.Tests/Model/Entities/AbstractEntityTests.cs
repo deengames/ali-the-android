@@ -5,10 +5,12 @@ using DeenGames.AliTheAndroid.Prototype.Enums;
 using Microsoft.Xna.Framework;
 using NUnit.Framework;
 
-namespace DeenGames.AliTheAndroid.Tests.Entities {
+namespace DeenGames.AliTheAndroid.Tests.Model.Entities
+{
     
     [TestFixture]
-    public class AbstractEntitytests {
+    public class AbstractEntitytests
+    {
         
         [Test]
         public void ConstructorSetsValuesToPassedInValues()

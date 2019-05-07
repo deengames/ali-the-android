@@ -30,7 +30,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                 case "slink": return new Entity("Slink", 's', Palette.DarkBlueMuted, x, y, 33, 6, 2);
                 // Tank. REALLY hard to kill (I hope).
                 case "zug":  return new Entity("Zug", 'z', Palette.Red, x, y, 90, 18, 8);
-                default: throw new InvalidOperationException($"Not sure how to create a {name} template entity");
+                default: throw new ArgumentException($"Not sure how to create a {name} template entity");
             }
         }
         
