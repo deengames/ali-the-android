@@ -1,6 +1,8 @@
-﻿using DeenGames.AliTheAndroid.Prototype;
+﻿using DeenGames.AliTheAndroid.Infrastructure.Common;
+using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Ninject;
 using SadConsole;
 using System;
 
@@ -11,10 +13,13 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
         private readonly int widthInTiles = 0;
         private readonly int heightInTiles = 0;
 
+
         public SadConsoleProgram(int widthInTiles, int heightInTiles)
         {
             this.widthInTiles = widthInTiles;
             this.heightInTiles = heightInTiles;
+
+            DependencyInjection.kernel.Bind<IKeyboard>().To<SadKeyboard>();
         }
         
         public void Run()

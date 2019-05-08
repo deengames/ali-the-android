@@ -18,6 +18,7 @@
     <PackageReference Include="GoRogue" Version="2.1.2" />
     <PackageReference Include="MonoGame.Content.Builder" Version="3.7.0.4" />
     <PackageReference Include="MonoGame.Framework.DesktopGL.Core" Version="3.7.0.7" />
+    <PackageReference Include="ninject" Version="3.3.4" />
     <PackageReference Include="SadConsole.Standard" Version="7.2.0" />
   </ItemGroup>
 

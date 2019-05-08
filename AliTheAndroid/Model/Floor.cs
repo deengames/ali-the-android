@@ -16,26 +16,14 @@ using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.EventData;
 using DeenGames.AliTheAndroid.Prototype;
+using DeenGames.AliTheAndroid.Infrastructure.Common;
+using DeenGames.AliTheAndroid.Infrastructure.Sad;
+using Ninject;
 
 namespace DeenGames.AliTheAndroid.Model
 {
     public class Floor
     {
-        public readonly List<Plasma> PlasmaResidue = new List<Plasma>();
-        public readonly List<AbstractEntity> Walls = new List<AbstractEntity>();
-        public readonly List<FakeWall> FakeWalls = new List<FakeWall>();
-        public readonly List<Door> Doors = new List<Door>();
-        public GoRogue.Coord StairsLocation = new GoRogue.Coord();
-        public readonly List<Effect> EffectEntities = new List<Effect>();
-        public readonly List<GravityWave> GravityWaves = new List<GravityWave>();
-        public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
-        public readonly IList<Entity> Monsters = new List<Entity>();
-
-        private int width = 0;
-        private int height = 0;
-        private IGenerator globalRandom;
-        private Player player;
-
         private const int MaxRooms = 10;
         // These are exterior sizes (walls included)
         private const int MinRoomSize = 7;
@@ -52,15 +40,31 @@ namespace DeenGames.AliTheAndroid.Model
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
         private const int MinimumChasmDistance = 10;
         
+
+        public readonly List<Plasma> PlasmaResidue = new List<Plasma>();
+        public readonly List<AbstractEntity> Walls = new List<AbstractEntity>();
+        public readonly List<FakeWall> FakeWalls = new List<FakeWall>();
+        public readonly List<Door> Doors = new List<Door>();
+        public GoRogue.Coord StairsLocation = new GoRogue.Coord();
+        public readonly List<Effect> EffectEntities = new List<Effect>();
+        public readonly List<GravityWave> GravityWaves = new List<GravityWave>();
+        public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
+        public readonly IList<Entity> Monsters = new List<Entity>();
+
+        private int width = 0;
+        private int height = 0;
+        private IGenerator globalRandom;
+        private Player player;
+
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
         // Super hack. Key is "x, y", value is IsDiscovered.
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
 
-
         private ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
 
         private string lastMessage = "";
+        private IKeyboard keyboard;
 
         // TODO: should not be publically settable
         public string LatestMessage { 
@@ -81,6 +85,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.height = height;
             this.globalRandom = globalRandom;
             this.player = player;
+            this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
 
@@ -265,7 +270,6 @@ namespace DeenGames.AliTheAndroid.Model
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(player, this.Monsters));
             }
         }
-
         
         public bool IsInPlayerFov(int x, int y)
         {
@@ -809,7 +813,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             var processedInput = false;
 
-            if (Global.KeyboardState.IsKeyPressed(Keys.Escape))
+            if (this.keyboard.IsKeyPressed(Key.Escape))
             {
                 Environment.Exit(0);
             }
@@ -817,56 +821,56 @@ namespace DeenGames.AliTheAndroid.Model
             var destinationX = this.player.X;
             var destinationY = this.player.Y;
             
-            if ((Global.KeyboardState.IsKeyPressed(Keys.W) || Global.KeyboardState.IsKeyPressed(Keys.Up)))
+            if ((this.keyboard.IsKeyPressed(Key.W) || this.keyboard.IsKeyPressed(Key.Up)))
             {
                 destinationY -= 1;
             }
-            else if ((Global.KeyboardState.IsKeyPressed(Keys.S) || Global.KeyboardState.IsKeyPressed(Keys.Down)))
+            else if ((this.keyboard.IsKeyPressed(Key.S) || this.keyboard.IsKeyPressed(Key.Down)))
             {
                 destinationY += 1;
             }
 
-            if ((Global.KeyboardState.IsKeyPressed(Keys.A) || Global.KeyboardState.IsKeyPressed(Keys.Left)))
+            if ((this.keyboard.IsKeyPressed(Key.A) || this.keyboard.IsKeyPressed(Key.Left)))
             {
                 destinationX -= 1;
             }
-            else if ((Global.KeyboardState.IsKeyPressed(Keys.D) || Global.KeyboardState.IsKeyPressed(Keys.Right)))
+            else if ((this.keyboard.IsKeyPressed(Key.D) || this.keyboard.IsKeyPressed(Key.Right)))
             {
                 destinationX += 1;
             }
-            else if ((Global.KeyboardState.IsKeyPressed(Keys.Q)))
+            else if ((this.keyboard.IsKeyPressed(Key.Q)))
             {
                 player.TurnCounterClockwise();
             }
-            else if ((Global.KeyboardState.IsKeyPressed(Keys.E)))
+            else if ((this.keyboard.IsKeyPressed(Key.E)))
             {
                 player.TurnClockwise();
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad1))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad1))
             {
                 player.CurrentWeapon = Weapon.Blaster;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad2))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad2))
             {
                 player.CurrentWeapon = Weapon.MiniMissile;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad3))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad3))
             {
                 player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad4))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad4))
             {
                 player.CurrentWeapon = Weapon.PlasmaCannon;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.NumPad5))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad5))
             {
                 player.CurrentWeapon = Weapon.GravityCannon;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.T))
+            else if (this.keyboard.IsKeyPressed(Key.T))
             {
                 player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.OemPeriod) && player.X == StairsLocation.X && player.Y == StairsLocation.Y)
+            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && player.X == StairsLocation.X && player.Y == StairsLocation.Y)
             {
                 this.GenerateMap();
             }
@@ -876,7 +880,7 @@ namespace DeenGames.AliTheAndroid.Model
                 processedInput = true;
                 this.OnPlayerMoved();
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.F) && (player.CurrentWeapon != Weapon.GravityCannon || player.CanFireGravityCannon))
+            else if (this.keyboard.IsKeyPressed(Key.F) && (player.CurrentWeapon != Weapon.GravityCannon || player.CanFireGravityCannon))
             {
                 // If gravity cannon wasn't fireable, but it's not equipped, make it fireable. This allows us to fire gravity/rocket/gravity/blaster/etc.
                 if (player.CurrentWeapon != Weapon.GravityCannon && !player.CanFireGravityCannon) {
@@ -904,7 +908,7 @@ namespace DeenGames.AliTheAndroid.Model
                 monster.Damage(damage);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
             }
-            else if (Global.KeyboardState.IsKeyPressed(Keys.OemPeriod) || Global.KeyboardState.IsKeyPressed(Keys.Space))
+            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) || this.keyboard.IsKeyPressed(Key.Space))
             {
                 // Skip turn
                 processedInput = true;

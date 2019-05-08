@@ -11,8 +11,8 @@ namespace DeenGames.AliTheAndroid
         [STAThread]
         static void Main()
         {
-            var console = new SadConsoleProgram(GameWidthInTiles, GameHeightInTiles);
-            console.Run();
+            var program = new SadConsoleProgram(GameWidthInTiles, GameHeightInTiles);
+            program.Run();
         }
     }
 }

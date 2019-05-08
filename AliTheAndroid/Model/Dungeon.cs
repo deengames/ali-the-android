@@ -1,5 +1,7 @@
 using System;
 using AliTheAndroid.Prototype;
+using DeenGames.AliTheAndroid.Infrastructure.Common;
+using Ninject;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
 
@@ -17,6 +19,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private readonly int? GameSeed = null; // null = random each time
         private readonly IGenerator globalRandom;
+        private readonly IKeyboard keyboard;
 
         public Dungeon(int widthInTiles, int heightInTiles)
         {
