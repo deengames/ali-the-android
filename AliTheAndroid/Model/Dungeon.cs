@@ -17,19 +17,30 @@ namespace DeenGames.AliTheAndroid.Model
         public int Height { get; private set; }
         public int CurrentFloorNum { get; private set; } = 0;
 
-        private readonly int? GameSeed = null; // null = random each time
+        public readonly int? GameSeed = null; // null = random each time
         private readonly IGenerator globalRandom;
-        private readonly IKeyboard keyboard;
 
-        public Dungeon(int widthInTiles, int heightInTiles)
+        public Dungeon(int widthInTiles, int heightInTiles, int? gameSeed = null)
         {
+            if (widthInTiles <= 0)
+            {
+                throw new ArgumentException("Dungeon width must be positive.");
+            }
+
+            if (heightInTiles <= 0)
+            {
+                throw new ArgumentException("Dungeon height must be positive.");
+            }
+
             this.Width = widthInTiles;
             this.Height = heightInTiles;
             
-            if (!GameSeed.HasValue)
+            if (!gameSeed.HasValue)
             {
-                GameSeed = new Random().Next();
+                gameSeed = new Random().Next();
             }
+
+            this.GameSeed = gameSeed;
             
             System.Console.WriteLine($"Universe #{GameSeed.Value}");
             this.globalRandom = new StandardGenerator(GameSeed.Value);
