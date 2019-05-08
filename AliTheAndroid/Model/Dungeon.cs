@@ -20,6 +20,9 @@ namespace DeenGames.AliTheAndroid.Model
 
         public Dungeon(int widthInTiles, int heightInTiles)
         {
+            this.Width = widthInTiles;
+            this.Height = heightInTiles;
+            
             if (!GameSeed.HasValue)
             {
                 GameSeed = new Random().Next();
@@ -33,7 +36,7 @@ namespace DeenGames.AliTheAndroid.Model
         public void Generate()
         {
             this.CurrentFloorNum++;
-            this.CurrentFloor = new Floor(this.Width, this.Height, globalRandom);
+            this.CurrentFloor = new Floor(this.Width, this.Height, globalRandom, this.Player);
         }
 
         internal void Update(TimeSpan delta)

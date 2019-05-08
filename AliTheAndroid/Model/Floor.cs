@@ -34,6 +34,7 @@ namespace DeenGames.AliTheAndroid.Model
         private int width = 0;
         private int height = 0;
         private IGenerator globalRandom;
+        private Player player;
 
         private const int MaxRooms = 10;
         // These are exterior sizes (walls included)
@@ -61,7 +62,8 @@ namespace DeenGames.AliTheAndroid.Model
 
         private string lastMessage = "";
 
-        private string LatestMessage { 
+        // TODO: should not be publically settable
+        public string LatestMessage { 
             get {
                 return this.lastMessage;
             }
@@ -72,18 +74,16 @@ namespace DeenGames.AliTheAndroid.Model
                 this.lastMessage = value;
             }
         }
-        
 
-
-        public Floor(int width, int height, IGenerator globalRandom)
+        public Floor(int width, int height, IGenerator globalRandom, Player player)
         {
             this.width = width;
             this.height = height;
             this.globalRandom = globalRandom;
+            this.player = player;
 
             this.PlasmaResidue = new List<Plasma>();
 
-            this.player = new Player();
             this.GenerateMap();
 
             var eventBus = EventBus.Instance;

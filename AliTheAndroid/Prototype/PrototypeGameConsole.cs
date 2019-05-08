@@ -27,12 +27,12 @@ namespace DeenGames.AliTheAndroid.Prototype
         {
             this.dungeon = new Dungeon(width, height);
             this.dungeon.Generate();
-            this.RedrawEverything();
         }
 
         override public void Update(TimeSpan delta)
         {
             this.dungeon.Update(delta);
+            this.RedrawEverything();
         }
 
         private void RedrawEverything()
@@ -142,8 +142,8 @@ namespace DeenGames.AliTheAndroid.Prototype
             this.DrawLine(new Point(0, this.dungeon.Height - 2), new Point(this.dungeon.Width, this.dungeon.Height - 2), null, Palette.BlackAlmost, ' ');
             this.DrawLine(new Point(0, this.dungeon.Height - 1), new Point(this.dungeon.Width, this.dungeon.Height - 1), null, Palette.BlackAlmost, ' ');
             this.DrawHealthIndicators();
-            this.Print(0, this.dungeon.Height - 1, this.LatestMessage, Palette.White);
-            this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloor}", Palette.White);
+            this.Print(0, this.dungeon.Height - 1, this.dungeon.CurrentFloor.LatestMessage, Palette.White);
+            this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloorNum}", Palette.White);
         }
 
         private void DrawHealthIndicators()
@@ -154,7 +154,7 @@ namespace DeenGames.AliTheAndroid.Prototype
             }
             string message = $"You: {this.dungeon.Player.CurrentHealth}/{this.dungeon.Player.TotalHealth} (facing {this.dungeon.Player.DirectionFacing.ToString()}) Equipped: {weaponString}";
             
-            foreach (var monster in this.Monsters)
+            foreach (var monster in this.dungeon.CurrentFloor.Monsters)
             {
                 var distance = Math.Sqrt(Math.Pow(monster.X - this.dungeon.Player.X, 2) + Math.Pow(monster.Y - this.dungeon.Player.Y, 2));
                 if (distance <= 1)
