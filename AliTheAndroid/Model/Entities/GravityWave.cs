@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DeenGames.AliTheAndroid.EventData;
-using DeenGames.AliTheAndroid.Prototype;
-using DeenGames.AliTheAndroid.Prototype.Enums;
+using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Model.Events;
 using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Model.Entities

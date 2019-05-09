@@ -1,4 +1,5 @@
-namespace DeenGames.AliTheAndroid.Prototype.Enums {
+namespace DeenGames.AliTheAndroid.Model.Events
+{
     public enum GameEvent
     {
         EntityDeath, // something dies

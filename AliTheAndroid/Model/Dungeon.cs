@@ -1,5 +1,5 @@
 using System;
-using AliTheAndroid.Prototype;
+using AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using Ninject;
 using Troschuetz.Random;

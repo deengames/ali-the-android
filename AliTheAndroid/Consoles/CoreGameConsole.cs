@@ -6,24 +6,20 @@ using Microsoft.Xna.Framework.Input;
 using GoRogue.MapViews;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
-using DeenGames.AliTheAndroid.Prototype.Enums;
 using Global = SadConsole.Global;
-using AliTheAndroid.Prototype;
 using AliTheAndroid.Enums;
-using static DeenGames.AliTheAndroid.Prototype.Shot;
 using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
-using DeenGames.AliTheAndroid.EventData;
 using DeenGames.AliTheAndroid.Model;
 
-namespace DeenGames.AliTheAndroid.Prototype
+namespace DeenGames.AliTheAndroid.Consoles
 {
-    public class PrototypeGameConsole : SadConsole.Console
+    public class CoreGameConsole : SadConsole.Console
     {
         private Dungeon dungeon;
 
-        public PrototypeGameConsole(int width, int height) : base(width, height)
+        public CoreGameConsole(int width, int height) : base(width, height)
         {
             this.dungeon = new Dungeon(width, height);
             this.dungeon.Generate();
@@ -68,7 +64,7 @@ namespace DeenGames.AliTheAndroid.Prototype
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = DebugOptions.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? Palette.Blue : Palette.LightGrey;
+                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? Palette.Blue : Palette.LightGrey;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {

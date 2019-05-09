@@ -1,8 +1,9 @@
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Prototype.Enums;
 using Microsoft.Xna.Framework;
 
-namespace DeenGames.AliTheAndroid.Prototype {
+namespace DeenGames.AliTheAndroid.Model.Entities
+{
     public class Door : AbstractEntity
     {
         private bool isLocked = false;

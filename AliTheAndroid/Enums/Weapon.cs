@@ -1,6 +1,7 @@
-namespace DeenGames.AliTheAndroid.Prototype.Enums
+namespace DeenGames.AliTheAndroid.Enums
 {
-    public enum Weapon {
+    public enum Weapon
+    {
         Blaster,
         MiniMissile,
         Zapper,

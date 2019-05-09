@@ -1,5 +1,5 @@
-﻿using DeenGames.AliTheAndroid.Infrastructure.Common;
-using DeenGames.AliTheAndroid.Prototype;
+﻿using DeenGames.AliTheAndroid.Consoles;
+using DeenGames.AliTheAndroid.Infrastructure.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Ninject;
@@ -68,7 +68,7 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
             Global.CurrentScreen = new SadConsole.ScreenObject();
 
             // Initialize the windows
-            Global.CurrentScreen.Children.Add(new PrototypeGameConsole(widthInTiles, heightInTiles));
+            Global.CurrentScreen.Children.Add(new CoreGameConsole(widthInTiles, heightInTiles));
         }
 
         private void Update(GameTime time)

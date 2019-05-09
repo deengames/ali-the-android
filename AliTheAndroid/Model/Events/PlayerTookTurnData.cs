@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
-using AliTheAndroid.Prototype;
+using AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Entities;
 
-namespace DeenGames.AliTheAndroid.EventData
+namespace DeenGames.AliTheAndroid.Model.Events
 {
     public class PlayerTookTurnData
     {

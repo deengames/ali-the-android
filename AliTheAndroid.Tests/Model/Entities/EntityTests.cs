@@ -1,7 +1,7 @@
 using System;
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Prototype;
-using DeenGames.AliTheAndroid.Prototype.Enums;
+using DeenGames.AliTheAndroid.Model.Events;
 using DeenGames.AliTheAndroid.Tests.Helpers;
 using Microsoft.Xna.Framework;
 using NUnit.Framework;

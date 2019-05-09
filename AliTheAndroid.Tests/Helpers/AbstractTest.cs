@@ -1,5 +1,5 @@
 using System;
-using DeenGames.AliTheAndroid.Prototype;
+using DeenGames.AliTheAndroid.Model.Events;
 using NUnit.Framework;
 
 namespace DeenGames.AliTheAndroid.Tests.Helpers

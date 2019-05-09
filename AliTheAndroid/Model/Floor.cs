@@ -6,19 +6,16 @@ using Microsoft.Xna.Framework.Input;
 using GoRogue.MapViews;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
-using DeenGames.AliTheAndroid.Prototype.Enums;
 using Global = SadConsole.Global;
-using AliTheAndroid.Prototype;
 using AliTheAndroid.Enums;
-using static DeenGames.AliTheAndroid.Prototype.Shot;
 using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
-using DeenGames.AliTheAndroid.EventData;
-using DeenGames.AliTheAndroid.Prototype;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Infrastructure.Sad;
 using Ninject;
+using AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Model.Events;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -129,7 +126,7 @@ namespace DeenGames.AliTheAndroid.Model
                     effect.OnUpdate();
                     // For out-of-sight effects, accelerate to the point that they destroy.
                     // This prevents the player from waiting, frozen, for out-of-sight shots.
-                    if (!this.IsInPlayerFov(effect.X, effect.Y) && !DebugOptions.IsOmnisight) {
+                    if (!this.IsInPlayerFov(effect.X, effect.Y) && !Options.IsOmnisight) {
                         effect.OnAction();
                     }
                 }
@@ -273,7 +270,7 @@ namespace DeenGames.AliTheAndroid.Model
         
         public bool IsInPlayerFov(int x, int y)
         {
-            if (DebugOptions.IsOmnisight) {
+            if (Options.IsOmnisight) {
                 return true;
             }
 
@@ -1044,9 +1041,9 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.Monsters.Clear();
 
-            var numZugs = DebugOptions.MonsterMultiplier * this.globalRandom.Next(1, 3); // 1-2
-            var numSlinks = DebugOptions.MonsterMultiplier * this.globalRandom.Next(2, 5); // 2-4            
-            var numMonsters = DebugOptions.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 aliens
+            var numZugs = Options.MonsterMultiplier * this.globalRandom.Next(1, 3); // 1-2
+            var numSlinks = Options.MonsterMultiplier * this.globalRandom.Next(2, 5); // 2-4            
+            var numMonsters = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 aliens
 
             while (numMonsters > 0)
             {

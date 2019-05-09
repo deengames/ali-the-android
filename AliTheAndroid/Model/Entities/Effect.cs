@@ -1,11 +1,11 @@
 using AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Prototype.Enums;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 
-namespace DeenGames.AliTheAndroid.Prototype
+namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public abstract class Effect : AbstractEntity
     {

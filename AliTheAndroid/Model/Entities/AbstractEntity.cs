@@ -1,6 +1,5 @@
 using System;
 using DeenGames.AliTheAndroid.Enums;
-using DeenGames.AliTheAndroid.Prototype.Enums;
 using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Model.Entities

@@ -1,8 +1,8 @@
 using System;
-using DeenGames.AliTheAndroid.Prototype.Enums;
-using DeenGames.AliTheAndroid.Prototype;
 using Microsoft.Xna.Framework;
 using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Model.Events;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {

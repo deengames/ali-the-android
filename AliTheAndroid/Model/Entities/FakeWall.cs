@@ -1,4 +1,4 @@
-using DeenGames.AliTheAndroid.Prototype.Enums;
+using DeenGames.AliTheAndroid.Enums;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
