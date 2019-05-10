@@ -39,8 +39,10 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 gameSeed = new Random().Next();
             }
-
-            this.GameSeed = gameSeed;
+            if (!GameSeed.HasValue)
+            {
+                this.GameSeed = gameSeed;
+            }
             
             System.Console.WriteLine($"Universe #{GameSeed.Value}");
             this.globalRandom = new StandardGenerator(GameSeed.Value);
