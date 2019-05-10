@@ -9,6 +9,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     /// </summary>
     public class AbstractEntity
     {
+        // TODO: character/colour should NOT be part of the model!!!!
         public Color Color { get; set; }
         public char Character { get; set; }
         public int X { get; set; }

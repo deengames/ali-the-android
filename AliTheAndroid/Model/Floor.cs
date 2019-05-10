@@ -47,6 +47,7 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<GravityWave> GravityWaves = new List<GravityWave>();
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
+        public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
 
         private int width = 0;
         private int height = 0;
@@ -350,6 +351,7 @@ namespace DeenGames.AliTheAndroid.Model
             player.Y = emptySpot.Y;
 
             this.GenerateStairs();
+            this.GeneratePowerUp();
 
             // After setting player coordinates and stairs, because generates path between them
             this.GenerateGravityWaves();
@@ -417,6 +419,30 @@ namespace DeenGames.AliTheAndroid.Model
             } while (distance <= MinimumDistanceFromPlayerToStairs);
 
             this.StairsLocation = spot;
+        }
+
+        private void GeneratePowerUp()
+        {
+            var floorsNearStairs = this.GetAdjacentFloors(StairsLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            if (!floorsNearStairs.Any())
+            {
+                // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
+                var aboveStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y - 1);
+                var belowStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y + 1);
+                var leftOfStairs = new GoRogue.Coord(StairsLocation.X - 1, StairsLocation.Y);
+                var rightOfStairs = new GoRogue.Coord(StairsLocation.X + 1, StairsLocation.Y);
+
+                var moreTiles = this.GetAdjacentFloors(aboveStairs);
+                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
+
+                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            }
+
+            var powerUpLocation = floorsNearStairs[globalRandom.Next(floorsNearStairs.Count)];
+            // Guaranteed to be health only for now
+            this.PowerUps.Add(new PowerUp(powerUpLocation.X, powerUpLocation.Y, healthBoost: 20));
         }
 
         private void GenerateMapRooms() {

@@ -17,6 +17,8 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class CoreGameConsole : SadConsole.Console
     {
+        private const int RotatePowerUpColorEveryMilliseconds = 333;
+        private TimeSpan gameTime;
         private Dungeon dungeon;
 
         public CoreGameConsole(int width, int height) : base(width, height)
@@ -28,6 +30,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         override public void Update(TimeSpan delta)
         {
             this.dungeon.Update(delta);
+            gameTime += delta;
             this.RedrawEverything();
         }
 
@@ -123,6 +126,14 @@ namespace DeenGames.AliTheAndroid.Consoles
             foreach (var effect in this.dungeon.CurrentFloor.EffectEntities) {
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(effect.X, effect.Y)) {
                     this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
+                }
+            }
+
+            foreach (var powerUp in this.dungeon.CurrentFloor.PowerUps) {
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y)) {
+                    var elapsedSeconds = this.gameTime.TotalMilliseconds;
+                    var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % PowerUp.DisplayColors.Length;
+                    this.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, PowerUp.DisplayColors[colourIndex]);
                 }
             }
 
