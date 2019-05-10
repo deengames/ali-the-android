@@ -75,5 +75,14 @@ namespace AliTheAndroid.Model.Entities
                     break;
             }
         }
+
+        public void Absorb(PowerUp powerUp)
+        {
+            this.CurrentHealth += powerUp.HealthBoost;
+            this.TotalHealth += powerUp.HealthBoost;
+            this.Strength += powerUp.StrengthBoost;
+            this.Defense += powerUp.DefenseBoost;
+            this.VisionRange += powerUp.VisionBoost;
+        }
     }
 }

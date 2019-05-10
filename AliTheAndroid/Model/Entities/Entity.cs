@@ -12,12 +12,12 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     public class Entity : AbstractEntity
     {
         public string Name { get; private set; }
-        public int CurrentHealth { get; private set; }
-        public int TotalHealth { get; }
-        public int Strength { get; }
-        public int Defense { get; }
+        public int CurrentHealth { get; protected set; }
+        public int TotalHealth { get; protected set; }
+        public int Strength { get; protected set; }
+        public int Defense { get; protected set; }
 
-        public int VisionRange { get; }
+        public int VisionRange { get; protected set; }
         public bool CanMove { get; set; } = true; // False for fake walls
 
         public static Entity CreateFromTemplate(string name, int x, int y)

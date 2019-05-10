@@ -1,4 +1,6 @@
 using System;
+using System.Text;
+using AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
 
@@ -23,5 +25,26 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.DefenseBoost = defenseBoost;
             this.VisionBoost = visionBoost;
         }
+
+        public string Message { get {
+            var builder = new StringBuilder();
+            if (this.HealthBoost > 0)
+            {
+                builder.Append($"+{this.HealthBoost} health ");
+            }
+            if (this.StrengthBoost > 0)
+            {
+                builder.Append($"+{this.StrengthBoost} strength ");
+            }
+            if (this.DefenseBoost > 0)
+            {
+                builder.Append($"+{this.DefenseBoost} defense ");
+            }
+            if (this.VisionBoost > 0)
+            {
+                builder.Append($"+{this.VisionBoost} sight ");
+            }
+            return builder.ToString();
+        }}
     }
 }

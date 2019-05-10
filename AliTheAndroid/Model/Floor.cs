@@ -267,6 +267,14 @@ namespace DeenGames.AliTheAndroid.Model
                 this.player.Unfreeze();
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(player, this.Monsters));
             }
+
+            var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == player.X && p.Y == player.Y);
+            if (powerUpUnderPlayer != null)
+            {
+                this.PowerUps.Remove(powerUpUnderPlayer);
+                player.Absorb(powerUpUnderPlayer);
+                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
+            }
         }
         
         public bool IsInPlayerFov(int x, int y)

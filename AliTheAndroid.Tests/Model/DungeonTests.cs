@@ -2,16 +2,18 @@ using System;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Tests.Helpers;
+using Ninject;
 using NUnit.Framework;
 
 namespace AliTheAndroid.Tests.Model
 {
     [TestFixture]
-    public class DungeonTests
+    public class DungeonTests : AbstractTest
     {
-        [OneTimeSetUp]
+        [SetUp]
         public void SetupDungeonDependencies()
         {
+            DependencyInjection.kernel = new StandardKernel();
             DependencyInjection.kernel.Bind<IKeyboard>().To<DeadKeyboard>();
         }
 
