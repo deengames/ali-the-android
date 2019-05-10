@@ -17,7 +17,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class CoreGameConsole : SadConsole.Console
     {
-        private const int RotatePowerUpColorEveryMilliseconds = 333;
+        private const int RotatePowerUpColorEveryMilliseconds = 200;
         private TimeSpan gameTime;
         private Dungeon dungeon;
 
