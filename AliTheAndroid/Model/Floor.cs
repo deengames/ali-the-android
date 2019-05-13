@@ -431,6 +431,8 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GeneratePowerUp()
         {
+            this.PowerUps.Clear();
+
             var floorsNearStairs = this.GetAdjacentFloors(StairsLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
             if (!floorsNearStairs.Any())
             {
@@ -450,7 +452,21 @@ namespace DeenGames.AliTheAndroid.Model
 
             var powerUpLocation = floorsNearStairs[globalRandom.Next(floorsNearStairs.Count)];
             // Guaranteed to be health only for now
-            this.PowerUps.Add(new PowerUp(powerUpLocation.X, powerUpLocation.Y, healthBoost: 20));
+            this.PowerUps.Add(this.createPowerUp(powerUpLocation));
+        }
+
+        // Returns a power-up based on our distribution. Currently, randomly picks.
+        private PowerUp createPowerUp(GoRogue.Coord coordinates)
+        {
+            var isHealth = globalRandom.NextBoolean();
+            if (isHealth)
+            {
+                return new PowerUp(coordinates.X, coordinates.Y, healthBoost: PowerUp.TypicalHealthBoost);
+            }
+            else
+            {
+                return new PowerUp(coordinates.X, coordinates.Y, strengthBoost: PowerUp.TypicalStrengthBoost);
+            }
         }
 
         private void GenerateMapRooms() {

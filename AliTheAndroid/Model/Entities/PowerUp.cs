@@ -8,8 +8,12 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class PowerUp : AbstractEntity
     {
+        public static readonly int TypicalHealthBoost = 20;
+        public static readonly int TypicalStrengthBoost = 4;
+
         // TODO: character/colour should NOT be part of model!
         private const char DisplayCharacter = (char)175; // »
+
         public static readonly Color[] DisplayColors = new Color[] { Palette.White, Palette.LightLilacPink, Palette.LilacPinkPurple, Palette.Purple };
 
         public int HealthBoost { get; private set; }
