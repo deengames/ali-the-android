@@ -7,14 +7,16 @@ using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
-    public class GravityWave : AbstractEntity, IDisposable
+    public class GravityWave : AbstractEntity
     {
         private static Random random = new Random();
         private const char GravityCharacter = (char)247;
         private Func<int, int, bool> isWalkableCheck;
+        private int floorNum;
 
-        public GravityWave(int x, int y, Func<int, int, bool> isWalkableCheck) : base(x, y, GravityCharacter, Palette.LightLilacPink)
+        public GravityWave(int x, int y, int floorNum, Func<int, int, bool> isWalkableCheck) : base(x, y, GravityCharacter, Palette.LightLilacPink)
         {
+            this.floorNum = floorNum;
             this.isWalkableCheck = isWalkableCheck;
             EventBus.Instance.AddListener(GameEvent.PlayerTookTurn, this.PerturbOccupantOnMove);
         }
@@ -25,29 +27,32 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             var monsters = data.Monsters;
             var player = data.Player;
 
-            var myMonster = monsters.SingleOrDefault(m => m.X == this.X && m.Y == this.Y);
-            if (myMonster != null)
+            if (this.floorNum == Dungeon.Instance.CurrentFloorNum)
             {
-                var moves = this.WhereCanIMove(myMonster);
-                if (moves.Any())
-                {
-                    var move = moves[random.Next(moves.Count)];
-                    myMonster.X = move.X;
-                    myMonster.Y = move.Y;
-                }
-            }
 
-            if (player.X == this.X && player.Y == this.Y)
-            {
-                var moves = this.WhereCanIMove(player);
-                if (moves.Any()) {
-                    var move = moves[random.Next(moves.Count)];
-                    player.X = move.X;
-                    player.Y = move.Y;
+                var myMonster = monsters.SingleOrDefault(m => m.X == this.X && m.Y == this.Y);
+                if (myMonster != null)
+                {
+                    var moves = this.WhereCanIMove(myMonster);
+                    if (moves.Any())
+                    {
+                        var move = moves[random.Next(moves.Count)];
+                        myMonster.X = move.X;
+                        myMonster.Y = move.Y;
+                    }
+                }
+
+                if (player.X == this.X && player.Y == this.Y)
+                {
+                    var moves = this.WhereCanIMove(player);
+                    if (moves.Any()) {
+                        var move = moves[random.Next(moves.Count)];
+                        player.X = move.X;
+                        player.Y = move.Y;
+                    }
                 }
             }
         }
-
         
         private List<GoRogue.Coord> WhereCanIMove(Entity e)
         {
@@ -61,9 +66,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             return toReturn;
         }
 
-        public void Dispose()
+        public void StopReactingToPlayer()
         {
-            EventBus.Instance.RemoveListener(GameEvent.PlayerTookTurn, this.PerturbOccupantOnMove);
+            EventBus.Instance.RemoveListener(GameEvent.PlayerTookTurn, this);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace AliTheAndroid.Tests.Model.Entities
         public void GravityWaveMovesMonstersOnItToWalkableLocationOnPlayerTookTurnEvent()
         {
             // Arrange
-            var wave = new GravityWave(3, 3, FakeIsWalkable);
+            var wave = new GravityWave(3, 3, 1, FakeIsWalkable);
             var zug = Entity.CreateFromTemplate("Zug", wave.X, wave.Y);
             var monsters = new List<Entity>() { zug };
             var player = new Player();
@@ -31,7 +31,7 @@ namespace AliTheAndroid.Tests.Model.Entities
         public void GravityWaveMovesPlayerOnItToWalkableLocationOnPlayerTookTurnEvent()
         {
             // Arrange
-            var wave = new GravityWave(3, 3, FakeIsWalkable);
+            var wave = new GravityWave(3, 3, 1, FakeIsWalkable);
             var monsters = new List<Entity>();
             var player = new Player();
             player.X = wave.X;

@@ -25,7 +25,7 @@ namespace AliTheAndroid.Tests.Model
         public void GenerateGeneratesPowerUpNearStairs()
         {
             // Good choice of seed: stairs have no adjacent floors, but extended search finds one.
-            var floor = new Floor(50, 40, new StandardGenerator(1234), new Player());
+            var floor = new Floor(50, 40, 1, new StandardGenerator(1234), new Player());
                         
             Assert.That(floor.PowerUps.Count, Is.GreaterThan(0));
             var powerUp = floor.PowerUps.First();
@@ -38,7 +38,7 @@ namespace AliTheAndroid.Tests.Model
         {
             // Arrange
             var player = new Player();
-            var floor = new Floor(30, 30, new StandardGenerator(1111), player);
+            var floor = new Floor(30, 30, 1, new StandardGenerator(1111), player);
             var powerUp = new PowerUp(0, 0, healthBoost:30);
             floor.PowerUps.Add(powerUp);
             var oldHealth = player.TotalHealth;

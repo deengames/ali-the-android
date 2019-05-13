@@ -150,7 +150,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.DrawLine(new Point(0, this.dungeon.Height - 1), new Point(this.dungeon.Width, this.dungeon.Height - 1), null, Palette.BlackAlmost, ' ');
             this.DrawHealthAndPowerUpIndicators();
             this.Print(0, this.dungeon.Height - 1, this.dungeon.CurrentFloor.LatestMessage, Palette.White);
-            this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloorNum}", Palette.White);
+            this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloorNum + 1}", Palette.White);
         }
 
         private void DrawHealthAndPowerUpIndicators()

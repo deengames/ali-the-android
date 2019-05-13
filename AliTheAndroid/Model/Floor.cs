@@ -50,6 +50,7 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
         public GoRogue.Coord PlayerPosition = new GoRogue.Coord();
 
+        private int floorNum = 0;
         private int width = 0;
         private int height = 0;
         private IGenerator globalRandom;
@@ -78,10 +79,11 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        public Floor(int width, int height, IGenerator globalRandom, Player player)
+        public Floor(int width, int height, int floorNum, IGenerator globalRandom, Player player)
         {
             this.width = width;
             this.height = height;
+            this.floorNum = floorNum;
             this.globalRandom = globalRandom;
             this.player = player;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
@@ -89,7 +91,10 @@ namespace DeenGames.AliTheAndroid.Model
             this.PlasmaResidue = new List<Plasma>();
 
             this.GenerateMap();
+        }
 
+        public void StartReactingToPlayer()
+        {
             var eventBus = EventBus.Instance;
 
             eventBus.AddListener(GameEvent.PlayerTookTurn, (data) =>
@@ -112,7 +117,11 @@ namespace DeenGames.AliTheAndroid.Model
             });
         }
 
-        
+        public void StopReactingToPlayer()
+        {
+            EventBus.Instance.RemoveListener(GameEvent.EntityDeath, this);
+            EventBus.Instance.RemoveListener(GameEvent.PlayerTookTurn, this);
+        }
 
         public void Update(System.TimeSpan delta)
         {
@@ -244,7 +253,7 @@ namespace DeenGames.AliTheAndroid.Model
                     var room = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
                     if (room != GoRogue.Rectangle.EMPTY) {
                         var waves = this.GravityWaves.Where(g => room.Contains(new GoRogue.Coord(g.X, g.Y)));
-                        waves.ToList().ForEach(w => w.Dispose());
+                        waves.ToList().ForEach(w => w.StopReactingToPlayer());
                         this.GravityWaves.RemoveAll(w => waves.Contains(w));
                     }
                 }
@@ -311,7 +320,8 @@ namespace DeenGames.AliTheAndroid.Model
             foreach (var step in path.StepsWithStart)
             {
                 var stepRoom = this.rooms.SingleOrDefault(r => r.Contains(step));
-                if (stepRoom != GoRogue.Rectangle.EMPTY && stepRoom != playerRoom && !roomsInPath.Contains(stepRoom)) {
+                if (stepRoom != GoRogue.Rectangle.EMPTY && stepRoom != playerRoom && !roomsInPath.Contains(stepRoom))
+                {
                     roomsInPath.Add(stepRoom);
                 }
             }
@@ -321,7 +331,8 @@ namespace DeenGames.AliTheAndroid.Model
             // If there are two or more, pick one and gravity-fill it.
             GoRogue.Rectangle gravityRoom = GoRogue.Rectangle.EMPTY;
 
-            if (roomsInPath.Any()) {
+            if (roomsInPath.Any())
+            {
                 // Guaranteed not to be the player room. If there's only one room between these two, could be the exit room.
                 gravityRoom = roomsInPath[this.globalRandom.Next(roomsInPath.Count)];
                 this.FillWithGravity(gravityRoom);            
@@ -330,9 +341,11 @@ namespace DeenGames.AliTheAndroid.Model
             var extraRooms = ExtraGravityWaveRooms;
             var candidateRooms = rooms.Where(r => r != gravityRoom).ToList();
 
-            while (extraRooms > 0) {
+            while (extraRooms > 0)
+            {
                 var nextRoom = candidateRooms[this.globalRandom.Next(candidateRooms.Count)];
-                if (!nextRoom.Contains(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y))) {
+                if (!nextRoom.Contains(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y)))
+                {
                     this.FillWithGravity(nextRoom);
                     candidateRooms.Remove(nextRoom);
                     extraRooms -= 1;
@@ -340,10 +353,13 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void FillWithGravity(GoRogue.Rectangle room) {
-            for (var y = room.MinExtentY; y <= room.MaxExtentY; y++) {
-                for (var x = room.MinExtentX; x <= room.MaxExtentX; x++) {
-                    this.GravityWaves.Add(new GravityWave(x, y, this.IsWalkable));
+        private void FillWithGravity(GoRogue.Rectangle room)
+        {
+            for (var y = room.MinExtentY; y <= room.MaxExtentY; y++)
+            {
+                for (var x = room.MinExtentX; x <= room.MaxExtentX; x++)
+                {
+                    this.GravityWaves.Add(new GravityWave(x, y, this.floorNum, this.IsWalkable));
                 }
             }
         }
@@ -931,8 +947,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && player.X == StairsLocation.X && player.Y == StairsLocation.Y)
             {
-                // TODO: call parent.Generate() which generates a new floor and clears everything, incrementing floorNum
-                this.GenerateMap();
+                Dungeon.Instance.GoToNextFloor();
             }
             
             if (this.TryToMove(player, destinationX, destinationY))

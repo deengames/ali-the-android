@@ -36,11 +36,19 @@ namespace DeenGames.AliTheAndroid.Model.Events
             }
         }
 
-        public void RemoveListener(GameEvent eventName, Action<object> eventListener)
+        public void RemoveListener(GameEvent eventName, object listener)
         {
             if (this.eventListeners.ContainsKey(eventName))
             {
-                this.eventListeners[eventName].Remove(eventListener);
+                var toRemove = new List<Action<object>>();
+                foreach (var l in this.eventListeners[eventName])
+                {
+                    if (l.Target == listener)
+                    {
+                        toRemove.Add(l);
+                    }
+                }
+                this.eventListeners[eventName].RemoveAll(r => toRemove.Contains(r));
             }
         }
     }
