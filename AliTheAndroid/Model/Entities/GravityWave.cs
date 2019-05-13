@@ -29,23 +29,28 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
             if (this.floorNum == Dungeon.Instance.CurrentFloorNum)
             {
+                // Not clear why multiple monsters can occupy one spot. Never figured out the root cause.
+                var myMonsters = monsters.Where(m => m.X == this.X && m.Y == this.Y);
 
-                var myMonster = monsters.SingleOrDefault(m => m.X == this.X && m.Y == this.Y);
-                if (myMonster != null)
+                foreach (var myMonster in myMonsters)
                 {
-                    var moves = this.WhereCanIMove(myMonster);
-                    if (moves.Any())
+                    if (myMonster != null)
                     {
-                        var move = moves[random.Next(moves.Count)];
-                        myMonster.X = move.X;
-                        myMonster.Y = move.Y;
+                        var moves = this.WhereCanIMove(myMonster);
+                        if (moves.Any())
+                        {
+                            var move = moves[random.Next(moves.Count)];
+                            myMonster.X = move.X;
+                            myMonster.Y = move.Y;
+                        }
                     }
                 }
 
                 if (player.X == this.X && player.Y == this.Y)
                 {
                     var moves = this.WhereCanIMove(player);
-                    if (moves.Any()) {
+                    if (moves.Any())
+                    {
                         var move = moves[random.Next(moves.Count)];
                         player.X = move.X;
                         player.Y = move.Y;
