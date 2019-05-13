@@ -148,12 +148,12 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             this.DrawLine(new Point(0, this.dungeon.Height - 2), new Point(this.dungeon.Width, this.dungeon.Height - 2), null, Palette.BlackAlmost, ' ');
             this.DrawLine(new Point(0, this.dungeon.Height - 1), new Point(this.dungeon.Width, this.dungeon.Height - 1), null, Palette.BlackAlmost, ' ');
-            this.DrawHealthIndicators();
+            this.DrawHealthAndPowerUpIndicators();
             this.Print(0, this.dungeon.Height - 1, this.dungeon.CurrentFloor.LatestMessage, Palette.White);
             this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloorNum}", Palette.White);
         }
 
-        private void DrawHealthIndicators()
+        private void DrawHealthAndPowerUpIndicators()
         {
             var weaponString = $"{this.dungeon.Player.CurrentWeapon}";
             if (this.dungeon.Player.CurrentWeapon == Weapon.GravityCannon && !this.dungeon.Player.CanFireGravityCannon) {
@@ -172,6 +172,20 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             this.Print(1, this.dungeon.Height - 2, message, Palette.White);
+
+
+            var powerUpMessage = "";
+
+            foreach (var powerUp in this.dungeon.CurrentFloor.PowerUps)
+            {
+                var distance = Math.Sqrt(Math.Pow(powerUp.X - this.dungeon.Player.X, 2) + Math.Pow(powerUp.Y - this.dungeon.Player.Y, 2));
+                if (distance <= 1)
+                {
+                    powerUpMessage = $"{powerUpMessage} Power-up: {powerUp.Message}";
+                }
+            }
+
+            this.Print(1, this.dungeon.Height - 1, powerUpMessage, Palette.White);
         }
     }
 }
