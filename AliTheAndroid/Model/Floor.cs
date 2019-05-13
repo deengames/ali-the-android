@@ -359,7 +359,7 @@ namespace DeenGames.AliTheAndroid.Model
             player.Y = emptySpot.Y;
 
             this.GenerateStairs();
-            this.GeneratePowerUp();
+            this.GeneratePowerUps();
 
             // After setting player coordinates and stairs, because generates path between them
             this.GenerateGravityWaves();
@@ -429,7 +429,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.StairsLocation = spot;
         }
 
-        private void GeneratePowerUp()
+        private void GeneratePowerUps()
         {
             this.PowerUps.Clear();
 
@@ -451,21 +451,32 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             var powerUpLocation = floorsNearStairs[globalRandom.Next(floorsNearStairs.Count)];
-            // Guaranteed to be health only for now
-            this.PowerUps.Add(this.createPowerUp(powerUpLocation));
+            if (!this.PowerUps.Any(p => p.X == powerUpLocation.X && p.Y == powerUpLocation.Y))
+            {
+                this.PowerUps.Add(this.createPowerUp(powerUpLocation));
+            }
         }
 
         // Returns a power-up based on our distribution. Currently, randomly picks.
         private PowerUp createPowerUp(GoRogue.Coord coordinates)
         {
-            var isHealth = globalRandom.NextBoolean();
-            if (isHealth)
+            // Distribution: 40 (health), 25 (strength), 25 (defense), 10 (vision)
+            var powerUpType = globalRandom.Next(100);
+            if (powerUpType <= 40)
             {
                 return new PowerUp(coordinates.X, coordinates.Y, healthBoost: PowerUp.TypicalHealthBoost);
             }
-            else
+            else if (powerUpType <= 40 + 25)
             {
                 return new PowerUp(coordinates.X, coordinates.Y, strengthBoost: PowerUp.TypicalStrengthBoost);
+            }
+            else if (powerUpType <= 40 + 25 + 25)
+            {
+                return new PowerUp(coordinates.X, coordinates.Y, defenseBoost: PowerUp.TypicalDefenseBoost);
+            }
+            else
+            {
+                return new PowerUp(coordinates.X, coordinates.Y, visionBoost: PowerUp.TypicalVisionBoost);
             }
         }
 
@@ -1185,7 +1196,8 @@ namespace DeenGames.AliTheAndroid.Model
         }
         private bool IsWalkable(int x, int y)
         {
-            if (this.Chasms.Any(c => c.X == x && c.Y == y)) {
+            if (this.Chasms.Any(c => c.X == x && c.Y == y))
+            {
                 return false;
             }
 

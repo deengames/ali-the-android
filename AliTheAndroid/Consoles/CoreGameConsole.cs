@@ -109,6 +109,13 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
+            int stairsX = this.dungeon.CurrentFloor.StairsLocation.X;
+            int stairsY = this.dungeon.CurrentFloor.StairsLocation.Y;
+
+            if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
+                this.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+            }
+
             foreach (var monster in this.dungeon.CurrentFloor.Monsters)
             {                
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(monster.X, monster.Y))
@@ -135,13 +142,6 @@ namespace DeenGames.AliTheAndroid.Consoles
                     var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % PowerUp.DisplayColors.Length;
                     this.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, PowerUp.DisplayColors[colourIndex]);
                 }
-            }
-
-            int stairsX = this.dungeon.CurrentFloor.StairsLocation.X;
-            int stairsY = this.dungeon.CurrentFloor.StairsLocation.Y;
-
-            if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                this.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
             }
 
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);

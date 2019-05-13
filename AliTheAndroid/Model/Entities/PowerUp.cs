@@ -10,6 +10,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     {
         public static readonly int TypicalHealthBoost = 20;
         public static readonly int TypicalStrengthBoost = 4;
+        public static readonly int TypicalDefenseBoost = 3;
+        public static readonly int TypicalVisionBoost = 1;
 
         // TODO: character/colour should NOT be part of model!
         private const char DisplayCharacter = (char)175; // »
