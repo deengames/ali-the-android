@@ -919,6 +919,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && player.X == StairsLocation.X && player.Y == StairsLocation.Y)
             {
+                // TODO: call parent.Generate() which generates a new floor and clears everything, incrementing floorNum
                 this.GenerateMap();
             }
             
