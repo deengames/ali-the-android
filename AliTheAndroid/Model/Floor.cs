@@ -54,7 +54,7 @@ namespace DeenGames.AliTheAndroid.Model
         private int width = 0;
         private int height = 0;
         private IGenerator globalRandom;
-        private Player player;
+        public Player Player;
 
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
@@ -79,48 +79,44 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        public Floor(int width, int height, int floorNum, IGenerator globalRandom, Player player)
+        public Floor(int width, int height, int floorNum, IGenerator globalRandom)
         {
             this.width = width;
             this.height = height;
             this.floorNum = floorNum;
             this.globalRandom = globalRandom;
-            this.player = player;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
 
             this.GenerateMap();
-        }
 
-        public void StartReactingToPlayer()
-        {
             var eventBus = EventBus.Instance;
 
-            eventBus.AddListener(GameEvent.PlayerTookTurn, (data) =>
+            eventBus.AddListener(GameEvent.PlayerTookTurn, (obj) =>
             {
-                this.PlayerTookTurn();
+                if (Dungeon.Instance.CurrentFloorNum == this.floorNum)
+                {
+                    this.PlayerTookTurn();
+                }
             });
 
             eventBus.AddListener(GameEvent.EntityDeath, (e) =>
             {
-                if (e == player)
+                if (Dungeon.Instance.CurrentFloorNum == this.floorNum)
                 {
-                    this.LatestMessage = "YOU DIE!!!";
-                    this.player.Character = '%';
-                    this.player.Color = Palette.DarkBurgandyPurple;
-                }
-                else
-                {
-                    this.Monsters.Remove(e as Entity);
+                    if (e == Player)
+                    {
+                        this.LatestMessage = "YOU DIE!!!";
+                        this.Player.Character = '%';
+                        this.Player.Color = Palette.DarkBurgandyPurple;
+                    }
+                    else
+                    {
+                        this.Monsters.Remove(e as Entity);
+                    }
                 }
             });
-        }
-
-        public void StopReactingToPlayer()
-        {
-            EventBus.Instance.RemoveListener(GameEvent.EntityDeath, this);
-            EventBus.Instance.RemoveListener(GameEvent.PlayerTookTurn, this);
         }
 
         public void Update(System.TimeSpan delta)
@@ -129,7 +125,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (playerTookTurn)
             {
-                EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(player, this.Monsters));
+                EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
             }
 
             if (this.EffectEntities.Any()) {
@@ -139,19 +135,19 @@ namespace DeenGames.AliTheAndroid.Model
                     effect.OnUpdate();
                     // For out-of-sight effects, accelerate to the point that they destroy.
                     // This prevents the player from waiting, frozen, for out-of-sight shots.
-                    if (!this.IsInPlayerFov(effect.X, effect.Y) && !Options.IsOmnisight) {
+                    if (!this.IsInPlayerFov(effect.X, effect.Y) && !Options.EnableOmniSight) {
                         effect.OnAction();
                     }
                 }
 
                 // Harm the player from explosions/zaps.
                 var backlashes = this.EffectEntities.Where(e => e.Character == '*' || e.Character == '$');
-                var playerBacklashes = (backlashes.Where(e => e.X == player.X && e.Y == player.Y));
+                var playerBacklashes = (backlashes.Where(e => e.X == Player.X && e.Y == Player.Y));
 
                 foreach (var backlash in playerBacklashes) {
                     var damage = this.CalculateDamage(backlash.Character);
                     Console.WriteLine("Player damaged by backlash for " + damage + " damage!");
-                    player.Damage(damage);
+                    Player.Damage(damage);
                 }
 
                 // Unlock doors hit by bolts
@@ -240,10 +236,10 @@ namespace DeenGames.AliTheAndroid.Model
                         }
                     }
 
-                    var playerDistance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(player.X - gravityShot.X, 2) + Math.Pow(player.Y - gravityShot.Y, 2)));
+                    var playerDistance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(Player.X - gravityShot.X, 2) + Math.Pow(Player.Y - gravityShot.Y, 2)));
                     if (playerDistance <= GravityRadius) {
                         int moveBy = GravityRadius - playerDistance;
-                        this.ApplyKnockbacks(player, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
+                        this.ApplyKnockbacks(Player, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
                     }
                 }
                 
@@ -260,8 +256,8 @@ namespace DeenGames.AliTheAndroid.Model
 
                 var teleporterShot = destroyedEffects.SingleOrDefault(s => s.Character == InstaTeleporterShot) as TeleporterShot;
                 if (teleporterShot != null) {
-                    player.X = teleporterShot.TeleportTo.X;
-                    player.Y = teleporterShot.TeleportTo.Y;
+                    Player.X = teleporterShot.TeleportTo.X;
+                    Player.Y = teleporterShot.TeleportTo.Y;
                     this.OnPlayerMoved();
                 }
 
@@ -275,29 +271,29 @@ namespace DeenGames.AliTheAndroid.Model
                 this.EffectEntities.RemoveAll(e => destroyedEffects.Contains(e));
             }
             
-            if (!this.player.CanMove && !this.EffectEntities.Any()) {
-                this.player.Unfreeze();
-                EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(player, this.Monsters));
+            if (!this.Player.CanMove && !this.EffectEntities.Any()) {
+                this.Player.Unfreeze();
+                EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
             }
 
-            var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == player.X && p.Y == player.Y);
+            var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (powerUpUnderPlayer != null)
             {
                 this.PowerUps.Remove(powerUpUnderPlayer);
-                player.Absorb(powerUpUnderPlayer);
+                Player.Absorb(powerUpUnderPlayer);
                 this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
             }
         }
         
         public bool IsInPlayerFov(int x, int y)
         {
-            if (Options.IsOmnisight) {
+            if (Options.EnableOmniSight) {
                 return true;
             }
 
             // Doesn't use LoS calculations, just simple range check
-            var distance = Math.Sqrt(Math.Pow(player.X - x, 2) + Math.Pow(player.Y - y, 2));
-            return distance <= player.VisionRange;
+            var distance = Math.Sqrt(Math.Pow(Player.X - x, 2) + Math.Pow(Player.Y - y, 2));
+            return distance <= Player.VisionRange;
         }
 
         public bool IsSeen(int x, int y)
@@ -372,9 +368,9 @@ namespace DeenGames.AliTheAndroid.Model
 
             this.GenerateMapRooms();
             this.GenerateMonsters();
-
+            
             this.PlayerPosition = this.FindEmptySpot();
-
+            
             this.GenerateStairs();
             this.GeneratePowerUps();
 
@@ -767,11 +763,11 @@ namespace DeenGames.AliTheAndroid.Model
         private int CalculateDamage(Weapon weapon)
         {
             switch(weapon) {
-                case Weapon.Blaster: return player.Strength;
-                case Weapon.MiniMissile: return player.Strength * 3;
-                case Weapon.Zapper: return player.Strength * 2;
-                case Weapon.PlasmaCannon: return player.Strength * 4;
-                case Weapon.GravityCannon: return player.Strength * 4;
+                case Weapon.Blaster: return Player.Strength;
+                case Weapon.MiniMissile: return Player.Strength * 3;
+                case Weapon.Zapper: return Player.Strength * 2;
+                case Weapon.PlasmaCannon: return Player.Strength * 4;
+                case Weapon.GravityCannon: return Player.Strength * 4;
                 case Weapon.InstaTeleporter: return 0;
                 default: return -1;
             }
@@ -805,7 +801,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             foreach (var monster in this.Monsters.Where(m => m.CanMove))
             {
-                var distance = Math.Sqrt(Math.Pow(player.X - monster.X, 2) + Math.Pow(player.Y - monster.Y, 2));
+                var distance = Math.Sqrt(Math.Pow(Player.X - monster.X, 2) + Math.Pow(Player.Y - monster.Y, 2));
 
                 // Monsters who you can see, or hurt monsters, attack.
                 if (!monster.IsDead && (distance <= monster.VisionRange || monster.CurrentHealth < monster.TotalHealth))
@@ -814,15 +810,15 @@ namespace DeenGames.AliTheAndroid.Model
                     if (distance <= 1)
                     {
                         // ATTACK~!
-                        var damage = monster.Strength - player.Defense;
-                        player.Damage(damage);
+                        var damage = monster.Strength - Player.Defense;
+                        Player.Damage(damage);
                         this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
                     }
                     else
                     {
                         // Move closer. Naively. Randomly.
-                        var dx = player.X - monster.X;
-                        var dy = player.Y - monster.Y;
+                        var dx = Player.X - monster.X;
+                        var dy = Player.Y - monster.Y;
                         var tryHorizontallyFirst = this.globalRandom.Next(0, 100) <= 50;
                         var moved = false;
 
@@ -864,9 +860,9 @@ namespace DeenGames.AliTheAndroid.Model
                 entity.X = targetX;
                 entity.Y = targetY;
 
-                if (entity == player)
+                if (entity == Player)
                 {
-                    player.OnMove(previousX, previousY);
+                    Player.OnMove(previousX, previousY);
                 }
                 return true;
             }
@@ -878,11 +874,11 @@ namespace DeenGames.AliTheAndroid.Model
 
         private bool ProcessPlayerInput()
         {            
-            if (player.IsDead) {
+            if (Player.IsDead) {
                 return false; // don't pass time
             }
 
-            if (!player.CanMove) {
+            if (!Player.CanMove) {
                 return false;
             }
 
@@ -893,8 +889,8 @@ namespace DeenGames.AliTheAndroid.Model
                 Environment.Exit(0);
             }
             
-            var destinationX = this.player.X;
-            var destinationY = this.player.Y;
+            var destinationX = this.Player.X;
+            var destinationY = this.Player.Y;
             
             if ((this.keyboard.IsKeyPressed(Key.W) || this.keyboard.IsKeyPressed(Key.Up)))
             {
@@ -915,51 +911,53 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if ((this.keyboard.IsKeyPressed(Key.Q)))
             {
-                player.TurnCounterClockwise();
+                Player.TurnCounterClockwise();
             }
             else if ((this.keyboard.IsKeyPressed(Key.E)))
             {
-                player.TurnClockwise();
+                Player.TurnClockwise();
             }
             else if (this.keyboard.IsKeyPressed(Key.NumPad1))
             {
-                player.CurrentWeapon = Weapon.Blaster;
+                Player.CurrentWeapon = Weapon.Blaster;
             }
             else if (this.keyboard.IsKeyPressed(Key.NumPad2))
             {
-                player.CurrentWeapon = Weapon.MiniMissile;
+                Player.CurrentWeapon = Weapon.MiniMissile;
             }
             else if (this.keyboard.IsKeyPressed(Key.NumPad3))
             {
-                player.CurrentWeapon = Weapon.Zapper;
+                Player.CurrentWeapon = Weapon.Zapper;
             }
             else if (this.keyboard.IsKeyPressed(Key.NumPad4))
             {
-                player.CurrentWeapon = Weapon.PlasmaCannon;
+                Player.CurrentWeapon = Weapon.PlasmaCannon;
             }
             else if (this.keyboard.IsKeyPressed(Key.NumPad5))
             {
-                player.CurrentWeapon = Weapon.GravityCannon;
+                Player.CurrentWeapon = Weapon.GravityCannon;
             }
             else if (this.keyboard.IsKeyPressed(Key.T))
             {
-                player.CurrentWeapon = Weapon.InstaTeleporter;
+                Player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && player.X == StairsLocation.X && player.Y == StairsLocation.Y)
+            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsLocation.X && Player.Y == StairsLocation.Y)))
             {
                 Dungeon.Instance.GoToNextFloor();
+                destinationX = Player.X;
+                destinationY = Player.Y;
             }
             
-            if (this.TryToMove(player, destinationX, destinationY))
+            if (this.TryToMove(Player, destinationX, destinationY))
             {
                 processedInput = true;
                 this.OnPlayerMoved();
             }
-            else if (this.keyboard.IsKeyPressed(Key.F) && (player.CurrentWeapon != Weapon.GravityCannon || player.CanFireGravityCannon))
+            else if (this.keyboard.IsKeyPressed(Key.F) && (Player.CurrentWeapon != Weapon.GravityCannon || Player.CanFireGravityCannon))
             {
                 // If gravity cannon wasn't fireable, but it's not equipped, make it fireable. This allows us to fire gravity/rocket/gravity/blaster/etc.
-                if (player.CurrentWeapon != Weapon.GravityCannon && !player.CanFireGravityCannon) {
-                    player.CanFireGravityCannon = true;
+                if (Player.CurrentWeapon != Weapon.GravityCannon && !Player.CanFireGravityCannon) {
+                    Player.CanFireGravityCannon = true;
                 }
                 this.FireShot();
             }
@@ -970,8 +968,8 @@ namespace DeenGames.AliTheAndroid.Model
                     door.IsOpened = true;
                     this.LatestMessage = "You open the door.";
                 } else {
-                    player.X = door.X;
-                    player.Y = door.Y;
+                    Player.X = door.X;
+                    Player.Y = door.Y;
                 }
             }
             else if (this.GetMonsterAt(destinationX, destinationY) != null)
@@ -979,7 +977,7 @@ namespace DeenGames.AliTheAndroid.Model
                 var monster = this.GetMonsterAt(destinationX, destinationY);
                 processedInput = true;
 
-                var damage = player.Strength - monster.Defense;
+                var damage = Player.Strength - monster.Defense;
                 monster.Damage(damage);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
             }
@@ -989,7 +987,7 @@ namespace DeenGames.AliTheAndroid.Model
                 processedInput = true;
             }
 
-            if (player.CurrentHealth <= 0)
+            if (Player.CurrentHealth <= 0)
             {
                 this.LatestMessage = "YOU DIE!!!!";
             }
@@ -999,12 +997,12 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void OnPlayerMoved()
         {
-            player.CanFireGravityCannon = true;
+            Player.CanFireGravityCannon = true;
             // This is too late - player already moved. For the prototype, we can live with this.
-            int viewRadius = (int)Math.Ceiling(player.VisionRange / 2.0);
-            for (var y = player.Y - viewRadius; y <= player.Y + viewRadius; y++)
+            int viewRadius = (int)Math.Ceiling(Player.VisionRange / 2.0);
+            for (var y = Player.Y - viewRadius; y <= Player.Y + viewRadius; y++)
             {
-                for (var x = player.X - viewRadius; x <= player.X + viewRadius; x++)
+                for (var x = Player.X - viewRadius; x <= Player.X + viewRadius; x++)
                 {
                     // Just to be sure
                     if (IsInPlayerFov(x, y))
@@ -1017,10 +1015,10 @@ namespace DeenGames.AliTheAndroid.Model
             this.LatestMessage = "";
 
             // Damaged by plasma residue
-            var plasmaUnderPlayer = this.PlasmaResidue.SingleOrDefault(p => p.X == player.X && p.Y == player.Y);
+            var plasmaUnderPlayer = this.PlasmaResidue.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (plasmaUnderPlayer != null) {
                 this.LatestMessage = $"The plasma burns through your suit! {PlasmaResidueDamage} damage!";
-                player.Damage(PlasmaResidueDamage);
+                Player.Damage(PlasmaResidueDamage);
                 this.PlasmaResidue.Remove(plasmaUnderPlayer);
             }
 
@@ -1031,12 +1029,12 @@ namespace DeenGames.AliTheAndroid.Model
         {
             var character = '+';
 
-            if (player.CurrentWeapon != Weapon.Zapper) {
+            if (Player.CurrentWeapon != Weapon.Zapper) {
                 // Blaster: +
                 // Missle: !
                 // Shock: $
                 // Plasma: o
-                switch (player.CurrentWeapon) {
+                switch (Player.CurrentWeapon) {
                     case Weapon.Blaster:
                         character = '+';
                         break;
@@ -1057,22 +1055,22 @@ namespace DeenGames.AliTheAndroid.Model
                 var dx = 0;
                 var dy = 0;
 
-                switch(player.DirectionFacing) {
+                switch(Player.DirectionFacing) {
                     case Direction.Up: dy = -1; break;
                     case Direction.Down: dy = 1; break;
                     case Direction.Left: dx = -1; break;
                     case Direction.Right: dx = 1; break;
-                    default: throw new InvalidOperationException(nameof(player.DirectionFacing));
+                    default: throw new InvalidOperationException(nameof(Player.DirectionFacing));
                 }
 
                 Shot shot;
-                if (player.CurrentWeapon == Weapon.InstaTeleporter) {
-                    shot = new TeleporterShot(player.X, player.Y, player.DirectionFacing, this.IsFlyable);
+                if (Player.CurrentWeapon == Weapon.InstaTeleporter) {
+                    shot = new TeleporterShot(Player.X, Player.Y, Player.DirectionFacing, this.IsFlyable);
                 } else {
-                    shot = new Shot(player.X + dx, player.Y + dy, character, Palette.Red, player.DirectionFacing, this.IsFlyable);
+                    shot = new Shot(Player.X + dx, Player.Y + dy, character, Palette.Red, Player.DirectionFacing, this.IsFlyable);
                 }
                 if (character == GravityCannonShot) {
-                    player.CanFireGravityCannon = false;
+                    Player.CanFireGravityCannon = false;
                 }
                 EffectEntities.Add(shot);
             }
@@ -1088,31 +1086,31 @@ namespace DeenGames.AliTheAndroid.Model
                 character = '$';
                 var colour = Palette.Blue;
 
-                switch(player.DirectionFacing) {
+                switch(Player.DirectionFacing) {
                     case Direction.Up: dy = -1; break;
                     case Direction.Down: dy = 1; break;
                     case Direction.Left: dx = -1; break;
                     case Direction.Right: dx = 1; break;
-                    default: throw new InvalidOperationException(nameof(player.DirectionFacing));
+                    default: throw new InvalidOperationException(nameof(Player.DirectionFacing));
                 }
 
-                ox = player.DirectionFacing == Direction.Up || player.DirectionFacing == Direction.Down ? 1 : 0;
-                oy = player.DirectionFacing == Direction.Left || player.DirectionFacing == Direction.Right ? 1 : 0;
+                ox = Player.DirectionFacing == Direction.Up || Player.DirectionFacing == Direction.Down ? 1 : 0;
+                oy = Player.DirectionFacing == Direction.Left || Player.DirectionFacing == Direction.Right ? 1 : 0;
 
-                EffectEntities.Add(new Bolt(player.X + dx, player.Y + dy));
-                EffectEntities.Add(new Bolt(player.X + 2*dx, player.Y + 2*dy));
-                EffectEntities.Add(new Bolt(player.X + 3*dx, player.Y + 3*dy));
+                EffectEntities.Add(new Bolt(Player.X + dx, Player.Y + dy));
+                EffectEntities.Add(new Bolt(Player.X + 2*dx, Player.Y + 2*dy));
+                EffectEntities.Add(new Bolt(Player.X + 3*dx, Player.Y + 3*dy));
 
-                EffectEntities.Add(new Bolt(player.X + dx + ox, player.Y + dy + oy));
-                EffectEntities.Add(new Bolt(player.X + 2*dx + 2*ox, player.Y + 2*dy + 2*oy));
-                EffectEntities.Add(new Bolt(player.X + 3*dx + 3*ox, player.Y + 3*dy + 3*oy));
+                EffectEntities.Add(new Bolt(Player.X + dx + ox, Player.Y + dy + oy));
+                EffectEntities.Add(new Bolt(Player.X + 2*dx + 2*ox, Player.Y + 2*dy + 2*oy));
+                EffectEntities.Add(new Bolt(Player.X + 3*dx + 3*ox, Player.Y + 3*dy + 3*oy));
 
-                EffectEntities.Add(new Bolt(player.X + dx - ox, player.Y + dy - oy));
-                EffectEntities.Add(new Bolt(player.X + 2*dx - 2*ox, player.Y + 2*dy - 2*oy));
-                EffectEntities.Add(new Bolt(player.X + 3*dx - 3*ox, player.Y + 3*dy - 3*oy));
+                EffectEntities.Add(new Bolt(Player.X + dx - ox, Player.Y + dy - oy));
+                EffectEntities.Add(new Bolt(Player.X + 2*dx - 2*ox, Player.Y + 2*dy - 2*oy));
+                EffectEntities.Add(new Bolt(Player.X + 3*dx - 3*ox, Player.Y + 3*dy - 3*oy));
             }
             
-            this.player.Freeze();
+            this.Player.Freeze();
         }
 
         private void GenerateMonsters()
@@ -1203,7 +1201,7 @@ namespace DeenGames.AliTheAndroid.Model
                 return false;
             }
 
-            if (this.player.X == x && this.player.Y == y)
+            if (this.Player != null && this.Player.X == x && this.Player.Y == y)
             {
                 return false;
             }

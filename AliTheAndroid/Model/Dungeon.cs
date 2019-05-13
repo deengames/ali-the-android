@@ -56,23 +56,17 @@ namespace DeenGames.AliTheAndroid.Model
 
             for (var i = 0; i < NumFloors; i++)
             {
-                this.floors.Add(new Floor(this.Width, this.Height, i, this.globalRandom, this.Player));
+                this.floors.Add(new Floor(this.Width, this.Height, i, this.globalRandom));
             }
         }
 
         public void GoToNextFloor()
         {
-            if (this.CurrentFloor != null)
-            {
-                this.CurrentFloor.StopReactingToPlayer();
-            }
-
             this.CurrentFloorNum++;
             this.CurrentFloor = this.floors[this.CurrentFloorNum];
-            this.CurrentFloor.StartReactingToPlayer();
+            this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.PlayerPosition.X;
             this.Player.Y = this.CurrentFloor.PlayerPosition.Y;
-            
         }
 
         internal void Update(TimeSpan delta)

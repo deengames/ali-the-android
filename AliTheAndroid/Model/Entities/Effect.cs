@@ -53,7 +53,6 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.Direction = direction;
             this.isMovableCheck = isMovable;
             this.createdOnTile = new GoRogue.Coord(x, y);
-            Console.WriteLine($"Shot at {this.createdOnTile}");
         }
 
         override internal void OnAction()
