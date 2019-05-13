@@ -48,6 +48,7 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
+        public GoRogue.Coord PlayerPosition = new GoRogue.Coord();
 
         private int width = 0;
         private int height = 0;
@@ -91,11 +92,13 @@ namespace DeenGames.AliTheAndroid.Model
 
             var eventBus = EventBus.Instance;
 
-            eventBus.AddListener(GameEvent.PlayerTookTurn, (data) => {
+            eventBus.AddListener(GameEvent.PlayerTookTurn, (data) =>
+            {
                 this.PlayerTookTurn();
             });
 
-            eventBus.AddListener(GameEvent.EntityDeath, (e) => {
+            eventBus.AddListener(GameEvent.EntityDeath, (e) =>
+            {
                 if (e == player)
                 {
                     this.LatestMessage = "YOU DIE!!!";
@@ -300,8 +303,8 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(new GoRogue.Coord(player.X, player.Y), new GoRogue.Coord(StairsLocation.X, StairsLocation.Y), true);
-            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(player.X, player.Y)));
+            var path = pathFinder.ShortestPath(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y), new GoRogue.Coord(StairsLocation.X, StairsLocation.Y), true);
+            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
 
@@ -329,7 +332,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             while (extraRooms > 0) {
                 var nextRoom = candidateRooms[this.globalRandom.Next(candidateRooms.Count)];
-                if (!nextRoom.Contains(new GoRogue.Coord(player.X, player.Y))) {
+                if (!nextRoom.Contains(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y))) {
                     this.FillWithGravity(nextRoom);
                     candidateRooms.Remove(nextRoom);
                     extraRooms -= 1;
@@ -354,9 +357,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.GenerateMapRooms();
             this.GenerateMonsters();
 
-            var emptySpot = this.FindEmptySpot();
-            player.X = emptySpot.X;
-            player.Y = emptySpot.Y;
+            this.PlayerPosition = this.FindEmptySpot();
 
             this.GenerateStairs();
             this.GeneratePowerUps();
@@ -418,12 +419,12 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateStairs()
         {
-            var spot = new GoRogue.Coord(player.X, player.Y);
+            var spot = new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y);
             var distance = 0d;
 
             do {
                 spot = this.FindEmptySpot();
-                distance = Math.Sqrt(Math.Pow(spot.X - player.X, 2)  + Math.Pow(spot.Y - player.Y, 2));
+                distance = Math.Sqrt(Math.Pow(spot.X - PlayerPosition.X, 2)  + Math.Pow(spot.Y - PlayerPosition.Y, 2));
             } while (distance <= MinimumDistanceFromPlayerToStairs);
 
             this.StairsLocation = spot;

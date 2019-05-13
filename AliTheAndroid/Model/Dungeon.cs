@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using Ninject;
@@ -19,6 +20,8 @@ namespace DeenGames.AliTheAndroid.Model
 
         public readonly int? GameSeed = null; // null = random each time
         private readonly IGenerator globalRandom;
+        private readonly List<Floor> floors = new List<Floor>(NumFloors);
+        private const int NumFloors = 10;
 
         public Dungeon(int widthInTiles, int heightInTiles, int? gameSeed = null)
         {
@@ -47,12 +50,20 @@ namespace DeenGames.AliTheAndroid.Model
             System.Console.WriteLine($"Universe #{GameSeed.Value}");
             this.globalRandom = new StandardGenerator(GameSeed.Value);
             this.Player = new Player();
+
+            for (var i = 0; i < NumFloors; i++)
+            {
+                this.floors.Add(new Floor(this.Width, this.Height, this.globalRandom, this.Player));
+            }
         }
 
-        public void Generate()
+        public void GoToNextFloor()
         {
             this.CurrentFloorNum++;
-            this.CurrentFloor = new Floor(this.Width, this.Height, globalRandom, this.Player);
+            this.CurrentFloor = this.floors[this.CurrentFloorNum - 1]; // base 1 => base 0
+            this.Player.X = this.CurrentFloor.PlayerPosition.X;
+            this.Player.Y = this.CurrentFloor.PlayerPosition.Y;
+            
         }
 
         internal void Update(TimeSpan delta)

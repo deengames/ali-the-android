@@ -43,15 +43,15 @@ namespace AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void GenerateGeneratesFloorAndIncrementsFloorNumber()
+        public void GoToNextFloorChangesFloorAndIncrementsFloorNumber()
         {
             var dungeon = new Dungeon(50, 40, gameSeed: 999);
 
-            dungeon.Generate();
+            dungeon.GoToNextFloor();
             Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
             var firstFloor = dungeon.CurrentFloor;
 
-            dungeon.Generate();
+            dungeon.GoToNextFloor();
             Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(2));
             var secondFloor = dungeon.CurrentFloor;
 

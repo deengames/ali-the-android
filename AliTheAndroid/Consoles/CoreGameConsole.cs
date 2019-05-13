@@ -24,7 +24,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         public CoreGameConsole(int width, int height) : base(width, height)
         {
             this.dungeon = new Dungeon(width, height);
-            this.dungeon.Generate();
+            this.dungeon.GoToNextFloor();
         }
 
         override public void Update(TimeSpan delta)
