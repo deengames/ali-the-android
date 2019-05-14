@@ -32,7 +32,7 @@ namespace DeenGames.AliTheAndroid.Tests.Prototype
             EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, null); // timesCalled = 1
 
             // Act
-            EventBus.Instance.RemoveListener(GameEvent.PlayerTookTurn, incrementMethod);
+            EventBus.Instance.RemoveListener(GameEvent.PlayerTookTurn, incrementMethod.Target);
             EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, null); // timesCalled = 1
             EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, null); // timesCalled = 1
             EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, null); // timesCalled = 1

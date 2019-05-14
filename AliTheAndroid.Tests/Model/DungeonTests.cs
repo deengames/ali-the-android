@@ -36,23 +36,24 @@ namespace AliTheAndroid.Tests.Model
         [Test]
         public void ConstructorSetsPlayerAndWidthAndHeight()
         {
-            var dungeon = new Dungeon(24, 10);
+            var dungeon = new Dungeon(24, 31);
             Assert.That(dungeon.Player, Is.Not.Null);
             Assert.That(dungeon.Width, Is.EqualTo(24));
-            Assert.That(dungeon.Height, Is.EqualTo(10));
+            Assert.That(dungeon.Height, Is.EqualTo(31));
         }
 
         [Test]
         public void GoToNextFloorChangesFloorAndIncrementsFloorNumber()
         {
             var dungeon = new Dungeon(50, 40, gameSeed: 999);
+            var currentFloor = dungeon.CurrentFloorNum;
 
             dungeon.GoToNextFloor();
-            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(currentFloor + 1));
             var firstFloor = dungeon.CurrentFloor;
 
             dungeon.GoToNextFloor();
-            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(2));
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(currentFloor + 2));
             var secondFloor = dungeon.CurrentFloor;
 
             Assert.That(secondFloor, Is.Not.EqualTo(firstFloor));

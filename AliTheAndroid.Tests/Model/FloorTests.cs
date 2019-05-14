@@ -39,6 +39,7 @@ namespace AliTheAndroid.Tests.Model
             // Arrange
             var player = new Player();
             var floor = new Floor(30, 30, 0, new StandardGenerator(1111));
+            floor.Player = player;
             var powerUp = new PowerUp(0, 0, healthBoost:30);
             floor.PowerUps.Add(powerUp);
             var oldHealth = player.TotalHealth;
