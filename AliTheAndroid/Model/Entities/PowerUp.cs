@@ -22,6 +22,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int StrengthBoost { get; private set; }
         public int DefenseBoost { get; private set; }
         public int VisionBoost { get; private set; }
+        private Action onPickUp { get; set; }
 
         public PowerUp(int x, int y, int healthBoost = 0, int strengthBoost = 0, int defenseBoost = 0, int visionBoost = 0)
         : base(x, y, DisplayCharacter, Palette.White)
@@ -52,5 +53,18 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
             return builder.ToString();
         }}
+
+        public void OnPickUp(Action callback)
+        {
+            this.onPickUp = callback;
+        }
+
+        public void PickUp()
+        {
+            if (this.onPickUp != null)
+            {
+                this.onPickUp.Invoke();
+            }
+        }
     }
 }

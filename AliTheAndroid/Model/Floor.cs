@@ -49,12 +49,13 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
         public GoRogue.Coord PlayerPosition = new GoRogue.Coord();
+        public Player Player;
+        public IList<PowerUp> guaranteedPowerUps = new List<PowerUp>();
 
         private int floorNum = 0;
         private int width = 0;
         private int height = 0;
         private IGenerator globalRandom;
-        public Player Player;
 
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
@@ -65,6 +66,8 @@ namespace DeenGames.AliTheAndroid.Model
 
         private string lastMessage = "";
         private IKeyboard keyboard;
+        private bool generatedPowerUps = false;
+
 
         // TODO: should not be publically settable
         public string LatestMessage { 
@@ -79,12 +82,13 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        public Floor(int width, int height, int floorNum, IGenerator globalRandom)
+        public Floor(int width, int height, int floorNum, IGenerator globalRandom, IList<PowerUp> guaranteedPowerUps)
         {
             this.width = width;
             this.height = height;
             this.floorNum = floorNum;
             this.globalRandom = globalRandom;
+            this.guaranteedPowerUps = guaranteedPowerUps;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
@@ -281,6 +285,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 this.PowerUps.Remove(powerUpUnderPlayer);
                 Player.Absorb(powerUpUnderPlayer);
+                powerUpUnderPlayer.PickUp();
                 this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
             }
         }
@@ -291,8 +296,10 @@ namespace DeenGames.AliTheAndroid.Model
                 return true;
             }
 
+#pragma warning disable
             // Doesn't use LoS calculations, just simple range check
             var distance = Math.Sqrt(Math.Pow(Player.X - x, 2) + Math.Pow(Player.Y - y, 2));
+#pragma warning restore
             return distance <= Player.VisionRange;
         }
 
@@ -372,7 +379,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.PlayerPosition = this.FindEmptySpot();
             
             this.GenerateStairs();
-            this.GeneratePowerUps();
 
             // After setting player coordinates and stairs, because generates path between them
             this.GenerateGravityWaves();
@@ -442,54 +448,59 @@ namespace DeenGames.AliTheAndroid.Model
             this.StairsLocation = spot;
         }
 
-        private void GeneratePowerUps()
+        // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
+        // the player's choice. So we pass the list to each floor, and let each floor consume/update it appropriately.
+        public void GeneratePowerUps()
         {
-            this.PowerUps.Clear();
+            if (!this.generatedPowerUps)
+            {
+                var floorsNearStairs = this.GetAdjacentFloors(StairsLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+                if (floorsNearStairs.Count < 2)
+                {
+                    // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
+                    var aboveStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y - 1);
+                    var belowStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y + 1);
+                    var leftOfStairs = new GoRogue.Coord(StairsLocation.X - 1, StairsLocation.Y);
+                    var rightOfStairs = new GoRogue.Coord(StairsLocation.X + 1, StairsLocation.Y);
 
-            var floorsNearStairs = this.GetAdjacentFloors(StairsLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-            if (!floorsNearStairs.Any())
-            {
-                // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
-                var aboveStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y - 1);
-                var belowStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y + 1);
-                var leftOfStairs = new GoRogue.Coord(StairsLocation.X - 1, StairsLocation.Y);
-                var rightOfStairs = new GoRogue.Coord(StairsLocation.X + 1, StairsLocation.Y);
+                    var moreTiles = this.GetAdjacentFloors(aboveStairs);
+                    moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
+                    moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
+                    moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
 
-                var moreTiles = this.GetAdjacentFloors(aboveStairs);
-                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
-                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
-                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
+                    floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+                }
 
-                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-            }
+                var locations = floorsNearStairs.OrderBy(f => globalRandom.Next()).Take(2).ToArray();
+                var powerUps = this.guaranteedPowerUps.Take(2).ToArray();
 
-            var powerUpLocation = floorsNearStairs[globalRandom.Next(floorsNearStairs.Count)];
-            if (!this.PowerUps.Any(p => p.X == powerUpLocation.X && p.Y == powerUpLocation.Y))
-            {
-                this.PowerUps.Add(this.createPowerUp(powerUpLocation));
-            }
-        }
+                // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
+                var choicePowerUps = new List<PowerUp>();
 
-        // Returns a power-up based on our distribution. Currently, randomly picks.
-        private PowerUp createPowerUp(GoRogue.Coord coordinates)
-        {
-            // Distribution: 40 (health), 25 (strength), 25 (defense), 10 (vision)
-            var powerUpType = globalRandom.Next(100);
-            if (powerUpType <= 40)
-            {
-                return new PowerUp(coordinates.X, coordinates.Y, healthBoost: PowerUp.TypicalHealthBoost);
-            }
-            else if (powerUpType <= 40 + 25)
-            {
-                return new PowerUp(coordinates.X, coordinates.Y, strengthBoost: PowerUp.TypicalStrengthBoost);
-            }
-            else if (powerUpType <= 40 + 25 + 25)
-            {
-                return new PowerUp(coordinates.X, coordinates.Y, defenseBoost: PowerUp.TypicalDefenseBoost);
-            }
-            else
-            {
-                return new PowerUp(coordinates.X, coordinates.Y, visionBoost: PowerUp.TypicalVisionBoost);
+                for (var i = 0; i < locations.Count(); i++)
+                {
+                    var powerUp = this.guaranteedPowerUps[i];
+                    var location = locations[i];
+
+                    powerUp.X = location.X;
+                    powerUp.Y = location.Y;
+
+                    choicePowerUps.Add(powerUp);
+                    this.PowerUps.Add(powerUp);
+                }
+
+                foreach (var powerUp in choicePowerUps)
+                {
+                    powerUp.OnPickUp(() => {
+                        this.guaranteedPowerUps.Remove(powerUp);
+                        foreach (var choice in choicePowerUps)
+                        {
+                            this.PowerUps.Remove(choice);
+                        }
+                    });
+                }
+                
+                this.generatedPowerUps = true;
             }
         }
 
