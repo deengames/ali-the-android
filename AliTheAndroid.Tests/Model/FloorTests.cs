@@ -121,7 +121,7 @@ namespace AliTheAndroid.Tests.Model
 
         }
 
-        [TestCase(0, true, false)]
+        [TestCase(0, true, true)]
         [TestCase(5, true, true)]
         [TestCase(Dungeon.NumFloors, false, true)]
         public void GenerateFloorGeneratesUpAndDownStairsAppropraitely(int floorNum, bool expectStairsDown, bool expectStairsUp)
