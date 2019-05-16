@@ -118,7 +118,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            if (this.dungeon.CurrentFloor.StairsUpLocation != GoRogue.Coord.NONE) {
+            if (this.dungeon.CurrentFloorNum > 0 && this.dungeon.CurrentFloor.StairsUpLocation != GoRogue.Coord.NONE) {
                 int stairsX = this.dungeon.CurrentFloor.StairsUpLocation.X;
                 int stairsY = this.dungeon.CurrentFloor.StairsUpLocation.Y;
 

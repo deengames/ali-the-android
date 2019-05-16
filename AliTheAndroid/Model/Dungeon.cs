@@ -72,10 +72,8 @@ namespace DeenGames.AliTheAndroid.Model
             this.CurrentFloor = this.floors[this.CurrentFloorNum];
             
             this.CurrentFloor.Player = this.Player;
-            // Equivalent to StairsUpLocation, which should be, but isn't, used in generation.
-            // But, B1 has a PlayerPosition; it doesn't have a StairsUpLocation.
-            this.Player.X = this.CurrentFloor.PlayerPosition.X;
-            this.Player.Y = this.CurrentFloor.PlayerPosition.Y;
+            this.Player.X = this.CurrentFloor.StairsUpLocation.X;
+            this.Player.Y = this.CurrentFloor.StairsUpLocation.Y;
             
             this.CurrentFloor.GeneratePowerUps();
         }

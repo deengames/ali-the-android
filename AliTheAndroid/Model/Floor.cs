@@ -49,7 +49,6 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
-        public GoRogue.Coord PlayerPosition = GoRogue.Coord.NONE;
         public Player Player;
         public IList<PowerUp> guaranteedPowerUps = new List<PowerUp>();
 
@@ -316,8 +315,8 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y), new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y), true);
-            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y)));
+            var path = pathFinder.ShortestPath(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y), new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y), true);
+            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
 
@@ -348,7 +347,7 @@ namespace DeenGames.AliTheAndroid.Model
             while (extraRooms > 0)
             {
                 var nextRoom = candidateRooms[this.globalRandom.Next(candidateRooms.Count)];
-                if (!nextRoom.Contains(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y)))
+                if (!nextRoom.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)))
                 {
                     this.FillWithGravity(nextRoom);
                     candidateRooms.Remove(nextRoom);
@@ -377,14 +376,15 @@ namespace DeenGames.AliTheAndroid.Model
             this.GenerateMapRooms();
             this.GenerateMonsters();
             
-            this.PlayerPosition = this.FindEmptySpot();
-            
             this.GenerateStairs();
 
             // After setting player coordinates and stairs, because generates path between them
-            this.GenerateGravityWaves();
-            this.GenerateChasms();
-            this.GenerateBosses();
+            // TEMPORARY HACK: proper floor number checking per-feature later
+            if (this.floorNum > 0) {
+                this.GenerateGravityWaves();
+                this.GenerateChasms();
+                this.GenerateBosses();
+            }
 
             // Appropriately, remove stairs here, after we no longer need it for path-finding
             if (this.floorNum == Dungeon.NumFloors)
@@ -450,21 +450,19 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateStairs()
         {
+            // Stairs up generate under the player. Available on all floors (start location), but only usable/visible on floor > 0.
+            this.StairsUpLocation = this.FindEmptySpot();
+
             // Stairs down generate far from the player.
-            var spot = new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y);
+            var spot = new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y);
             var distance = 0d;
 
             do {
                 spot = this.FindEmptySpot();
-                distance = Math.Sqrt(Math.Pow(spot.X - PlayerPosition.X, 2)  + Math.Pow(spot.Y - PlayerPosition.Y, 2));
+                distance = Math.Sqrt(Math.Pow(spot.X - StairsUpLocation.X, 2)  + Math.Pow(spot.Y - StairsUpLocation.Y, 2));
             } while (distance <= MinimumDistanceFromPlayerToStairs);
 
             this.StairsDownLocation = spot;
-
-            // Stairs up generate under the player
-            if (this.floorNum > 0) {
-                this.StairsUpLocation = new GoRogue.Coord(this.PlayerPosition.X, this.PlayerPosition.Y);
-            }
         }
 
         // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
@@ -977,7 +975,7 @@ namespace DeenGames.AliTheAndroid.Model
                 destinationX = Player.X;
                 destinationY = Player.Y;
             }
-            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
+            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
             {
                 Dungeon.Instance.GoToPreviousFloor();
                 destinationX = Player.X;
