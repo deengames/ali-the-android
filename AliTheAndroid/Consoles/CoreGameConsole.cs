@@ -109,8 +109,8 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            int stairsX = this.dungeon.CurrentFloor.StairsLocation.X;
-            int stairsY = this.dungeon.CurrentFloor.StairsLocation.Y;
+            int stairsX = this.dungeon.CurrentFloor.StairsDownLocation.X;
+            int stairsY = this.dungeon.CurrentFloor.StairsDownLocation.Y;
 
             if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
                 this.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);

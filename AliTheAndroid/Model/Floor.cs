@@ -42,7 +42,7 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Walls = new List<AbstractEntity>();
         public readonly List<FakeWall> FakeWalls = new List<FakeWall>();
         public readonly List<Door> Doors = new List<Door>();
-        public GoRogue.Coord StairsLocation = new GoRogue.Coord();
+        public GoRogue.Coord StairsDownLocation = new GoRogue.Coord();
         public readonly List<Effect> EffectEntities = new List<Effect>();
         public readonly List<GravityWave> GravityWaves = new List<GravityWave>();
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
@@ -315,7 +315,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y), new GoRogue.Coord(StairsLocation.X, StairsLocation.Y), true);
+            var path = pathFinder.ShortestPath(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y), new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y), true);
             var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
@@ -445,7 +445,7 @@ namespace DeenGames.AliTheAndroid.Model
                 distance = Math.Sqrt(Math.Pow(spot.X - PlayerPosition.X, 2)  + Math.Pow(spot.Y - PlayerPosition.Y, 2));
             } while (distance <= MinimumDistanceFromPlayerToStairs);
 
-            this.StairsLocation = spot;
+            this.StairsDownLocation = spot;
         }
 
         // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
@@ -454,14 +454,14 @@ namespace DeenGames.AliTheAndroid.Model
         {
             if (!this.generatedPowerUps)
             {
-                var floorsNearStairs = this.GetAdjacentFloors(StairsLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+                var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
                 if (floorsNearStairs.Count < 2)
                 {
                     // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
-                    var aboveStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y - 1);
-                    var belowStairs = new GoRogue.Coord(StairsLocation.X, StairsLocation.Y + 1);
-                    var leftOfStairs = new GoRogue.Coord(StairsLocation.X - 1, StairsLocation.Y);
-                    var rightOfStairs = new GoRogue.Coord(StairsLocation.X + 1, StairsLocation.Y);
+                    var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
+                    var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
+                    var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
+                    var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
 
                     var moreTiles = this.GetAdjacentFloors(aboveStairs);
                     moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
@@ -952,7 +952,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsLocation.X && Player.Y == StairsLocation.Y)))
+            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
             {
                 Dungeon.Instance.GoToNextFloor();
                 destinationX = Player.X;
