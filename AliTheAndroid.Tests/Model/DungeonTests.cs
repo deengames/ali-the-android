@@ -60,5 +60,42 @@ namespace AliTheAndroid.Tests.Model
 
             Assert.That(secondFloor, Is.Not.EqualTo(firstFloor));
         }
+
+        [Test]
+        public void GoToPreviousFloorDecrementsFloorNumberAndPositionsPlayerAtStairsDown()
+        {
+            var dungeon = new Dungeon(35, 25, gameSeed: 12323);
+            // Start at B1 / floor 0
+            dungeon.GoToNextFloor();
+
+            dungeon.GoToNextFloor();
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+
+            dungeon.GoToPreviousFloor();
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(0));
+            Assert.That(dungeon.Player.X, Is.EqualTo(dungeon.CurrentFloor.StairsDownLocation.X));
+            Assert.That(dungeon.Player.Y, Is.EqualTo(dungeon.CurrentFloor.StairsDownLocation.Y));
+        }
+
+        [Test]
+        public void GoToNextFloorDoesntRegeneratePowerUps()
+        {
+            var dungeon = new Dungeon(35, 25, gameSeed: 12323);
+
+            // Start at B2 / floor 1
+            dungeon.GoToNextFloor();
+            dungeon.GoToNextFloor();
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+            Assert.That(dungeon.CurrentFloor.PowerUps.Count > 0);
+
+            dungeon.CurrentFloor.PowerUps[0].PickUp();
+            Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);
+
+            dungeon.GoToPreviousFloor();
+            dungeon.GoToNextFloor();
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+            Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);            
+        }
+
     }
 }

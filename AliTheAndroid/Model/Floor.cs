@@ -977,6 +977,12 @@ namespace DeenGames.AliTheAndroid.Model
                 destinationX = Player.X;
                 destinationY = Player.Y;
             }
+            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
+            {
+                Dungeon.Instance.GoToPreviousFloor();
+                destinationX = Player.X;
+                destinationY = Player.Y;
+            }
             
             if (this.TryToMove(Player, destinationX, destinationY))
             {

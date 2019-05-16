@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 using DeenGames.AliTheAndroid.Tests.Helpers;
@@ -14,8 +15,10 @@ namespace AliTheAndroid.Tests.Model.Entities
         [Test]
         public void GravityWaveMovesMonstersOnItToWalkableLocationOnPlayerTookTurnEvent()
         {
+            new Dungeon(40, 30, gameSeed: 98723).GoToNextFloor(); // Start on 1B / floor 0
+
             // Arrange
-            var wave = new GravityWave(3, 3, 1, FakeIsWalkable);
+            var wave = new GravityWave(3, 3, 0, FakeIsWalkable);
             var zug = Entity.CreateFromTemplate("Zug", wave.X, wave.Y);
             var monsters = new List<Entity>() { zug };
             var player = new Player();

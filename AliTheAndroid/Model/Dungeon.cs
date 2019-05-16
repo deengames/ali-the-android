@@ -70,10 +70,24 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.CurrentFloorNum++;
             this.CurrentFloor = this.floors[this.CurrentFloorNum];
-            this.CurrentFloor.GeneratePowerUps();
+            
             this.CurrentFloor.Player = this.Player;
+            // Equivalent to StairsUpLocation, which should be, but isn't, used in generation.
+            // But, B1 has a PlayerPosition; it doesn't have a StairsUpLocation.
             this.Player.X = this.CurrentFloor.PlayerPosition.X;
             this.Player.Y = this.CurrentFloor.PlayerPosition.Y;
+            
+            this.CurrentFloor.GeneratePowerUps();
+        }
+
+        public void GoToPreviousFloor()
+        {
+            this.CurrentFloorNum--;
+            this.CurrentFloor = this.floors[this.CurrentFloorNum];
+
+            this.CurrentFloor.Player = this.Player;
+            this.Player.X = this.CurrentFloor.StairsDownLocation.X;
+            this.Player.Y = this.CurrentFloor.StairsDownLocation.Y;
         }
 
         internal void Update(TimeSpan delta)
