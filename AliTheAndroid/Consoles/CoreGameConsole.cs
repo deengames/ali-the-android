@@ -109,11 +109,22 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            int stairsX = this.dungeon.CurrentFloor.StairsDownLocation.X;
-            int stairsY = this.dungeon.CurrentFloor.StairsDownLocation.Y;
+            if (this.dungeon.CurrentFloor.StairsDownLocation != GoRogue.Coord.NONE) {
+                int stairsX = this.dungeon.CurrentFloor.StairsDownLocation.X;
+                int stairsY = this.dungeon.CurrentFloor.StairsDownLocation.Y;
 
-            if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                this.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
+                    this.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                }
+            }
+
+            if (this.dungeon.CurrentFloor.StairsUpLocation != GoRogue.Coord.NONE) {
+                int stairsX = this.dungeon.CurrentFloor.StairsUpLocation.X;
+                int stairsY = this.dungeon.CurrentFloor.StairsUpLocation.Y;
+
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
+                    this.SetGlyph(stairsX, stairsY, '<', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                }
             }
 
             foreach (var monster in this.dungeon.CurrentFloor.Monsters)

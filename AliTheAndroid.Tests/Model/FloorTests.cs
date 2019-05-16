@@ -72,12 +72,12 @@ namespace AliTheAndroid.Tests.Model
             };
 
             var globalRandom = new StandardGenerator(0);
-            var floor = new Floor(100, 100, 10, globalRandom, powerUps);
-            var nextFloor = new Floor(25, 50, 11, globalRandom, powerUps);
+            var floor = new Floor(100, 100, 3, globalRandom, powerUps);
+            var nextFloor = new Floor(25, 50, 4, globalRandom, powerUps);
 
             floor.GeneratePowerUps();
 
-            var twins = floor.PowerUps; // TODO: later, this will include backtracking power-ups
+            var twins = floor.PowerUps; // TODO: later, this could include backtracking power-ups
             Assert.That(twins.Count, Is.EqualTo(2));
             var twin = twins.First();
             twin.PickUp();
@@ -119,6 +119,27 @@ namespace AliTheAndroid.Tests.Model
             // Assert
             Assert.That(floor.PowerUps.Count, Is.EqualTo(0));
 
+        }
+
+        [TestCase(0, true, false)]
+        [TestCase(5, true, true)]
+        [TestCase(Dungeon.NumFloors, false, true)]
+        public void GenerateFloorGeneratesUpAndDownStairsAppropraitely(int floorNum, bool expectStairsDown, bool expectStairsUp)
+        {
+            var globalRandom = new StandardGenerator(10201);
+            var floor = new Floor(35, 25, floorNum, globalRandom, new List<PowerUp>());
+
+            if (expectStairsDown) {
+                Assert.That(floor.StairsDownLocation, Is.Not.EqualTo(GoRogue.Coord.NONE));
+            } else {
+                Assert.That(floor.StairsDownLocation, Is.EqualTo(GoRogue.Coord.NONE));
+            }
+
+            if (expectStairsUp) {
+                Assert.That(floor.StairsUpLocation, Is.Not.EqualTo(GoRogue.Coord.NONE));
+            } else {
+                Assert.That(floor.StairsUpLocation, Is.EqualTo(GoRogue.Coord.NONE));
+            }
         }
     }
 }

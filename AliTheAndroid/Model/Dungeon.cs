@@ -12,8 +12,10 @@ namespace DeenGames.AliTheAndroid.Model
 {
     public class Dungeon
     {
-        public Floor CurrentFloor { get; private set; }
+        public const int NumFloors = 10;
         public static Dungeon Instance;
+
+        public Floor CurrentFloor { get; private set; }
 
         public readonly Player Player;
 
@@ -24,7 +26,6 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly int? GameSeed = 113899188; // null = random each time
         private readonly IGenerator globalRandom;
         private readonly List<Floor> floors = new List<Floor>(NumFloors);
-        private const int NumFloors = 10;
         private readonly List<PowerUp> guaranteedPowerUps = new List<PowerUp>();
 
         public Dungeon(int widthInTiles, int heightInTiles, int? gameSeed = null)

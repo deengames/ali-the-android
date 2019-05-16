@@ -42,13 +42,14 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Walls = new List<AbstractEntity>();
         public readonly List<FakeWall> FakeWalls = new List<FakeWall>();
         public readonly List<Door> Doors = new List<Door>();
-        public GoRogue.Coord StairsDownLocation = new GoRogue.Coord();
+        public GoRogue.Coord StairsDownLocation = GoRogue.Coord.NONE;
+        public GoRogue.Coord StairsUpLocation = GoRogue.Coord.NONE;
         public readonly List<Effect> EffectEntities = new List<Effect>();
         public readonly List<GravityWave> GravityWaves = new List<GravityWave>();
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
-        public GoRogue.Coord PlayerPosition = new GoRogue.Coord();
+        public GoRogue.Coord PlayerPosition = GoRogue.Coord.NONE;
         public Player Player;
         public IList<PowerUp> guaranteedPowerUps = new List<PowerUp>();
 
@@ -383,6 +384,18 @@ namespace DeenGames.AliTheAndroid.Model
             // After setting player coordinates and stairs, because generates path between them
             this.GenerateGravityWaves();
             this.GenerateChasms();
+            this.GenerateBosses();
+
+            // Appropriately, remove stairs here, after we no longer need it for path-finding
+            if (this.floorNum == Dungeon.NumFloors)
+            {
+                this.StairsDownLocation = GoRogue.Coord.NONE;
+            }
+        }
+
+        private void GenerateBosses()
+        {
+            var bossLocation = this.StairsDownLocation;
         }
 
         private void GenerateChasms()
@@ -437,6 +450,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateStairs()
         {
+            // Stairs down generate far from the player.
             var spot = new GoRogue.Coord(PlayerPosition.X, PlayerPosition.Y);
             var distance = 0d;
 
@@ -446,6 +460,11 @@ namespace DeenGames.AliTheAndroid.Model
             } while (distance <= MinimumDistanceFromPlayerToStairs);
 
             this.StairsDownLocation = spot;
+
+            // Stairs up generate under the player
+            if (this.floorNum > 0) {
+                this.StairsUpLocation = new GoRogue.Coord(this.PlayerPosition.X, this.PlayerPosition.Y);
+            }
         }
 
         // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
