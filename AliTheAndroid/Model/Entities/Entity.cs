@@ -25,7 +25,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             // This code makes me cry.
             switch (name.ToLower()) {
                 // Regular enemy. Takes a bit of skill to kill.
-                case "alien": return new Entity("Alien", 'a', Palette.Blue, x, y, 42, 9, 4);
+                case "fuseling": return new Entity("Fuseling", 'f', Palette.Blue, x, y, 42, 9, 4);
                 // Fodder. Generates in big groups, though.
                 case "slink": return new Entity("Slink", 's', Palette.DarkBlueMuted, x, y, 33, 6, 2);
                 // Tank. REALLY hard to kill (I hope).

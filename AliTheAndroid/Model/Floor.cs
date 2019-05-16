@@ -1153,9 +1153,9 @@ namespace DeenGames.AliTheAndroid.Model
 
             var numZugs = Options.MonsterMultiplier * this.globalRandom.Next(1, 3); // 1-2
             var numSlinks = Options.MonsterMultiplier * this.globalRandom.Next(2, 5); // 2-4            
-            var numMonsters = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 aliens
+            var numFuselings = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 fuselings
 
-            while (numMonsters > 0)
+            while (numFuselings > 0)
             {
                 var spot = this.FindEmptySpot();
 
@@ -1167,8 +1167,8 @@ namespace DeenGames.AliTheAndroid.Model
                     template = "Slink";
                     numSlinks--;
                 } else {
-                    template = "Alien";
-                    numMonsters--;
+                    template = "Fuseling";
+                    numFuselings--;
                 }
 
                 var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
