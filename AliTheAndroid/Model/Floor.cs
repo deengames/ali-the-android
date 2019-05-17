@@ -55,7 +55,10 @@ namespace DeenGames.AliTheAndroid.Model
         private int floorNum = 0;
         private int width = 0;
         private int height = 0;
+        // Used for deterministic things like dungeon generation
         private IGenerator globalRandom;
+        // Used for non-deterministic things, like monster movement
+        private Random random = new Random(); 
 
         private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
@@ -107,18 +110,32 @@ namespace DeenGames.AliTheAndroid.Model
 
             eventBus.AddListener(GameEvent.EntityDeath, (e) =>
             {
+                if (Dungeon.Instance.CurrentFloorNum == this.floorNum && e == Player)
+                {
+                    this.LatestMessage = "YOU DIE!!!";
+                    this.Player.Character = '%';
+                    this.Player.Color = Palette.DarkBurgandyPurple;
+                }
+                else
+                {
+                    this.Monsters.Remove(e as Entity);
+                }
+            });
+
+            eventBus.AddListener(GameEvent.EggHatched, (e) => {
                 if (Dungeon.Instance.CurrentFloorNum == this.floorNum)
                 {
-                    if (e == Player)
+                    var position = (GoRogue.Coord)e;
+                    // Remove egg
+                    var egg = this.Monsters.SingleOrDefault(m => m.X == position.X && m.Y == position.Y && m is Egg);
+                    // Null if it gets killed before it hatches. I removed the event listener in Die() but, alas.
+                    if (egg != null)
                     {
-                        this.LatestMessage = "YOU DIE!!!";
-                        this.Player.Character = '%';
-                        this.Player.Color = Palette.DarkBurgandyPurple;
+                        this.Monsters.Remove(egg);
                     }
-                    else
-                    {
-                        this.Monsters.Remove(e as Entity);
-                    }
+
+                    // Add monster
+                    this.Monsters.Add(Entity.CreateFromTemplate("Fuseling", position.X, position.Y));
                 }
             });
         }
@@ -827,13 +844,26 @@ namespace DeenGames.AliTheAndroid.Model
         {
             var plasmaBurnedMonsters = new List<Entity>();
 
-            foreach (var monster in this.Monsters.Where(m => m.CanMove))
+            // Eggs' turns create more monsters (modify enumeration during iteration).
+            // Just use ToArray here to create a copy.
+            foreach (var monster in this.Monsters.Where(m => m.CanMove).ToArray())
             {
                 var distance = Math.Sqrt(Math.Pow(Player.X - monster.X, 2) + Math.Pow(Player.Y - monster.Y, 2));
 
                 // Monsters who you can see, or hurt monsters, attack.
                 if (!monster.IsDead && (distance <= monster.VisionRange || monster.CurrentHealth < monster.TotalHealth))
                 {
+                    var spawner = monster as Spawner;
+                    if (spawner != null)
+                    {
+                        var floors = this.GetAdjacentFloors(new GoRogue.Coord(monster.X, monster.Y));
+                        if (floors.Any())
+                        {
+                            var floor = floors.OrderBy(f => random.Next()).First();
+                            this.Monsters.Add(Entity.CreateFromTemplate("Egg", floor.X, floor.Y));
+                        }
+                    }
+                    
                     // Process turn.
                     if (distance <= 1)
                     {
@@ -847,7 +877,7 @@ namespace DeenGames.AliTheAndroid.Model
                         // Move closer. Naively. Randomly.
                         var dx = Player.X - monster.X;
                         var dy = Player.Y - monster.Y;
-                        var tryHorizontallyFirst = this.globalRandom.Next(0, 100) <= 50;
+                        var tryHorizontallyFirst = this.random.Next(0, 100) <= 50;
                         var moved = false;
 
                         if (tryHorizontallyFirst && dx != 0)
@@ -1152,8 +1182,9 @@ namespace DeenGames.AliTheAndroid.Model
             this.Monsters.Clear();
 
             var numZugs = Options.MonsterMultiplier * this.globalRandom.Next(1, 3); // 1-2
-            var numSlinks = Options.MonsterMultiplier * this.globalRandom.Next(2, 5); // 2-4            
-            var numMonsters = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 aliens
+            var numTenLegs = Options.MonsterMultiplier * this.globalRandom.Next(2, 4); // 2-3
+            var numSlinks = Options.MonsterMultiplier * this.globalRandom.Next(3, 5); // 3-4            
+            var numMonsters = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 monsters of all types
 
             while (numMonsters > 0)
             {
@@ -1163,11 +1194,14 @@ namespace DeenGames.AliTheAndroid.Model
                 if (numZugs > 0) {
                     template = "Zug";
                     numZugs--;
+                } else if (numTenLegs > 0) {
+                    template = "TenLegs";
+                    numTenLegs--;
                 } else if (numSlinks > 0) {
                     template = "Slink";
                     numSlinks--;
                 } else {
-                    template = "Alien";
+                    template = "Fuseling";
                     numMonsters--;
                 }
 
@@ -1176,7 +1210,7 @@ namespace DeenGames.AliTheAndroid.Model
 
                 // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
                 if (template == "Slink") {
-                    var numSubSlinks = this.globalRandom.Next(3, 7); // 3-6
+                    var numSubSlinks = this.globalRandom.Next(3, 7); // 3-6 in a bunch
                     var spots = this.GetAdjacentFloors(spot);
                     var spotsToUse = spots.OrderBy(s => this.globalRandom.Next()).Take(Math.Min(spots.Count, numSubSlinks));
 

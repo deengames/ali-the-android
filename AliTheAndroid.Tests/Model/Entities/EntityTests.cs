@@ -11,8 +11,10 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
     [TestFixture]
     public class Entitytests : AbstractTest
     {
-        [TestCase("Alien")]
+        [TestCase("Fuseling")]
         [TestCase("Slink")]
+        [TestCase("TenLegs")]
+        [TestCase("Egg")]
         [TestCase("Zug")]
         public void CreateFromTemplateCreatesKnownEntities(string name)
         {

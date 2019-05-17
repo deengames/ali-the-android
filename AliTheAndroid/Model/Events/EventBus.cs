@@ -29,7 +29,9 @@ namespace DeenGames.AliTheAndroid.Model.Events
         {
             if (this.eventListeners.ContainsKey(eventName))
             {
-                foreach (var listener in this.eventListeners[eventName])
+                // Make a copy so that, any events triggering things that bind events, can do so.
+                // eg. move => lays egg => adds an event listener. Can't modify collection mid-iteration.
+                foreach (var listener in this.eventListeners[eventName].ToArray())
                 {
                     listener.Invoke(data);
                 }
