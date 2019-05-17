@@ -14,7 +14,7 @@ namespace AliTheAndroid.Model.Entities
         public bool HasEnvironmentSuit = false;
         public bool CanFireGravityCannon { get; set; } = true;
 
-        public Player() : base("You", '@', Color.White, 0, 0, 50, 7, 5, 4)
+        public Player() : base("You", '@', Color.White, 0, 0, 50, 70, 50, 4)
         {
             this.DirectionFacing = Direction.Up;
         }

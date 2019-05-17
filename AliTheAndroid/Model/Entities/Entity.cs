@@ -24,11 +24,14 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         {
             // This code makes me cry.
             switch (name.ToLower()) {
+                case "egg": return new Egg(x, y);
                 // Regular enemy. Takes a bit of skill to kill.
                 case "fuseling": return new Entity("Fuseling", 'f', Palette.Blue, x, y, 42, 9, 4);
                 // Fodder. Generates in big groups, though.
                 case "slink": return new Entity("Slink", 's', Palette.DarkBlueMuted, x, y, 33, 6, 2);
-                // Tank. REALLY hard to kill (I hope).
+                // Spawner. Tough, and lays eggs frequently.
+                case "tenlegs": return new Spawner("TenLegs", 't', Palette.DarkSkinBrown, x, y, 60, 12, 5);
+                // Tank. REALLY hard to kill.
                 case "zug":  return new Entity("Zug", 'z', Palette.Red, x, y, 90, 18, 8);
                 default: throw new ArgumentException($"Not sure how to create a {name} template entity");
             }
@@ -45,7 +48,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.VisionRange = visionRange;
         }
 
-        public void Die()
+        public virtual void Die()
         {
             this.CurrentHealth = 0;
             this.Character = '%';

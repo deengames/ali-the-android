@@ -13,6 +13,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
     {
         [TestCase("Fuseling")]
         [TestCase("Slink")]
+        [TestCase("TenLegs")]
+        [TestCase("Egg")]
         [TestCase("Zug")]
         public void CreateFromTemplateCreatesKnownEntities(string name)
         {
