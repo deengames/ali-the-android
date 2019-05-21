@@ -141,5 +141,31 @@ namespace AliTheAndroid.Tests.Model
                 Assert.That(floor.StairsUpLocation, Is.EqualTo(GoRogue.Coord.NONE));
             }
         }
+
+        [Test]
+        public void GenerateMonstersGeneratesMonstersOnAppropriateFloorsOnly()
+        {
+            // Slinks on B2, TenLegs on B4, Zugs on B6
+            var random = new StandardGenerator(1021);
+            var noPowerUps = new List<PowerUp>();
+            var width = 50;
+            var height = 40;
+
+            var floors = new List<Floor>();
+            // i => B1, B2, etc. base 1)
+            for (var i = 1; i <= 8; i++)
+            {
+                floors.Add(new Floor(width, height, i - 1, random, noPowerUps));
+            }
+
+            // Assert, starting with B1
+            Assert.That(floors[0].Monsters.All(m => m.Name == "Fuseling"));
+            Assert.That(floors[1].Monsters.All(m => m.Name == "Fuseling" || m.Name == "Slink"));
+            Assert.That(floors[2].Monsters.All(m => m.Name == "Fuseling" || m.Name == "Slink"));
+            Assert.That(floors[3].Monsters.All(m => m.Name == "Fuseling" || m.Name == "Slink" || m.Name == "TenLegs"));
+            Assert.That(floors[4].Monsters.All(m => m.Name == "Fuseling" || m.Name == "Slink" || m.Name == "TenLegs"));
+            Assert.That(floors[5].Monsters.All(m => m.Name == "Fuseling" || m.Name == "Slink" || m.Name == "TenLegs" || m.Name == "Zug"));
+            Assert.That(floors[6].Monsters.All(m => m.Name == "Fuseling" || m.Name == "Slink" || m.Name == "TenLegs" || m.Name == "Zug"));
+        }
     }
 }

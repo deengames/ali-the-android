@@ -71,6 +71,14 @@ namespace DeenGames.AliTheAndroid.Model
         private IKeyboard keyboard;
         private bool generatedPowerUps = false;
 
+        // These are: B2, B4, etc.
+        private static readonly IDictionary<string, int> monsterFloors = new Dictionary<string, int>() {
+            { "slink", 2 },
+            { "tenlegs", 4 },
+            { "zug", 6 },
+            { "boss", 10 },
+        };
+
 
         // TODO: should not be publically settable
         public string LatestMessage { 
@@ -1181,10 +1189,11 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.Monsters.Clear();
 
-            var numZugs = Options.MonsterMultiplier * this.globalRandom.Next(1, 3); // 1-2
-            var numTenLegs = Options.MonsterMultiplier * this.globalRandom.Next(2, 4); // 2-3
-            var numSlinks = Options.MonsterMultiplier * this.globalRandom.Next(3, 5); // 3-4            
+            // floorNum + 1 because B1 is floorNum 0, the dictionary is in B2, B4 ... not 1, 3, ...
             var numFuselings = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 monsters of all types
+            var numSlinks = this.floorNum + 1 >= monsterFloors["slink"] ? Options.MonsterMultiplier * this.globalRandom.Next(3, 5) : 0; // 3-4            
+            var numTenLegs = this.floorNum + 1 >= monsterFloors["tenlegs"] ? Options.MonsterMultiplier * this.globalRandom.Next(2, 4) : 0; // 2-3
+            var numZugs = this.floorNum + 1 >= monsterFloors["zug"] ? Options.MonsterMultiplier * this.globalRandom.Next(1, 3) : 0; // 1-2
 
             while (numFuselings > 0)
             {
