@@ -365,17 +365,15 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             var extraRooms = ExtraGravityWaveRooms;
-            var candidateRooms = rooms.Where(r => r != gravityRoom).ToList();
+            var stairsUpCoordinates = new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y);
+            var candidateRooms = rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates)).ToList();
 
-            while (extraRooms > 0)
+            while (extraRooms > 0 && candidateRooms.Any())
             {
                 var nextRoom = candidateRooms[this.globalRandom.Next(candidateRooms.Count)];
-                if (!nextRoom.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)))
-                {
-                    this.FillWithGravity(nextRoom);
-                    candidateRooms.Remove(nextRoom);
-                    extraRooms -= 1;
-                }
+                this.FillWithGravity(nextRoom);
+                candidateRooms.Remove(nextRoom);
+                extraRooms -= 1;
             }
         }
 
