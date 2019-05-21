@@ -1,6 +1,7 @@
+using DeenGames.AliTheAndroid.Model.Entities;
 using NUnit.Framework;
 
-namespace DeenGames.AliTheAndroid.Model.Entities
+namespace DeenGames.AliTheAndroid.Tests.Model.Entities
 {
     [TestFixture]
     public class PowerUpTests
