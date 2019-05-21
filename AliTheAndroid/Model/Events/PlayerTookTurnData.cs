@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Entities;
 
 namespace DeenGames.AliTheAndroid.Model.Events

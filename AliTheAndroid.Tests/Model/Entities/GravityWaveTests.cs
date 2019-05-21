@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Events;
 using DeenGames.AliTheAndroid.Tests.Helpers;
 using NUnit.Framework;
 
-namespace AliTheAndroid.Tests.Model.Entities
+namespace DeenGames.AliTheAndroid.Tests.Model.Entities
 {
     [TestFixture]
     public class GravityWaveTests : AbstractTest

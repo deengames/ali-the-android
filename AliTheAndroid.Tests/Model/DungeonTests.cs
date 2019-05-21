@@ -5,7 +5,7 @@ using DeenGames.AliTheAndroid.Tests.Helpers;
 using Ninject;
 using NUnit.Framework;
 
-namespace AliTheAndroid.Tests.Model
+namespace DeenGames.AliTheAndroid.Tests.Model
 {
     [TestFixture]
     public class DungeonTests : AbstractTest

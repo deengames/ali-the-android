@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
 using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Enums;
 
-namespace AliTheAndroid.Model.Entities
+namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class Player : Entity
     {

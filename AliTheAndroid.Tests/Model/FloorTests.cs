@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
-using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Tests.Helpers;
 using Ninject;
 using NUnit.Framework;
 using Troschuetz.Random.Generators;
 
-namespace AliTheAndroid.Tests.Model
+namespace DeenGames.AliTheAndroid.Tests.Model
 {
     [TestFixture]
     public class FloorTests : AbstractTest
@@ -145,6 +144,7 @@ namespace AliTheAndroid.Tests.Model
         [Test]
         public void GenerateMonstersGeneratesMonstersOnAppropriateFloorsOnly()
         {
+            Console.WriteLine("STarting on problematic test");
             // Slinks on B2, TenLegs on B4, Zugs on B6
             var random = new StandardGenerator(1021);
             var noPowerUps = new List<PowerUp>();
@@ -155,6 +155,7 @@ namespace AliTheAndroid.Tests.Model
             // i => B1, B2, etc. base 1)
             for (var i = 1; i <= 8; i++)
             {
+                Console.WriteLine($"Generating floor B{i} ...");
                 floors.Add(new Floor(width, height, i - 1, random, noPowerUps));
             }
 

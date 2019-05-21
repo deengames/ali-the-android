@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
 

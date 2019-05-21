@@ -7,10 +7,9 @@ using GoRogue.MapViews;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
 using Global = SadConsole.Global;
-using AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Enums;
 using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model;
 
 namespace DeenGames.AliTheAndroid.Consoles

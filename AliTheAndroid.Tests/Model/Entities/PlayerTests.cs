@@ -1,4 +1,3 @@
-using AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Entities;
 using NUnit.Framework;
 

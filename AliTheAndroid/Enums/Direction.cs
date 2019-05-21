@@ -1,4 +1,4 @@
-namespace AliTheAndroid.Enums
+namespace DeenGames.AliTheAndroid.Enums
 {
 	public enum Direction
 	{
