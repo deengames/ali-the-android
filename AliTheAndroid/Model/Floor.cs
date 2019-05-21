@@ -1191,6 +1191,11 @@ namespace DeenGames.AliTheAndroid.Model
             var numTenLegs = this.floorNum + 1 >= monsterFloors["tenlegs"] ? Options.MonsterMultiplier * this.globalRandom.Next(2, 4) : 0; // 2-3
             var numZugs = this.floorNum + 1 >= monsterFloors["zug"] ? Options.MonsterMultiplier * this.globalRandom.Next(1, 3) : 0; // 1-2
 
+            numFuselings += this.floorNum; // +1 fuseling per floor
+            numSlinks += (int)Math.Floor((this.floorNum - monsterFloors["slink"]) / 2f); // +1 slink every other floor (B4, B6, B8, B10)
+            numTenLegs += (int)Math.Floor((this.floorNum - monsterFloors["tenlegs"]) / 3f); // +1 tenlegs every third floor (B4, B7, B10)
+            numZugs += floorNum >= 8 ? 1 : 0; // +1 zug on floors B9+
+
             while (numFuselings > 0)
             {
                 var spot = this.FindEmptySpot();
