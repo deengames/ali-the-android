@@ -7,14 +7,12 @@ using GoRogue.MapViews;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
 using Global = SadConsole.Global;
-using AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Enums;
 using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Infrastructure.Sad;
 using Ninject;
-using AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 
 namespace DeenGames.AliTheAndroid.Model
@@ -1190,7 +1188,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.Monsters.Clear();
 
             // floorNum + 1 because B1 is floorNum 0, the dictionary is in B2, B4 ... not 1, 3, ...
-            var numFuselings = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 monsters of all types
+            var numFuselings = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 fuselings
             var numSlinks = this.floorNum + 1 >= monsterFloors["slink"] ? Options.MonsterMultiplier * this.globalRandom.Next(3, 5) : 0; // 3-4            
             var numTenLegs = this.floorNum + 1 >= monsterFloors["tenlegs"] ? Options.MonsterMultiplier * this.globalRandom.Next(2, 4) : 0; // 2-3
             var numZugs = this.floorNum + 1 >= monsterFloors["zug"] ? Options.MonsterMultiplier * this.globalRandom.Next(1, 3) : 0; // 1-2
@@ -1221,7 +1219,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (template == "Slink") {
                     var numSubSlinks = this.globalRandom.Next(3, 7); // 3-6 in a bunch
                     var spots = this.GetAdjacentFloors(spot);
-                    var spotsToUse = spots.OrderBy(s => this.globalRandom.Next()).Take(Math.Min(spots.Count, numSubSlinks));
+                    var spotsToUse = spots.Where(s => IsWalkable(s.X, s.Y)).OrderBy(s => this.globalRandom.Next()).Take(Math.Min(spots.Count, numSubSlinks));
 
                     foreach (var slinkSpot in spotsToUse) {
                         monster = Entity.CreateFromTemplate(template, slinkSpot.X, slinkSpot.Y);
