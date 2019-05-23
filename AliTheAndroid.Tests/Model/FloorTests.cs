@@ -8,6 +8,7 @@ using DeenGames.AliTheAndroid.Tests.Helpers;
 using Ninject;
 using NUnit.Framework;
 using Troschuetz.Random.Generators;
+using DeenGames.AliTheAndroid.Enums;
 
 namespace DeenGames.AliTheAndroid.Tests.Model
 {
@@ -22,7 +23,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void UpdateAbsorbsPowerUpUnderPlayer()
+        public void OnPlayerMovedAbsorbsPowerUpUnderPlayer()
         {
             // Arrange
             var player = new Player();
@@ -35,7 +36,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             player.Y = powerUp.Y;
 
             // Act
-            floor.Update(TimeSpan.MinValue);
+            floor.OnPlayerMoved();
 
             // Assert
             Assert.That(player.TotalHealth, Is.EqualTo(oldHealth + powerUp.HealthBoost));
@@ -174,7 +175,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             // Number of monsters is quasi-random. Pick the first floor with all monsters (B6) and the last; every monster should be more in number.
             // This won't pass with all seeds; only a carefully-selected seed. You may get a low number of zugs (1-3 => 1) then a +1 on the next floor.
-            var random = new StandardGenerator(99999);
+            var random = new StandardGenerator(9);
             var noPowerUps = new List<PowerUp>();
 
             var b6 = new Floor(40, 40, 5, random, noPowerUps);
@@ -184,6 +185,21 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             Assert.That(b10.Monsters.Where(m => m.Name == "Slink").Count(), Is.GreaterThan(b6.Monsters.Where(m => m.Name == "Slink").Count()));
             Assert.That(b10.Monsters.Where(m => m.Name == "TenLegs").Count(), Is.GreaterThan(b6.Monsters.Where(m => m.Name == "TenLegs").Count()));
             Assert.That(b10.Monsters.Where(m => m.Name == "Zug").Count(), Is.GreaterThan(b6.Monsters.Where(m => m.Name == "Zug").Count()));
+        }
+
+        [TestCase(2, Weapon.MiniMissile)]
+        [TestCase(4, Weapon.Zapper)]
+        [TestCase(6, Weapon.GravityCannon)]
+        [TestCase(8, Weapon.InstaTeleporter)]
+        [TestCase(9, Weapon.PlasmaCannon)]
+        public void GenerateWeaponPickUpGeneratesWeaponsOnAppropriateFloor(int basementNumber, Weapon expectedWeapon)
+        {
+            var random = new StandardGenerator(93524);
+            var noPowerUps = new List<PowerUp>();
+            
+            var floor = new Floor(30, 30, basementNumber - 1, random, noPowerUps);
+            Assert.That(floor.WeaponPickUp, Is.Not.Null);
+            Assert.That(floor.WeaponPickUp.Weapon, Is.EqualTo(expectedWeapon));
         }
     }
 }

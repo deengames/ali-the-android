@@ -48,7 +48,8 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
         public Player Player;
-        public IList<PowerUp> guaranteedPowerUps = new List<PowerUp>();
+        public IList<PowerUp> GuaranteedPowerUps = new List<PowerUp>();
+        public WeaponPickUp WeaponPickUp = null;
 
         private int floorNum = 0;
         private int width = 0;
@@ -69,7 +70,7 @@ namespace DeenGames.AliTheAndroid.Model
         private IKeyboard keyboard;
         private bool generatedPowerUps = false;
 
-        // These are: B2, B4, etc.
+        // 2 = B2
         private static readonly IDictionary<string, int> monsterFloors = new Dictionary<string, int>() {
             { "slink", 2 },
             { "tenlegs", 4 },
@@ -77,6 +78,15 @@ namespace DeenGames.AliTheAndroid.Model
             { "boss", 10 },
         };
 
+        // 2 = B2
+        private static readonly IDictionary<int, Weapon> weaponPickUpFloors = new Dictionary<int, Weapon> {
+            { 2, Weapon.MiniMissile },
+            { 4, Weapon.Zapper },
+            { 6, Weapon.GravityCannon }, // Guaranteed to be between player and gravity waves
+            // Generates on B8, first chasm is B9
+            { 8, Weapon.InstaTeleporter },
+            { 9, Weapon.PlasmaCannon }, // In the final, darkest floor
+        };
 
         // TODO: should not be publically settable
         public string LatestMessage { 
@@ -97,7 +107,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.height = height;
             this.floorNum = floorNum;
             this.globalRandom = globalRandom;
-            this.guaranteedPowerUps = guaranteedPowerUps;
+            this.GuaranteedPowerUps = guaranteedPowerUps;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
@@ -302,15 +312,6 @@ namespace DeenGames.AliTheAndroid.Model
                 this.Player.Unfreeze();
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
             }
-
-            var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
-            if (powerUpUnderPlayer != null)
-            {
-                this.PowerUps.Remove(powerUpUnderPlayer);
-                Player.Absorb(powerUpUnderPlayer);
-                powerUpUnderPlayer.PickUp();
-                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
-            }
         }
         
         public bool IsInPlayerFov(int x, int y)
@@ -352,7 +353,7 @@ namespace DeenGames.AliTheAndroid.Model
                 }
             }
 
-            // If there are no rooms between us (stairs is in a hallway), we don't generate this room.
+            // If there are no rooms between us (stairs is in a hallway), we don't generate waves in this room.
             // If there's just one room - the stairs room - it will be full of gravity.
             // If there are two or more, pick one and gravity-fill it.
             GoRogue.Rectangle gravityRoom = GoRogue.Rectangle.EMPTY;
@@ -411,6 +412,29 @@ namespace DeenGames.AliTheAndroid.Model
             if (this.floorNum == Dungeon.NumFloors)
             {
                 this.StairsDownLocation = GoRogue.Coord.NONE;
+            }
+
+            this.GenerateWeaponPickUp();
+        }
+
+        private void GenerateWeaponPickUp()
+        {
+            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            if (weaponPickUpFloors.ContainsKey(actualFloorNumber))
+            {
+                var rooms = this.rooms.OrderBy(r => globalRandom.Next());
+                var targetRoom = rooms.First();
+
+                foreach (var room in rooms)
+                {
+                    if (!this.GravityWaves.Any(g => room.Contains(new GoRogue.Coord(g.X, g.Y))))
+                    {
+                        targetRoom = room;
+                        break;
+                    }
+                }
+
+                this.WeaponPickUp = new WeaponPickUp(targetRoom.Center.X, targetRoom.Center.Y, weaponPickUpFloors[actualFloorNumber]);
             }
         }
 
@@ -510,14 +534,14 @@ namespace DeenGames.AliTheAndroid.Model
                 }
 
                 var locations = floorsNearStairs.OrderBy(f => globalRandom.Next()).Take(2).ToArray();
-                var powerUps = this.guaranteedPowerUps.Take(2).ToArray();
+                var powerUps = this.GuaranteedPowerUps.Take(2).ToArray();
 
                 // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
                 var choicePowerUps = new List<PowerUp>();
 
                 for (var i = 0; i < locations.Count(); i++)
                 {
-                    var powerUp = this.guaranteedPowerUps[i];
+                    var powerUp = this.GuaranteedPowerUps[i];
                     var location = locations[i];
 
                     powerUp.X = location.X;
@@ -532,7 +556,7 @@ namespace DeenGames.AliTheAndroid.Model
                 foreach (var powerUp in choicePowerUps)
                 {
                     powerUp.OnPickUp(() => {
-                        this.guaranteedPowerUps.Remove(powerUp);
+                        this.GuaranteedPowerUps.Remove(powerUp);
                         this.PowerUps.Remove(powerUp);
                         this.PowerUps.Remove(powerUp.PairedTo);
                     });
@@ -1003,13 +1027,13 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
+            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
             {
                 Dungeon.Instance.GoToNextFloor();
                 destinationX = Player.X;
                 destinationY = Player.Y;
             }
-            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
+            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
             {
                 Dungeon.Instance.GoToPreviousFloor();
                 destinationX = Player.X;
@@ -1063,7 +1087,7 @@ namespace DeenGames.AliTheAndroid.Model
             return processedInput;
         }
 
-        private void OnPlayerMoved()
+        internal void OnPlayerMoved()
         {
             Player.CanFireGravityCannon = true;
             // This is too late - player already moved. For the prototype, we can live with this.
@@ -1091,6 +1115,42 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             this.PlasmaResidue.ForEach(p => p.Degenerate());
+
+            var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
+            if (powerUpUnderPlayer != null)
+            {
+                this.PowerUps.Remove(powerUpUnderPlayer);
+                Player.Absorb(powerUpUnderPlayer);
+                powerUpUnderPlayer.PickUp();
+                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
+            }
+
+            if (this.WeaponPickUp != null && WeaponPickUp.X == Player.X && WeaponPickUp.Y == Player.Y)
+            {
+                this.Player.Acquire(this.WeaponPickUp.Weapon);
+                var key = this.GetKeyFor(this.WeaponPickUp.Weapon);
+                var keyText = key.ToString().Replace("NumPad", "");
+                this.LatestMessage = $"You assimilate the {this.WeaponPickUp.Weapon}. Press {keyText} to equip it.";
+                this.WeaponPickUp = null;
+            }
+        }
+
+        private Keys GetKeyFor(Weapon weapon)
+        {
+            switch (weapon) {
+                case Weapon.MiniMissile:
+                    return Keys.NumPad2;
+                case Weapon.Zapper:
+                    return Keys.NumPad3;
+                case Weapon.GravityCannon:
+                    return Keys.NumPad4;
+                case Weapon.PlasmaCannon:
+                    return Keys.NumPad5;
+                case Weapon.InstaTeleporter:
+                    return Keys.T;
+                default:
+                    throw new ArgumentException($"Not sure what the key binding is for {weapon}");
+            }
         }
 
         private void FireShot()

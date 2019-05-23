@@ -17,6 +17,7 @@ namespace DeenGames.AliTheAndroid.Consoles
     public class CoreGameConsole : SadConsole.Console
     {
         private const int RotatePowerUpColorEveryMilliseconds = 200;
+        private const int RotateWeaponColorEveryMilliseconds = 300;
         private TimeSpan gameTime;
         private Dungeon dungeon;
 
@@ -146,6 +147,13 @@ namespace DeenGames.AliTheAndroid.Consoles
                     var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % PowerUp.DisplayColors.Length;
                     this.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, PowerUp.DisplayColors[colourIndex]);
                 }
+            }
+
+            var weaponPickUp = this.dungeon.CurrentFloor.WeaponPickUp;
+            if (weaponPickUp != null) {
+                var elapsedSeconds = this.gameTime.TotalMilliseconds;
+                var colourIndex = (int)Math.Floor(elapsedSeconds / RotateWeaponColorEveryMilliseconds) % WeaponPickUp.DisplayColors.Length;
+                this.SetGlyph(weaponPickUp.X, weaponPickUp.Y, weaponPickUp.Character, WeaponPickUp.DisplayColors[colourIndex]);
             }
 
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
