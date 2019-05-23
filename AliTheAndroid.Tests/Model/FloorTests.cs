@@ -123,7 +123,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
         [TestCase(0, true, true)]
         [TestCase(5, true, true)]
-        [TestCase(Dungeon.NumFloors, false, true)]
+        [TestCase(Dungeon.NumFloors - 1, false, true)]
         public void GenerateFloorGeneratesUpAndDownStairsAppropraitely(int floorNum, bool expectStairsDown, bool expectStairsUp)
         {
             var globalRandom = new StandardGenerator(10201);
@@ -175,7 +175,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             // Number of monsters is quasi-random. Pick the first floor with all monsters (B6) and the last; every monster should be more in number.
             // This won't pass with all seeds; only a carefully-selected seed. You may get a low number of zugs (1-3 => 1) then a +1 on the next floor.
-            var random = new StandardGenerator(9);
+            var random = new StandardGenerator(99999);
             var noPowerUps = new List<PowerUp>();
 
             var b6 = new Floor(40, 40, 5, random, noPowerUps);
