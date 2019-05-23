@@ -1,3 +1,4 @@
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
 using NUnit.Framework;
 
@@ -26,6 +27,23 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
             Assert.That(player.Strength, Is.EqualTo(startStrength + powerUp.StrengthBoost));
             Assert.That(player.Defense, Is.EqualTo(startDefense + powerUp.DefenseBoost));
             Assert.That(player.VisionRange, Is.EqualTo(startVision + powerUp.VisionBoost));
+        }
+
+        [Test]
+        public void PlayerStartsWithBlaster()
+        {
+            var player = new Player();
+            Assert.That(player.Has(Weapon.Blaster), Is.True);
+        }
+
+        [Test]
+        public void HasReturnsTrueForAcquiredWeapons()
+        {
+            var player = new Player();
+            player.Acquire(Weapon.PlasmaCannon);
+
+            Assert.That(player.Has(Weapon.PlasmaCannon), Is.True);
+            Assert.That(player.Has(Weapon.GravityCannon), Is.False);
         }
     }
 

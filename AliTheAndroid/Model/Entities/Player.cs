@@ -12,6 +12,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public Weapon CurrentWeapon = Weapon.Blaster;
         public bool HasEnvironmentSuit = false;
         public bool CanFireGravityCannon { get; set; } = true;
+        private List<Weapon> weapons { get; } = new List<Weapon>() { Weapon.Blaster };
 
         public Player() : base("You", '@', Color.White, 0, 0, 50, 70, 50, 4)
         {
@@ -37,6 +38,28 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public void Unfreeze() {
             this.CanMove = true;
+        }
+        
+        public void Absorb(PowerUp powerUp)
+        {
+            this.CurrentHealth += powerUp.HealthBoost;
+            this.TotalHealth += powerUp.HealthBoost;
+            this.Strength += powerUp.StrengthBoost;
+            this.Defense += powerUp.DefenseBoost;
+            this.VisionRange += powerUp.VisionBoost;
+        }
+
+        public bool Has(Weapon weapon)
+        {
+            return this.weapons.Contains(weapon);
+        }
+
+        public void Acquire(Weapon weapon)
+        {
+            if (!this.weapons.Contains(weapon))
+            {
+                this.weapons.Add(weapon);
+            }
         }
 
         internal void TurnCounterClockwise()
@@ -75,13 +98,5 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
         }
 
-        public void Absorb(PowerUp powerUp)
-        {
-            this.CurrentHealth += powerUp.HealthBoost;
-            this.TotalHealth += powerUp.HealthBoost;
-            this.Strength += powerUp.StrengthBoost;
-            this.Defense += powerUp.DefenseBoost;
-            this.VisionRange += powerUp.VisionBoost;
-        }
     }
 }

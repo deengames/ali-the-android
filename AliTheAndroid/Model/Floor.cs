@@ -979,23 +979,23 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 Player.TurnClockwise();
             }
-            else if (this.keyboard.IsKeyPressed(Key.NumPad1))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad1) && Player.Has(Weapon.Blaster))
             {
                 Player.CurrentWeapon = Weapon.Blaster;
             }
-            else if (this.keyboard.IsKeyPressed(Key.NumPad2))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad2) && Player.Has(Weapon.MiniMissile))
             {
                 Player.CurrentWeapon = Weapon.MiniMissile;
             }
-            else if (this.keyboard.IsKeyPressed(Key.NumPad3))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad3) && Player.Has(Weapon.Zapper))
             {
                 Player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (this.keyboard.IsKeyPressed(Key.NumPad4))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad4) && Player.Has(Weapon.PlasmaCannon))
             {
                 Player.CurrentWeapon = Weapon.PlasmaCannon;
             }
-            else if (this.keyboard.IsKeyPressed(Key.NumPad5))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad5) && Player.Has(Weapon.GravityCannon))
             {
                 Player.CurrentWeapon = Weapon.GravityCannon;
             }
