@@ -527,14 +527,14 @@ namespace DeenGames.AliTheAndroid.Model
                     this.PowerUps.Add(powerUp);
                 }
 
+                PowerUp.Pair(powerUps[0], powerUps[1]);
+
                 foreach (var powerUp in choicePowerUps)
                 {
                     powerUp.OnPickUp(() => {
                         this.guaranteedPowerUps.Remove(powerUp);
-                        foreach (var choice in choicePowerUps)
-                        {
-                            this.PowerUps.Remove(choice);
-                        }
+                        this.PowerUps.Remove(powerUp);
+                        this.PowerUps.Remove(powerUp.PairedTo);
                     });
                 }
                 
