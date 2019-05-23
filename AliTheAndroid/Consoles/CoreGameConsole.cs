@@ -140,12 +140,6 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            foreach (var effect in this.dungeon.CurrentFloor.EffectEntities) {
-                if (this.dungeon.CurrentFloor.IsInPlayerFov(effect.X, effect.Y)) {
-                    this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
-                }
-            }
-
             foreach (var powerUp in this.dungeon.CurrentFloor.PowerUps) {
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y)) {
                     var elapsedSeconds = this.gameTime.TotalMilliseconds;
@@ -155,6 +149,12 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
+
+            foreach (var effect in this.dungeon.CurrentFloor.EffectEntities) {
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(effect.X, effect.Y)) {
+                    this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
+                }
+            }
 
             this.DrawLine(new Point(0, this.dungeon.Height - 2), new Point(this.dungeon.Width, this.dungeon.Height - 2), null, Palette.BlackAlmost, ' ');
             this.DrawLine(new Point(0, this.dungeon.Height - 1), new Point(this.dungeon.Width, this.dungeon.Height - 1), null, Palette.BlackAlmost, ' ');
