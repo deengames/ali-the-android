@@ -33,7 +33,7 @@ namespace DeenGames.AliTheAndroid.Model
         private const char GravityCannonShot = (char)246; 
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
-        private const int MinimumChasmDistance = 10;
+        private const int MinimumChasmDistance = 3;
         
 
         public readonly List<Plasma> PlasmaResidue = new List<Plasma>();
@@ -79,13 +79,13 @@ namespace DeenGames.AliTheAndroid.Model
         };
 
         // 2 = B2
-        private static readonly IDictionary<int, Weapon> weaponPickUpFloors = new Dictionary<int, Weapon> {
-            { 2, Weapon.MiniMissile },
-            { 4, Weapon.Zapper },
-            { 6, Weapon.GravityCannon }, // Guaranteed to be between player and gravity waves
+        private static readonly IDictionary<Weapon, int> weaponPickUpFloors = new Dictionary< Weapon, int > {
+            { Weapon.MiniMissile, 2 },
+            { Weapon.Zapper, 4 },
+            { Weapon.GravityCannon, 6 }, // Guaranteed to be between player and gravity waves
             // Generates on B8, first chasm is B9
-            { 8, Weapon.InstaTeleporter },
-            { 9, Weapon.PlasmaCannon }, // In the final, darkest floor
+            { Weapon.InstaTeleporter, 8 },
+            { Weapon.PlasmaCannon, 9 }, // In the final, darkest floor
         };
 
         // TODO: should not be publically settable
@@ -400,16 +400,25 @@ namespace DeenGames.AliTheAndroid.Model
             
             this.GenerateStairs();
 
-            // After setting player coordinates and stairs, because generates path between them
-            // TEMPORARY HACK: proper floor number checking per-feature later
-            if (this.floorNum > 0) {
+            var actualFloorNum = this.floorNum + 1;
+            
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.GravityCannon])
+            {
                 this.GenerateGravityWaves();
+            }
+            
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.InstaTeleporter])
+            {
                 this.GenerateChasms();
+            }
+
+            if (actualFloorNum == Dungeon.NumFloors)
+            {
                 this.GenerateBosses();
             }
 
             // Appropriately, remove stairs here, after we no longer need it for path-finding
-            if (this.floorNum == Dungeon.NumFloors)
+            if (actualFloorNum == Dungeon.NumFloors)
             {
                 this.StairsDownLocation = GoRogue.Coord.NONE;
             }
@@ -420,8 +429,11 @@ namespace DeenGames.AliTheAndroid.Model
         private void GenerateWeaponPickUp()
         {
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
-            if (weaponPickUpFloors.ContainsKey(actualFloorNumber))
+            var weaponFloorNumbers = weaponPickUpFloors.Values;
+
+            if (weaponFloorNumbers.Contains(actualFloorNumber))
             {
+                var weaponType = weaponPickUpFloors.Single(w => w.Value == actualFloorNumber).Key;
                 var rooms = this.rooms.OrderBy(r => globalRandom.Next());
                 var targetRoom = rooms.First();
 
@@ -434,7 +446,7 @@ namespace DeenGames.AliTheAndroid.Model
                     }
                 }
 
-                this.WeaponPickUp = new WeaponPickUp(targetRoom.Center.X, targetRoom.Center.Y, weaponPickUpFloors[actualFloorNumber]);
+                this.WeaponPickUp = new WeaponPickUp(targetRoom.Center.X, targetRoom.Center.Y, weaponType);
             }
         }
 
@@ -447,7 +459,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.Chasms.Clear();
             
-            // Pick three/N hallways and fill them with chasms. Make sure they're far from each other.
+            // Pick hallways and fill them with chasms. Make sure they're far from each other.
             var hallwayTiles = new List<GoRogue.Coord>();
             for (var y = 0; y < this.height; y++) {
                 for (var x = 0; x < this.width; x++) {
@@ -460,12 +472,12 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             var numGenerated = 0;
-            var iterations = 0;
-            var candidates = hallwayTiles.Where(h => this.CountAdjacentFloors(h) == 2).OrderBy(c => this.globalRandom.Next()).ToList();
+            var iterations = 0;  // Iterations because: hard to tell if we ran out of hallway tiles.
+            var candidates = hallwayTiles.Where(h => this.IsChasmCandidate(h)).OrderBy(c => this.globalRandom.Next()).ToList();
             
             // Make sure we don't generate chasms too close to each other. This can make hallways impossible to traverse.
             // https://trello.com/c/HxpLSDMt/3-map-generates-a-stuck-map-seed-740970391
-            do {
+            while (iterations++ < 10000 && numGenerated < NumChasms) {
                 var candidate = candidates.FirstOrDefault();
                 if (candidate != null) {
                     if (!this.Chasms.Any()) {
@@ -473,17 +485,59 @@ namespace DeenGames.AliTheAndroid.Model
                         candidates.Remove(candidate);
                         numGenerated++;
                     } else {
-                        // Calculate the distance to the closest chasm, and make sure it's distant enough.
-                        var minDistance = this.Chasms.Select(c => Math.Sqrt(Math.Pow(c.X - candidate.X, 2) + Math.Pow(c.Y - candidate.Y, 2))).Min();
-                        if (minDistance >= MinimumChasmDistance) {
-                            this.GenerateChasmAt(candidate);
-                            candidates.Remove(candidate);
+                        var isGenerated = this.GenerateChasmIfNotTooClose(candidate);
+                        if (isGenerated)
+                        {
                             numGenerated++;
+                            candidates.Remove(candidate);
                         }
                     }
                 }
-            // Iterations because: hard to tell if we ran out of hallway tiles.
-            } while (iterations++ < 1000 && numGenerated < NumChasms);
+            };
+
+            // Fill rooms with chasms too
+            while (numGenerated < NumChasms) 
+            {
+                var spot = this.FindEmptySpot();
+                var isGenerated = this.GenerateChasmIfNotTooClose(spot);
+                if (isGenerated)
+                {
+                    numGenerated++;
+                }
+            }
+        }
+
+        private bool GenerateChasmIfNotTooClose(GoRogue.Coord spot)
+        {
+            // Calculate the distance to the closest chasm, and make sure it's distant enough.
+            var minDistance = this.Chasms.Select(c => Math.Sqrt(Math.Pow(c.X - spot.X, 2) + Math.Pow(c.Y - spot.Y, 2))).Min();
+            if (minDistance >= MinimumChasmDistance) {
+                this.GenerateChasmAt(spot);
+                Console.WriteLine($"On floor B{floorNum + 1}, generated a chasm at {spot}!");
+                return true;
+            }
+            
+            return false;
+        }
+
+        private bool IsChasmCandidate(GoRogue.Coord spot)
+        {
+            if (this.CountAdjacentFloors(spot) != 2)
+            {
+                return false;
+            }
+
+            if (this.IsWalkable(spot.X - 1, spot.Y) && this.IsWalkable(spot.X + 1, spot.Y))
+            {
+                return true;
+            }
+
+            if (this.IsWalkable(spot.X, spot.Y - 1) && this.IsWalkable(spot.X, spot.Y + 1))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private void GenerateChasmAt(GoRogue.Coord location) {
@@ -568,8 +622,14 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateMapRooms() {
             this.rooms = this.GenerateWalls();
-            this.GenerateFakeWallClusters();
-            this.GenerateSecretRooms(rooms);
+
+            var actualFloorNum = this.floorNum + 1;
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
+            {
+                this.GenerateFakeWallClusters();
+                this.GenerateSecretRooms(rooms);
+            }
+
             this.GenerateDoors(rooms);
         }
 
@@ -677,13 +737,17 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             // Generate locked doors: random spots with only two surrounding ground tiles.
-            var leftToGenerate = NumberOfLockedDoors;
-            while (leftToGenerate > 0) {
-                var spot = this.FindEmptySpot();
-                var numFloors = this.CountAdjacentFloors(spot);
-                if (numFloors == 2) {
-                    this.Doors.Add(new Door(spot.X, spot.Y, true));
-                    leftToGenerate--;
+            var actualFloorNum = this.floorNum + 1;
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.Zapper])
+            {
+                var leftToGenerate = NumberOfLockedDoors;
+                while (leftToGenerate > 0) {
+                    var spot = this.FindEmptySpot();
+                    var numFloors = this.CountAdjacentFloors(spot);
+                    if (numFloors == 2) {
+                        this.Doors.Add(new Door(spot.X, spot.Y, true));
+                        leftToGenerate--;
+                    }
                 }
             }
         }

@@ -67,7 +67,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? Palette.Blue : Palette.LightGrey;
+                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? Palette.DarkMutedBrown : Palette.LightGrey;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
