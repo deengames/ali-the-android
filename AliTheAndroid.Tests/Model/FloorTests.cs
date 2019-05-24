@@ -257,5 +257,19 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var previousFloor = new Floor(30, 30, InstaTeleporterFloor - 2, random, noPowerUps);
             Assert.That(!previousFloor.Chasms.Any());
         }
+
+        [Test]
+        // Fix for: https://trello.com/c/7vkfyZEY/34-were-not-generating-enough-chasms
+        public void NumberOfChasmsGeneratedIsAlwaysMax()
+        {
+            const int ExpectedChasmCount = 5;
+            var seed = 358;
+            var noPowerUps =  new List<PowerUp>();
+            for (var i = 0; i < 100; i++) {
+                var random = new StandardGenerator(seed + i);
+                var floor = new Floor(30, 30, 10, random, noPowerUps);
+                Assert.That(floor.Chasms.Count, Is.GreaterThanOrEqualTo(ExpectedChasmCount));
+            }
+        }
     }
 }

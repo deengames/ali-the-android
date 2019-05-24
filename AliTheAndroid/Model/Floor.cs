@@ -471,24 +471,21 @@ namespace DeenGames.AliTheAndroid.Model
                 }
             }
 
-            var numGenerated = 0;
             var iterations = 0;  // Iterations because: hard to tell if we ran out of hallway tiles.
             var candidates = hallwayTiles.Where(h => this.IsChasmCandidate(h)).OrderBy(c => this.globalRandom.Next()).ToList();
             
             // Make sure we don't generate chasms too close to each other. This can make hallways impossible to traverse.
             // https://trello.com/c/HxpLSDMt/3-map-generates-a-stuck-map-seed-740970391
-            while (iterations++ < 10000 && numGenerated < NumChasms) {
+            while (iterations++ < 10000 && this.Chasms.Count < NumChasms) {
                 var candidate = candidates.FirstOrDefault();
                 if (candidate != null) {
                     if (!this.Chasms.Any()) {
                         this.GenerateChasmAt(candidate);
                         candidates.Remove(candidate);
-                        numGenerated++;
                     } else {
                         var isGenerated = this.GenerateChasmIfNotTooClose(candidate);
                         if (isGenerated)
                         {
-                            numGenerated++;
                             candidates.Remove(candidate);
                         }
                     }
@@ -496,14 +493,10 @@ namespace DeenGames.AliTheAndroid.Model
             };
 
             // Fill rooms with chasms too
-            while (numGenerated < NumChasms) 
+            while (this.Chasms.Count < NumChasms) 
             {
                 var spot = this.FindEmptySpot();
-                var isGenerated = this.GenerateChasmIfNotTooClose(spot);
-                if (isGenerated)
-                {
-                    numGenerated++;
-                }
+                this.GenerateChasmIfNotTooClose(spot);
             }
         }
 
