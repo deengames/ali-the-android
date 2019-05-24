@@ -339,7 +339,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y), new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y), true);
+            var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
             var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
@@ -401,7 +401,16 @@ namespace DeenGames.AliTheAndroid.Model
             this.GenerateStairs();
 
             var actualFloorNum = this.floorNum + 1;
-            
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
+            {
+                // Add one more fake wall cluster between the player and the stairs down.
+                var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
+                var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
+                var middle = globalRandom.Next((int)(path.Length * 0.25), (int)(path.Length * 0.75));
+                var midPath = path.GetStep(middle);
+                this.CreateFakeWallClusterAt(midPath);
+            }
+
             if (actualFloorNum >= weaponPickUpFloors[Weapon.GravityCannon])
             {
                 this.GenerateGravityWaves();
@@ -646,8 +655,7 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
         private void GenerateMapRooms() {
-            this.rooms = this.GenerateWalls();
-            
+            this.rooms = this.GenerateWalls();            
             this.GenerateFakeWallClusters();
             this.GenerateSecretRooms(rooms);
             this.GenerateDoors(rooms);
@@ -685,15 +693,20 @@ namespace DeenGames.AliTheAndroid.Model
                     var numFloors = this.CountAdjacentFloors(spot);
                     if (numFloors <= 4) {
                         // Make a plus-shaped cluster. It's cooler.
-                        this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
-                        this.AddNonDupeEntity(new FakeWall(spot.X - 1, spot.Y), this.FakeWalls);
-                        this.AddNonDupeEntity(new FakeWall(spot.X + 1, spot.Y), this.FakeWalls);
-                        this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y - 1), this.FakeWalls);
-                        this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
+                        this.CreateFakeWallClusterAt(spot);
                         numFakeWallClusters -= 1;
                     }
                 }
             }
+        }
+
+        private void CreateFakeWallClusterAt(GoRogue.Coord spot)
+        {
+            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
+            this.AddNonDupeEntity(new FakeWall(spot.X - 1, spot.Y), this.FakeWalls);
+            this.AddNonDupeEntity(new FakeWall(spot.X + 1, spot.Y), this.FakeWalls);
+            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y - 1), this.FakeWalls);
+            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
         }
 
         private void GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
