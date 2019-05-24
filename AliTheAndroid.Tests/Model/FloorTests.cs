@@ -9,6 +9,7 @@ using Ninject;
 using NUnit.Framework;
 using Troschuetz.Random.Generators;
 using DeenGames.AliTheAndroid.Enums;
+using GoRogue.Pathing;
 
 namespace DeenGames.AliTheAndroid.Tests.Model
 {
@@ -175,16 +176,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             // Number of monsters is quasi-random. Pick the first floor with all monsters (B6) and the last; every monster should be more in number.
             // This won't pass with all seeds; only a carefully-selected seed. You may get a low number of zugs (1-3 => 1) then a +1 on the next floor.
-            var random = new StandardGenerator(99999);
+            var random = new StandardGenerator(999);
             var noPowerUps = new List<PowerUp>();
 
             var b6 = new Floor(40, 40, 5, random, noPowerUps);
             var b10 = new Floor(40, 40, 9, random, noPowerUps);
 
-            Assert.That(b10.Monsters.Where(m => m.Name == "Fuseling").Count(), Is.GreaterThan(b6.Monsters.Where(m => m.Name == "Fuseling").Count()));
-            Assert.That(b10.Monsters.Where(m => m.Name == "Slink").Count(), Is.GreaterThan(b6.Monsters.Where(m => m.Name == "Slink").Count()));
-            Assert.That(b10.Monsters.Where(m => m.Name == "TenLegs").Count(), Is.GreaterThan(b6.Monsters.Where(m => m.Name == "TenLegs").Count()));
-            Assert.That(b10.Monsters.Where(m => m.Name == "Zug").Count(), Is.GreaterThan(b6.Monsters.Where(m => m.Name == "Zug").Count()));
+            Assert.That(b10.Monsters.Where(m => m.Name == "Fuseling").Count(), Is.GreaterThanOrEqualTo(b6.Monsters.Where(m => m.Name == "Fuseling").Count()));
+            Assert.That(b10.Monsters.Where(m => m.Name == "Slink").Count(), Is.GreaterThanOrEqualTo(b6.Monsters.Where(m => m.Name == "Slink").Count()));
+            Assert.That(b10.Monsters.Where(m => m.Name == "TenLegs").Count(), Is.GreaterThanOrEqualTo(b6.Monsters.Where(m => m.Name == "TenLegs").Count()));
+            Assert.That(b10.Monsters.Where(m => m.Name == "Zug").Count(), Is.GreaterThanOrEqualTo(b6.Monsters.Where(m => m.Name == "Zug").Count()));
         }
 
         [TestCase(2, Weapon.MiniMissile)]
@@ -270,6 +271,19 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var floor = new Floor(30, 30, 10, random, noPowerUps);
                 Assert.That(floor.Chasms.Count, Is.GreaterThanOrEqualTo(ExpectedChasmCount));
             }
+        }
+
+        [Test]
+        public void GenerateGeneratesFakeWallBetweenStairs()
+        {
+            var floor = new Floor(90, 45, 7, new StandardGenerator(777), new List<PowerUp>());
+
+            var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
+            
+            // Any steps have any fake walls on them. Alternatively, this can be negated as:
+            // For all steps, there are no fake walls.
+            Assert.That(path.Steps.Any(p => floor.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y)));
         }
     }
 }

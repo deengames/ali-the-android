@@ -50,6 +50,9 @@ namespace DeenGames.AliTheAndroid.Model
         public Player Player;
         public IList<PowerUp> GuaranteedPowerUps = new List<PowerUp>();
         public WeaponPickUp WeaponPickUp = null;
+        
+        // Internal for unit testing
+        internal ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
 
         private int floorNum = 0;
         private int width = 0;
@@ -64,7 +67,6 @@ namespace DeenGames.AliTheAndroid.Model
         // Super hack. Key is "x, y", value is IsDiscovered.
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
 
-        private ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
 
         private string lastMessage = "";
         private IKeyboard keyboard;
@@ -547,7 +549,6 @@ namespace DeenGames.AliTheAndroid.Model
             var minDistance = this.Chasms.Select(c => Math.Sqrt(Math.Pow(c.X - spot.X, 2) + Math.Pow(c.Y - spot.Y, 2))).Min();
             if (minDistance >= MinimumChasmDistance) {
                 this.GenerateChasmAt(spot);
-                Console.WriteLine($"On floor B{floorNum + 1}, generated a chasm at {spot}!");
                 return true;
             }
             
