@@ -622,14 +622,9 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateMapRooms() {
             this.rooms = this.GenerateWalls();
-
-            var actualFloorNum = this.floorNum + 1;
-            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
-            {
-                this.GenerateFakeWallClusters();
-                this.GenerateSecretRooms(rooms);
-            }
-
+            
+            this.GenerateFakeWallClusters();
+            this.GenerateSecretRooms(rooms);
             this.GenerateDoors(rooms);
         }
 
@@ -655,50 +650,58 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.FakeWalls.Clear();
 
-             // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
-            var numFakeWallClusters = 3;
-            while (numFakeWallClusters > 0) {
-                var spot = this.FindEmptySpot();
-                var numFloors = this.CountAdjacentFloors(spot);
-                if (numFloors <= 4) {
-                    // Make a plus-shaped cluster. It's cooler.
-                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
-                    this.AddNonDupeEntity(new FakeWall(spot.X - 1, spot.Y), this.FakeWalls);
-                    this.AddNonDupeEntity(new FakeWall(spot.X + 1, spot.Y), this.FakeWalls);
-                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y - 1), this.FakeWalls);
-                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
-                    numFakeWallClusters -= 1;
+            var actualFloorNum = this.floorNum + 1;
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
+            {
+                // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
+                var numFakeWallClusters = 3;
+                while (numFakeWallClusters > 0) {
+                    var spot = this.FindEmptySpot();
+                    var numFloors = this.CountAdjacentFloors(spot);
+                    if (numFloors <= 4) {
+                        // Make a plus-shaped cluster. It's cooler.
+                        this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
+                        this.AddNonDupeEntity(new FakeWall(spot.X - 1, spot.Y), this.FakeWalls);
+                        this.AddNonDupeEntity(new FakeWall(spot.X + 1, spot.Y), this.FakeWalls);
+                        this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y - 1), this.FakeWalls);
+                        this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
+                        numFakeWallClusters -= 1;
+                    }
                 }
             }
         }
 
         private void GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
         {
-            var secretRooms = this.FindPotentialSecretRooms(rooms).Take(2);
-            foreach (var room in secretRooms) {
-                // Fill the interior with fake walls. Otherwise, FOV gets complicated.
-                // Trim perimeter by 1 tile so we get an interior only
-                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
-                    for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
-                        var wall = this.Walls.SingleOrDefault(w => w.X == x && w.Y == y);
+            var actualFloorNum = this.floorNum + 1;
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
+            {
+                var secretRooms = this.FindPotentialSecretRooms(rooms).Take(2);
+                foreach (var room in secretRooms) {
+                    // Fill the interior with fake walls. Otherwise, FOV gets complicated.
+                    // Trim perimeter by 1 tile so we get an interior only
+                    for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                        for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
+                            var wall = this.Walls.SingleOrDefault(w => w.X == x && w.Y == y);
+                            if (wall != null) {
+                                this.Walls.Remove(wall);
+                            }
+
+                            // Mark as "secret floor" if not perimeter
+                            this.FakeWalls.Add(new FakeWall(x, y));
+                        }
+                    }
+
+                    // Hollow out the walls between us and the real room and fill it with fake walls
+                    var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
+                    for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                        var wall = this.Walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
                         if (wall != null) {
                             this.Walls.Remove(wall);
                         }
 
-                        // Mark as "secret floor" if not perimeter
-                        this.FakeWalls.Add(new FakeWall(x, y));
+                        this.FakeWalls.Add(new FakeWall(secretX, y));
                     }
-                }
-
-                // Hollow out the walls between us and the real room and fill it with fake walls
-                var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
-                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
-                    var wall = this.Walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
-                    if (wall != null) {
-                        this.Walls.Remove(wall);
-                    }
-
-                    this.FakeWalls.Add(new FakeWall(secretX, y));
                 }
             }
         }

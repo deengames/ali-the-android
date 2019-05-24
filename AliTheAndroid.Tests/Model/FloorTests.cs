@@ -201,5 +201,61 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             Assert.That(floor.WeaponPickUp, Is.Not.Null);
             Assert.That(floor.WeaponPickUp.Weapon, Is.EqualTo(expectedWeapon));
         }
+
+        [Test]
+        public void GenerateMapGeneratesFakeWallsAfterMiniMissileFloor()
+        {
+            const int MiniMissileFloor = 2; // B2
+            var random = new StandardGenerator(354);
+            var noPowerUps =  new List<PowerUp>();
+
+            var floor = new Floor(30, 30, MiniMissileFloor - 1, random, noPowerUps);
+            Assert.That(floor.FakeWalls.Any());
+
+            var firstFloor = new Floor(30, 30, 0, random, noPowerUps);
+            Assert.That(!firstFloor.FakeWalls.Any());
+        }
+
+        [Test]
+        public void GenerateMapGeneratesLockedDoorsAfterZapperFloor()
+        {
+            const int ZapperFloor = 4; // B4
+            var random = new StandardGenerator(355);
+            var noPowerUps =  new List<PowerUp>();
+
+            var floor = new Floor(30, 30, ZapperFloor - 1, random, noPowerUps);
+            Assert.That(floor.Doors.Any(d => d.IsLocked));
+
+            var previousFloor = new Floor(30, 30, ZapperFloor - 2, random, noPowerUps);
+            Assert.That(previousFloor.Doors.All(d => !d.IsLocked));
+        }
+
+        [Test]
+        public void GenerateMapGeneratesGravityWavesAfterGravityCannonFloor()
+        {
+            const int GravityCannonFloor = 6; // B6
+            var random = new StandardGenerator(356);
+            var noPowerUps =  new List<PowerUp>();
+
+            var floor = new Floor(30, 30, GravityCannonFloor - 1, random, noPowerUps);
+            Assert.That(floor.GravityWaves.Any());
+
+            var previousFloor = new Floor(30, 30, GravityCannonFloor - 2, random, noPowerUps);
+            Assert.That(!previousFloor.GravityWaves.Any());
+        }
+
+        [Test]
+        public void GenerateMapGeneratesChasmsAfterTeleporterFloor()
+        {
+            const int InstaTeleporterFloor = 8; // B8
+            var random = new StandardGenerator(357);
+            var noPowerUps =  new List<PowerUp>();
+
+            var floor = new Floor(30, 30, InstaTeleporterFloor - 1, random, noPowerUps);
+            Assert.That(floor.Chasms.Any());
+
+            var previousFloor = new Floor(30, 30, InstaTeleporterFloor - 2, random, noPowerUps);
+            Assert.That(!previousFloor.Chasms.Any());
+        }
     }
 }
