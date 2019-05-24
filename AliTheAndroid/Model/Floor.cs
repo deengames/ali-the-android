@@ -434,20 +434,52 @@ namespace DeenGames.AliTheAndroid.Model
             if (weaponFloorNumbers.Contains(actualFloorNumber))
             {
                 var weaponType = weaponPickUpFloors.Single(w => w.Value == actualFloorNumber).Key;
-                var rooms = this.rooms.OrderBy(r => globalRandom.Next());
-                var targetRoom = rooms.First();
+                
+                var floorTiles = this.GetTilesAccessibleFromStairsWithoutWeapons();
 
-                foreach (var room in rooms)
+                var target = floorTiles.OrderByDescending(c => 
+                    // Order by farthest to closest (compared to stairs)
+                    Math.Sqrt(Math.Pow(c.X - this.StairsUpLocation.X, 2) + Math.Pow(c.Y - this.StairsUpLocation.Y, 2)))
+                    // Pick randomly from the first 10
+                    .Take(10).OrderBy(c => globalRandom.Next()).First();
+
+                this.WeaponPickUp = new WeaponPickUp(target.X, target.Y, weaponType);
+            }
+        }
+
+        // Start at the stairs-up. Flood fill floor tiles. Return the floor tiles that you can reach, without
+        // wandering through locked doors, gravity waves, fake walls, or across chasms.
+        private List<GoRogue.Coord> GetTilesAccessibleFromStairsWithoutWeapons()
+        {
+            var toExplore = new List<GoRogue.Coord>();
+            var explored = new List<GoRogue.Coord>();
+            var reachable = new List<GoRogue.Coord>();
+
+            toExplore.Add(this.StairsUpLocation);
+
+            while (toExplore.Any())
+            {
+                var check = toExplore.First();
+                if (IsWalkable(check.X, check.Y) && !GravityWaves.Any(g => g.X == check.X && g.Y == check.Y))
                 {
-                    if (!this.GravityWaves.Any(g => room.Contains(new GoRogue.Coord(g.X, g.Y))))
-                    {
-                        targetRoom = room;
-                        break;
-                    }
+                    reachable.Add(check);
+
+                    var left = new GoRogue.Coord(check.X - 1, check.Y);
+                    var right = new GoRogue.Coord(check.X + 1, check.Y);
+                    var up = new GoRogue.Coord(check.X, check.Y - 1);
+                    var down = new GoRogue.Coord(check.X, check.Y + 1);
+
+                    if (!toExplore.Contains(left) && !explored.Contains(left)) { toExplore.Add(left); }
+                    if (!toExplore.Contains(right) &&!explored.Contains(right)) { toExplore.Add(right); }
+                    if (!toExplore.Contains(up) &&!explored.Contains(up)) { toExplore.Add(up); }
+                    if (!toExplore.Contains(down) &&!explored.Contains(down)) { toExplore.Add(down); }
                 }
 
-                this.WeaponPickUp = new WeaponPickUp(targetRoom.Center.X, targetRoom.Center.Y, weaponType);
+                explored.Add(check);
+                toExplore.Remove(check);
             }
+
+            return reachable;
         }
 
         private void GenerateBosses()
