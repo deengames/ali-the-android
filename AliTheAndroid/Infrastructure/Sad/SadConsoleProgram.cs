@@ -25,8 +25,9 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
         public void Run()
         {
             //SadConsole.Settings.UnlimitedFPS = true;
-            //SadConsole.Settings.UseHardwareFullScreen = true;
-
+            SadConsole.Settings.UseHardwareFullScreen = true;
+            SadConsole.Settings.ResizeMode = Settings.WindowResizeOptions.Stretch;
+            
             // Setup the engine and creat the main window.
             // 120x50
             SadConsole.Game.Create("Fonts/IBM.font", widthInTiles, heightInTiles);
