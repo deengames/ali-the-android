@@ -212,9 +212,18 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             var floor = new Floor(30, 30, MiniMissileFloor - 1, random, noPowerUps);
             Assert.That(floor.FakeWalls.Any());
+            Assert.That(floor.FakeWalls.All(w => !w.IsBacktrackingWall));
+        }
+
+        [Test]
+        public void GenerateMapGeneratesBacktrackingFakeWallsOnFirstMap()
+        {
+            var random = new StandardGenerator(354);
+            var noPowerUps =  new List<PowerUp>();
 
             var firstFloor = new Floor(30, 30, 0, random, noPowerUps);
-            Assert.That(!firstFloor.FakeWalls.Any());
+            Assert.That(firstFloor.FakeWalls.Any());
+            Assert.That(firstFloor.FakeWalls.All(w => w.IsBacktrackingWall));
         }
 
         [Test]

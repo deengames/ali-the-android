@@ -398,6 +398,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.PlasmaResidue.Clear();
 
             this.GenerateMapRooms();
+            this.GenerateBacktrackingObstacles();
             this.GenerateMonsters();
             
             this.GenerateStairs();
@@ -435,6 +436,19 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             this.GenerateWeaponPickUp();
+        }
+
+        // Generates things out-of-depth (eg. fake walls before the missile launcher pick-up or gaps before the teleporter pick-up).
+        // Each one generates just one floor back, for simplicity and user experience (backtracking 2-4 floors is painful).
+        private void GenerateBacktrackingObstacles()
+        {
+            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1) {
+                this.GenerateSecretRooms(rooms, 1, true);
+            } else if (actualFloorNumber == weaponPickUpFloors[Weapon.Zapper] - 1) {
+            } else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1) {
+            } else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1) {
+            }
         }
 
         private void GenerateWeaponPickUp()
@@ -656,9 +670,16 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
         private void GenerateMapRooms() {
+            var actualFloorNum = this.floorNum + 1;
+
             this.rooms = this.GenerateWalls();            
             this.GenerateFakeWallClusters();
-            this.GenerateSecretRooms(rooms);
+
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
+            {
+                this.GenerateSecretRooms(rooms);
+            }
+            
             this.GenerateDoors(rooms);
         }
 
@@ -710,39 +731,38 @@ namespace DeenGames.AliTheAndroid.Model
             this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
         }
 
-        private void GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
+        private void GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms, int numRooms = 2, bool flagWallsAsBacktracking = false)
         {
             var actualFloorNum = this.floorNum + 1;
-            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
-            {
-                var secretRooms = this.FindPotentialSecretRooms(rooms).Take(2);
-                foreach (var room in secretRooms) {
-                    // Fill the interior with fake walls. Otherwise, FOV gets complicated.
-                    // Trim perimeter by 1 tile so we get an interior only
-                    for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
-                        for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
-                            var wall = this.Walls.SingleOrDefault(w => w.X == x && w.Y == y);
-                            if (wall != null) {
-                                this.Walls.Remove(wall);
-                            }
 
-                            // Mark as "secret floor" if not perimeter
-                            this.FakeWalls.Add(new FakeWall(x, y));
-                        }
-                    }
-
-                    // Hollow out the walls between us and the real room and fill it with fake walls
-                    var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
-                    for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
-                        var wall = this.Walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
+            var secretRooms = this.FindPotentialSecretRooms(rooms).Take(numRooms);
+            foreach (var room in secretRooms) {
+                // Fill the interior with fake walls. Otherwise, FOV gets complicated.
+                // Trim perimeter by 1 tile so we get an interior only
+                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                    for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
+                        var wall = this.Walls.SingleOrDefault(w => w.X == x && w.Y == y);
                         if (wall != null) {
                             this.Walls.Remove(wall);
                         }
 
-                        this.FakeWalls.Add(new FakeWall(secretX, y));
+                        // Mark as "secret floor" if not perimeter
+                        this.FakeWalls.Add(new FakeWall(x, y, flagWallsAsBacktracking));
                     }
                 }
+
+                // Hollow out the walls between us and the real room and fill it with fake walls
+                var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
+                for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
+                    var wall = this.Walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
+                    if (wall != null) {
+                        this.Walls.Remove(wall);
+                    }
+
+                    this.FakeWalls.Add(new FakeWall(secretX, y, flagWallsAsBacktracking));
+                }
             }
+            
         }
 
         private void GenerateDoors(IEnumerable<GoRogue.Rectangle> rooms) {
