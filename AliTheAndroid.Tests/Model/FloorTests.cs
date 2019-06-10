@@ -234,10 +234,19 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var noPowerUps =  new List<PowerUp>();
 
             var floor = new Floor(30, 30, ZapperFloor - 1, random, noPowerUps);
-            Assert.That(floor.Doors.Any(d => d.IsLocked));
+            Assert.That(floor.Doors.Any(d => d.IsLocked && !d.IsBacktrackingDoor));
+        }
+
+        [Test]
+        public void GenerateMapGeneratesBacktrackingLockedDoorsOnZapperFloorMinusOne()
+        {
+            const int ZapperFloor = 4; // B4
+            var random = new StandardGenerator(355);
+            var noPowerUps =  new List<PowerUp>();
 
             var previousFloor = new Floor(30, 30, ZapperFloor - 2, random, noPowerUps);
-            Assert.That(previousFloor.Doors.All(d => !d.IsLocked));
+            Assert.That(previousFloor.Doors.Any(d => d.IsLocked && d.IsBacktrackingDoor));
+            Assert.That(previousFloor.Doors.Count(d => d.IsLocked && !d.IsBacktrackingDoor), Is.EqualTo(0));
         }
 
         [Test]

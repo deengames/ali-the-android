@@ -6,6 +6,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class Door : AbstractEntity
     {
+        public bool IsBacktrackingDoor {get; private set;}
         private bool isLocked = false;
         private bool isOpened = false;
 
@@ -22,10 +23,11 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.Color = this.isLocked ? Palette.Orange : Palette.YellowAlmost;
         }}
 
-        public Door(int x, int y, bool isLocked = false) : base(x, y, '+', Palette.YellowAlmost)
+        public Door(int x, int y, bool isLocked = false, bool isBacktrackingDoor = false) : base(x, y, '+', Palette.YellowAlmost)
         {
             this.IsLocked = isLocked;
             this.Color = isLocked ? Palette.Orange : Palette.YellowAlmost;
+            this.IsBacktrackingDoor = isBacktrackingDoor;
         }
     }
 }

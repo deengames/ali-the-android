@@ -335,25 +335,34 @@ namespace DeenGames.AliTheAndroid.Model
             return isTileDiscovered.ContainsKey(key) && isTileDiscovered[key] == true;
         }
 
-        private void GenerateGravityWaves()
+        // Get the set of tiles spanning a path from the stairs up to the stairs down. Get all rooms that encompass those tiles.
+        private List<GoRogue.Rectangle> RoomsInPathFromStairsToStairs()
         {
-            this.GravityWaves.Clear();
-
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
             var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
-            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
 
             var roomsInPath = new List<GoRogue.Rectangle>();
 
             foreach (var step in path.StepsWithStart)
             {
                 var stepRoom = this.rooms.SingleOrDefault(r => r.Contains(step));
-                if (stepRoom != GoRogue.Rectangle.EMPTY && stepRoom != playerRoom && !roomsInPath.Contains(stepRoom))
+                if (stepRoom != GoRogue.Rectangle.EMPTY && !roomsInPath.Contains(stepRoom))
                 {
                     roomsInPath.Add(stepRoom);
                 }
             }
+
+            return roomsInPath;
+        }
+
+        private void GenerateGravityWaves()
+        {
+            this.GravityWaves.Clear();
+
+            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
+            var roomsInPath = this.RoomsInPathFromStairsToStairs();
+            roomsInPath.Remove(playerRoom);
 
             // If there are no rooms between us (stairs is in a hallway), we don't generate waves in this room.
             // If there's just one room - the stairs room - it will be full of gravity.
@@ -399,6 +408,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             this.GenerateMapRooms();
             this.GenerateBacktrackingObstacles();
+            this.GenerateDoors();
             this.GenerateMonsters();
             
             this.GenerateStairs();
@@ -443,11 +453,23 @@ namespace DeenGames.AliTheAndroid.Model
         private void GenerateBacktrackingObstacles()
         {
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
-            if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1) {
+
+            if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
+            {
                 this.GenerateSecretRooms(rooms, 1, true);
-            } else if (actualFloorNumber == weaponPickUpFloors[Weapon.Zapper] - 1) {
-            } else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1) {
-            } else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1) {
+            }
+            else if (actualFloorNumber == weaponPickUpFloors[Weapon.Zapper] - 1)
+            {
+                // Find a room NOT in the path from player to stairs. Lock it. DONE.
+                var roomsInPath = RoomsInPathFromStairsToStairs();
+                var extraLockedRoom = this.rooms.Where(r => !roomsInPath.Contains(r)).OrderBy(r => globalRandom.Next()).First();
+                this.AddDoorsToRoom(extraLockedRoom, true, true);
+            }
+            else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1)
+            {
+            }
+            else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1)
+            {
             }
         }
 
@@ -678,9 +700,7 @@ namespace DeenGames.AliTheAndroid.Model
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
                 this.GenerateSecretRooms(rooms);
-            }
-            
-            this.GenerateDoors(rooms);
+            }            
         }
 
         private IList<GoRogue.Rectangle> GenerateWalls()
@@ -765,37 +785,12 @@ namespace DeenGames.AliTheAndroid.Model
             
         }
 
-        private void GenerateDoors(IEnumerable<GoRogue.Rectangle> rooms) {
-            this.Doors.Clear();
-
+        private void GenerateDoors()
+        {
             // Generate regular doors: any time we have a room, look at the perimeter tiles around that room.
-            // If any of them have <= 4 ground tiles (including tiles with doors on them already), add a door.
+            // If any of them have two ground tiles (including tiles with doors on them already), add a door.
             foreach (var room in rooms) {
-                var startX = room.X;
-                var stopX = room.X + room.Width - 1;
-                var startY = room.Y;
-                var stopY = room.Y + room.Height - 1;
-
-                for (var x = startX; x <= stopX; x++) {
-                    if (this.IsDoorCandidate(x, room.Y - 1)) {
-                        this.Doors.Add(new Door(x, room.Y - 1));
-                    }
-                    if (this.IsDoorCandidate(x, room.Y + room.Height - 1)) {
-                        this.Doors.Add(new Door(x, room.Y + room.Height - 1));
-                    }
-                }
-
-                for (var y = startY; y <= stopY; y++) {
-                    if (this.IsDoorCandidate(room.X, y)) {
-                        this.Doors.Add(new Door(room.X, y));
-                    }
-                }
-
-                for (var y = startY; y <= stopY; y++) {
-                    if (this.IsDoorCandidate(room.X + room.Width - 1, y)) {
-                        this.Doors.Add(new Door(room.X + room.Width - 1, y));
-                    }
-                }
+                this.AddDoorsToRoom(room);
             }
 
             // Generate locked doors: random spots with only two surrounding ground tiles.
@@ -805,8 +800,8 @@ namespace DeenGames.AliTheAndroid.Model
                 var leftToGenerate = NumberOfLockedDoors;
                 while (leftToGenerate > 0) {
                     var spot = this.FindEmptySpot();
-                    var numFloors = this.CountAdjacentFloors(spot);
-                    if (numFloors == 2) {
+                    if (IsDoorCandidate(spot))
+                    {
                         this.Doors.Add(new Door(spot.X, spot.Y, true));
                         leftToGenerate--;
                     }
@@ -814,8 +809,48 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private bool IsDoorCandidate(int x, int y) {
-            return this.IsWalkable(x, y) && this.CountAdjacentFloors(new GoRogue.Coord(x, y)) == 4;
+        private void AddDoorsToRoom(GoRogue.Rectangle room, bool isLocked = false, bool isBacktrackingDoor = false)
+        {
+            var startX = room.X;
+            var stopX = room.X + room.Width - 1;
+            var startY = room.Y;
+            var stopY = room.Y + room.Height - 1;
+
+            for (var x = startX; x <= stopX; x++) {
+                if (this.IsDoorCandidate(x, room.Y - 1)) {
+                    this.Doors.Add(new Door(x, room.Y - 1, isLocked, isBacktrackingDoor));
+                }
+                if (this.IsDoorCandidate(x, room.Y + room.Height - 1)) {
+                    this.Doors.Add(new Door(x, room.Y + room.Height - 1, isLocked, isBacktrackingDoor));
+                }
+            }
+
+            for (var y = startY; y <= stopY; y++) {
+                if (this.IsDoorCandidate(room.X, y)) {
+                    this.Doors.Add(new Door(room.X, y, isLocked, isBacktrackingDoor));
+                }
+                if (this.IsDoorCandidate(room.X + room.Width - 1, y)) {
+                    this.Doors.Add(new Door(room.X + room.Width - 1, y, isLocked, isBacktrackingDoor));
+                }
+            }
+        }
+
+        private bool IsDoorCandidate(int x, int y)
+        {
+            return IsDoorCandidate(new GoRogue.Coord(x, y));
+        }
+
+        private bool IsDoorCandidate(GoRogue.Coord coordinates)
+        {
+            var x = coordinates.X;
+            var y = coordinates.Y;
+            // Walkable, in a somewhat enclosed area. 2 tiles for things that are hallways/corners, 4 tiles
+            // for generating locked doors where rooms meet hallways - we get three or four floor tiles here
+            return this.IsWalkable(x, y) && this.CountAdjacentFloors(coordinates) <= 4 &&
+            // not near any other doors
+            !this.Doors.Any(d => Math.Abs(d.X - x) + Math.Abs(d.Y - y) <= 3) &&
+            // is walkable on two sides
+            ((IsWalkable(x - 1, y) && IsWalkable(x + 1, y)) || (IsWalkable(x, y - 1) && IsWalkable(x, y + 1)));
         }
 
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
