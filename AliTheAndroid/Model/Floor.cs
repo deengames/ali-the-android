@@ -469,14 +469,14 @@ namespace DeenGames.AliTheAndroid.Model
                 var nonCriticalRoom = this.CreateIsolatedRoom();
                 for (var x = nonCriticalRoom.MinExtentX; x <= nonCriticalRoom.MaxExtentX; x++)
                 {
-                    this.Doors.Add(new Door(x, nonCriticalRoom.MinExtentY, true));
-                    this.Doors.Add(new Door(x, nonCriticalRoom.MaxExtentY, true));
+                    this.Doors.Add(new Door(x, nonCriticalRoom.MinExtentY, true, true));
+                    this.Doors.Add(new Door(x, nonCriticalRoom.MaxExtentY, true, true));
                 }
                 // Don't create duplicates on the top/bottom, ignore min/max y
                 for (var y = nonCriticalRoom.MinExtentY + 1; y <= nonCriticalRoom.MaxExtentY - 1; y++)
                 {
-                    this.Doors.Add(new Door(nonCriticalRoom.MinExtentX, y, true));
-                    this.Doors.Add(new Door(nonCriticalRoom.MaxExtentX, y, true));
+                    this.Doors.Add(new Door(nonCriticalRoom.MinExtentX, y, true, true));
+                    this.Doors.Add(new Door(nonCriticalRoom.MaxExtentX, y, true, true));
                 }
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1)
