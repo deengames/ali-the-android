@@ -32,11 +32,21 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
             for (var i = 0; i < DungeonsToGenerate; i++)
             {
                 var seed = random.Next();
-                Console.WriteLine($"Generating dungeon {i + 1} with seed {seed}");
+                Console.WriteLine($"{StopWatchTime(stopWatch)} | Generating dungeon {i + 1} with seed {seed}");
                 var dungeon = new Dungeon(50, 40, seed);
             }
             stopWatch.Stop();
-            Console.WriteLine($"Generated {DungeonsToGenerate} dungeons in {stopWatch.ElapsedMilliseconds/1000}s");
+            Console.WriteLine($"Generated {DungeonsToGenerate} dungeons in {StopWatchTime(stopWatch)}");
+        }
+
+        private string StopWatchTime(Stopwatch input)
+        {
+            var total = input.ElapsedMilliseconds;
+            var seconds = total / 1000;
+            var minutes = seconds / 60;
+            var hours = minutes / 60;
+
+            return $"{hours}h {minutes}m {seconds}s";
         }
     }
 }
