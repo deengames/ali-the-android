@@ -247,6 +247,12 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var previousFloor = new Floor(30, 30, ZapperFloor - 2, random, noPowerUps);
             Assert.That(previousFloor.Doors.Any(d => d.IsLocked && d.IsBacktrackingDoor));
             Assert.That(previousFloor.Doors.Count(d => d.IsLocked && !d.IsBacktrackingDoor), Is.EqualTo(0));
+
+            // Generated in a new room, make sure it's accessible
+            var firstLock = previousFloor.Doors.First(d => d.IsLocked && d.IsBacktrackingDoor);
+            var firstLockCoordinates = new GoRogue.Coord(firstLock.X, firstLock.Y);
+            var pathFinder = new AStar(previousFloor.map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(previousFloor.StairsUpLocation, firstLockCoordinates, true);
         }
 
         [Test]
@@ -271,6 +277,12 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var previousFloor = new Floor(30, 30, GravityCannonFloor - 2, random, noPowerUps);
             Assert.That(previousFloor.GravityWaves.Any());
             Assert.That(previousFloor.GravityWaves.All(g => g.IsBacktrackingWave));
+
+            // Generated in a new room, make sure it's accessible
+            var firstGravity = previousFloor.GravityWaves.First();
+            var firstGravityCoordinates = new GoRogue.Coord(firstGravity.X, firstGravity.Y);
+            var pathFinder = new AStar(previousFloor.map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(previousFloor.StairsUpLocation, firstGravityCoordinates, true);
         }
 
         [Test]
@@ -293,6 +305,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             var previousFloor = new Floor(30, 30, InstaTeleporterFloor - 2, random, noPowerUps);
             Assert.That(previousFloor.Chasms.Any());
+
             // Chasms don't have a "backtracking" property. Instead, Check that all the chasms are in one room.
             // Well, we can't check that either; so check that they're all adjacent to two other chasms. /shrug
             foreach (var chasm in previousFloor.Chasms)
@@ -300,6 +313,13 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var adjacencies = previousFloor.Chasms.Where(c => c != chasm && Math.Sqrt(Math.Pow(c.X - chasm.X, 2) + Math.Pow(c.Y - chasm.Y, 2)) == 1);
                 Assert.That(adjacencies.Count(), Is.EqualTo(2));
             }
+
+            // Generated in a new room, make sure it's accessible
+            var firstChasm = previousFloor.Chasms.First();
+            var firstChasmCoordinates = new GoRogue.Coord(firstChasm.X, firstChasm.Y);
+            var pathFinder = new AStar(previousFloor.map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(previousFloor.StairsUpLocation, firstChasmCoordinates, true);
+            
         }
 
         [Test]

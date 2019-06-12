@@ -400,6 +400,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
+        // TODO: move this, and all generator functions, into a map-generator class. But, these mutate the existing floor.
         private void GenerateMap()
         {
             this.lastMessage = "";
@@ -407,7 +408,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.PlasmaResidue.Clear();
 
             this.GenerateMapRooms();
-            this.GenerateBacktrackingObstacles();
             this.GenerateDoors();
             this.GenerateMonsters();
             
@@ -434,6 +434,8 @@ namespace DeenGames.AliTheAndroid.Model
                 this.GenerateChasms();
             }
 
+            this.GenerateBacktrackingObstacles();
+
             if (actualFloorNum == Dungeon.NumFloors)
             {
                 this.GenerateBosses();
@@ -457,10 +459,6 @@ namespace DeenGames.AliTheAndroid.Model
         {            
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
             
-            // Find a room NOT in the path from player to stairs. Lock it. DONE.
-            var roomsInPath = RoomsInPathFromStairsToStairs();
-            var roomsNotInPath = this.rooms.Where(r => !roomsInPath.Contains(r));
-
             if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
             {
                 this.GenerateSecretRooms(rooms, 1, true);
@@ -468,19 +466,28 @@ namespace DeenGames.AliTheAndroid.Model
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.Zapper] - 1)
             {
                 // Find a room NOT in the path from player to stairs. Lock it on all sides. DONE.
-                var nonCriticalRoom = roomsNotInPath.OrderBy(r => globalRandom.Next()).First();
-                this.AddDoorsToRoom(nonCriticalRoom, true, true);
+                var nonCriticalRoom = this.CreateIsolatedRoom();
+                for (var x = nonCriticalRoom.MinExtentX; x <= nonCriticalRoom.MaxExtentX; x++)
+                {
+                    this.Doors.Add(new Door(x, nonCriticalRoom.MinExtentY, true));
+                    this.Doors.Add(new Door(x, nonCriticalRoom.MaxExtentY, true));
+                }
+                // Don't create duplicates on the top/bottom, ignore min/max y
+                for (var y = nonCriticalRoom.MinExtentY + 1; y <= nonCriticalRoom.MaxExtentY - 1; y++)
+                {
+                    this.Doors.Add(new Door(nonCriticalRoom.MinExtentX, y, true));
+                    this.Doors.Add(new Door(nonCriticalRoom.MaxExtentX, y, true));
+                }
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1)
             {
-                // Find a room NOT in the path from player to stairs. Plasma it. DONE.
-                var nonCriticalRoom = roomsNotInPath.OrderBy(r => globalRandom.Next()).First();
+                var nonCriticalRoom = this.CreateIsolatedRoom();
                 this.FillWithGravity(nonCriticalRoom, true);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1)
             {
                 // Fill the interior with chasms, so you can't get in without teleporting.
-                var nonCriticalRoom = roomsNotInPath.OrderBy(r => globalRandom.Next()).First();
+                var nonCriticalRoom = this.CreateIsolatedRoom();
                 for (var x = nonCriticalRoom.MinExtentX; x <= nonCriticalRoom.MaxExtentX; x++)
                 {
                     this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, x, nonCriticalRoom.MinExtentY));
@@ -493,6 +500,72 @@ namespace DeenGames.AliTheAndroid.Model
                     this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, nonCriticalRoom.MaxExtentX, y));
                 }
             }
+        }
+
+        // Creates an isolated 5x5 room by locating and then tunnelling out a 5x5 area of walls.
+        // Then, finds the nearest room, and connects it to that naively (L-shaped tunnel).
+        private GoRogue.Rectangle CreateIsolatedRoom()
+        {
+            // Find a 5x5 region full of walls and clear it out
+            const int width = 5;
+            const int height = 5;
+            var startSpot = new GoRogue.Coord(globalRandom.Next(this.width), globalRandom.Next(this.height));
+            while (!this.IsWallRegion(startSpot, width, height))
+            {
+                startSpot = new GoRogue.Coord(globalRandom.Next(this.width), globalRandom.Next(this.height));
+            }
+
+            var toReturn = new GoRogue.Rectangle(startSpot.X, startSpot.Y, width, height);
+
+            var innerWalls = this.Walls.Where(w => w.X >= startSpot.X && w.X < startSpot.X  + width && 
+                w.Y >= startSpot.Y && w.Y < startSpot.Y + height);
+
+            this.Walls.RemoveAll(w => innerWalls.Contains(w));
+
+            // Find the nearest room and naively connect to it
+            var nearestRoom = this.rooms.OrderBy(r => Math.Sqrt(Math.Pow(r.Center.X - toReturn.Center.X, 2) + Math.Pow(r.Center.Y - toReturn.Center.Y, 2))).First();
+
+            if (globalRandom.NextBoolean())
+            {
+                // Horizontal, then vertical
+                this.DigTunnel(toReturn.Center.X, toReturn.Center.Y, nearestRoom.Center.X, toReturn.Center.Y);
+                this.DigTunnel(nearestRoom.Center.X, toReturn.Center.Y, nearestRoom.Center.X, nearestRoom.Center.Y);
+            }
+            else
+            {
+                // Vertical, then horizontal
+                this.DigTunnel(toReturn.Center.X, toReturn.Center.Y, toReturn.Center.X, nearestRoom.Center.Y);
+                this.DigTunnel(toReturn.Center.X, nearestRoom.Center.Y, nearestRoom.Center.X, nearestRoom.Center.Y);
+            }
+
+            return toReturn;
+        }
+
+        private void DigTunnel(int startX, int startY, int stopX, int stopY)
+        {
+            var minX = Math.Min(startX, stopX);
+            var maxX = minX == startX ? stopX : startX;
+            var minY = Math.Min(startY, stopY);
+            var maxY = minY == startY ? stopY : startY;
+
+            // I know it's only one direction, but it's easier to just iterate two-dimensionally
+            for (var y = minY; y <= maxY; y++)
+            {
+                for (var x = minX; x <= maxX; x++)
+                {
+                    var wall = this.Walls.SingleOrDefault(w => w.X == x && w.Y == y);
+                    if (wall != null)
+                    {
+                        this.Walls.Remove(wall);
+                    }
+                }
+            }
+        }
+
+        private bool IsWallRegion(GoRogue.Coord topLeftCorner, int width, int height)
+        {
+            return this.Walls.Where(w => w.X >= topLeftCorner.X && w.X < topLeftCorner.X  + width && 
+                w.Y >= topLeftCorner.Y && w.Y < topLeftCorner.Y + height).Count() == width * height;
         }
 
         private void GenerateWeaponPickUp()
@@ -562,11 +635,14 @@ namespace DeenGames.AliTheAndroid.Model
             
             // Pick hallways and fill them with chasms. Make sure they're far from each other.
             var hallwayTiles = new List<GoRogue.Coord>();
-            for (var y = 0; y < this.height; y++) {
-                for (var x = 0; x < this.width; x++) {
+            for (var y = 0; y < this.height; y++)
+            {
+                for (var x = 0; x < this.width; x++)
+                {
                     // Not 100% accurate since we have monsters, ec.
                     var coordinates = new GoRogue.Coord(x, y);
-                    if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates))) {
+                    if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
+                    {
                         hallwayTiles.Add(coordinates);
                     }
                 }
@@ -599,12 +675,14 @@ namespace DeenGames.AliTheAndroid.Model
                 var spot = this.FindEmptySpot();
                 this.GenerateChasmIfNotTooClose(spot);
             }
+
+            Console.WriteLine("Floor " + floorNum + " has " + this.Chasms.Count + " chasms");
         }
 
         private bool GenerateChasmIfNotTooClose(GoRogue.Coord spot)
         {
             // Calculate the distance to the closest chasm, and make sure it's distant enough.
-            var minDistance = this.Chasms.Select(c => Math.Sqrt(Math.Pow(c.X - spot.X, 2) + Math.Pow(c.Y - spot.Y, 2))).Min();
+            var minDistance = this.Chasms.Any() ? this.Chasms.Select(c => Math.Sqrt(Math.Pow(c.X - spot.X, 2) + Math.Pow(c.Y - spot.Y, 2))).Min() : int.MaxValue;
             if (minDistance >= MinimumChasmDistance) {
                 this.GenerateChasmAt(spot);
                 return true;
@@ -616,6 +694,11 @@ namespace DeenGames.AliTheAndroid.Model
         private bool IsChasmCandidate(GoRogue.Coord spot)
         {
             if (this.CountAdjacentFloors(spot) != 2)
+            {
+                return false;
+            }
+
+            if (spot == StairsDownLocation || spot == StairsUpLocation)
             {
                 return false;
             }
@@ -634,9 +717,17 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
         private void GenerateChasmAt(GoRogue.Coord location) {
-            this.Chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, location.X, location.Y));
-            foreach (var adjacency in this.GetAdjacentFloors(location)) {
-                this.Chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, adjacency.X, adjacency.Y));
+            if (IsChasmCandidate(location))
+            {
+                this.Chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, location.X, location.Y));
+            }
+
+            foreach (var adjacency in this.GetAdjacentFloors(location))
+            {
+                if (IsChasmCandidate(adjacency))
+                {
+                    this.Chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, adjacency.X, adjacency.Y));
+                }
             }
         }
 
@@ -855,7 +946,7 @@ namespace DeenGames.AliTheAndroid.Model
                     this.Doors.Add(new Door(room.X + room.Width - 1, y, isLocked, isBacktrackingDoor));
                 }
             }
-        }
+        }        
 
         private bool IsDoorCandidate(int x, int y)
         {
