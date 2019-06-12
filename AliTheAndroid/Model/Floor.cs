@@ -491,7 +491,8 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1)
             {
-                var nonCriticalRoom = this.CreateIsolatedRoom();
+                // Generate a 9x9 here so the player can't easily get the power-ups
+                var nonCriticalRoom = this.CreateIsolatedRoom(9, 9);
                 this.FillWithGravity(nonCriticalRoom, true);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1)
@@ -514,11 +515,8 @@ namespace DeenGames.AliTheAndroid.Model
 
         // Creates an isolated 5x5 room by locating and then tunnelling out a 5x5 area of walls.
         // Then, finds the nearest room, and connects it to that naively (L-shaped tunnel).
-        private GoRogue.Rectangle CreateIsolatedRoom()
+        private GoRogue.Rectangle CreateIsolatedRoom(int width = 5, int height = 5)
         {
-            // Find a 5x5 region full of walls and clear it out
-            const int width = 5;
-            const int height = 5;
             var startSpot = new GoRogue.Coord(globalRandom.Next(this.width), globalRandom.Next(this.height));
             while (!this.IsWallRegion(startSpot, width, height))
             {
