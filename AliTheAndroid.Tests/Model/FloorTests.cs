@@ -258,9 +258,19 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             var floor = new Floor(30, 30, GravityCannonFloor - 1, random, noPowerUps);
             Assert.That(floor.GravityWaves.Any());
+            Assert.That(floor.GravityWaves.All(g => !g.IsBacktrackingWave));            
+        }
 
+        [Test]
+        public void GenerateMapGeneratesBacktrackingGravityWavesOneFloorAboveGravityCannon()
+        {
+            const int GravityCannonFloor = 6; // B6
+            var random = new StandardGenerator(356);
+            var noPowerUps =  new List<PowerUp>();
+            
             var previousFloor = new Floor(30, 30, GravityCannonFloor - 2, random, noPowerUps);
-            Assert.That(!previousFloor.GravityWaves.Any());
+            Assert.That(previousFloor.GravityWaves.Any());
+            Assert.That(previousFloor.GravityWaves.All(g => g.IsBacktrackingWave));
         }
 
         [Test]
@@ -272,9 +282,24 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             var floor = new Floor(30, 30, InstaTeleporterFloor - 1, random, noPowerUps);
             Assert.That(floor.Chasms.Any());
+        }
+
+        [Test]
+        public void GenreateMapGeneratesBacktrackingChasmsOneFloorBeforeTeleporter()
+        {
+            const int InstaTeleporterFloor = 8; // B8
+            var random = new StandardGenerator(357);
+            var noPowerUps =  new List<PowerUp>();
 
             var previousFloor = new Floor(30, 30, InstaTeleporterFloor - 2, random, noPowerUps);
-            Assert.That(!previousFloor.Chasms.Any());
+            Assert.That(previousFloor.Chasms.Any());
+            // Chasms don't have a "backtracking" property. Instead, Check that all the chasms are in one room.
+            // Well, we can't check that either; so check that they're all adjacent to two other chasms. /shrug
+            foreach (var chasm in previousFloor.Chasms)
+            {
+                var adjacencies = previousFloor.Chasms.Where(c => c != chasm && Math.Sqrt(Math.Pow(c.X - chasm.X, 2) + Math.Pow(c.Y - chasm.Y, 2)) == 1);
+                Assert.That(adjacencies.Count(), Is.EqualTo(2));
+            }
         }
 
         [Test]

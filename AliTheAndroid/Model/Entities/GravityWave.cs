@@ -9,15 +9,18 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class GravityWave : AbstractEntity
     {
+        public bool IsBacktrackingWave { get; private set; }
+
         private static Random random = new Random();
         private const char GravityCharacter = (char)247;
         private Func<int, int, bool> isWalkableCheck;
         private int floorNum;
 
-        public GravityWave(int x, int y, int floorNum, Func<int, int, bool> isWalkableCheck) : base(x, y, GravityCharacter, Palette.LightLilacPink)
+        public GravityWave(int x, int y, bool isBacktrackingWave, int floorNum, Func<int, int, bool> isWalkableCheck) : base(x, y, GravityCharacter, Palette.LightLilacPink)
         {
             this.floorNum = floorNum;
             this.isWalkableCheck = isWalkableCheck;
+            this.IsBacktrackingWave = isBacktrackingWave;
             EventBus.Instance.AddListener(GameEvent.PlayerTookTurn, this.PerturbOccupantOnMove);
         }
 

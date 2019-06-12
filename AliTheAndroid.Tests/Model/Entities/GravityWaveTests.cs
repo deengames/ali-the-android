@@ -17,7 +17,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
             new Dungeon(40, 30, gameSeed: 98723).GoToNextFloor(); // Start on 1B / floor 0
 
             // Arrange
-            var wave = new GravityWave(3, 3, 0, FakeIsWalkable);
+            var wave = new GravityWave(3, 3, false, 0, FakeIsWalkable);
             var zug = Entity.CreateFromTemplate("Zug", wave.X, wave.Y);
             var monsters = new List<Entity>() { zug };
             var player = new Player();
@@ -33,7 +33,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         public void GravityWaveMovesPlayerOnItToWalkableLocationOnPlayerTookTurnEvent()
         {
             // Arrange
-            var wave = new GravityWave(3, 3, 1, FakeIsWalkable);
+            var wave = new GravityWave(3, 3, false, 1, FakeIsWalkable);
             var monsters = new List<Entity>();
             var player = new Player();
             player.X = wave.X;

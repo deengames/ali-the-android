@@ -389,13 +389,13 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void FillWithGravity(GoRogue.Rectangle room)
+        private void FillWithGravity(GoRogue.Rectangle room, bool isBacktrackingWave = false)
         {
             for (var y = room.MinExtentY; y <= room.MaxExtentY; y++)
             {
                 for (var x = room.MinExtentX; x <= room.MaxExtentX; x++)
                 {
-                    this.GravityWaves.Add(new GravityWave(x, y, this.floorNum, this.IsWalkable));
+                    this.GravityWaves.Add(new GravityWave(x, y, isBacktrackingWave, this.floorNum, this.IsWalkable));
                 }
             }
         }
@@ -450,9 +450,16 @@ namespace DeenGames.AliTheAndroid.Model
 
         // Generates things out-of-depth (eg. fake walls before the missile launcher pick-up or gaps before the teleporter pick-up).
         // Each one generates just one floor back, for simplicity and user experience (backtracking 2-4 floors is painful).
+
+        // TODO: instead of using an existing room, generate a new room that connects to the rest on only one point. Makes it feel
+        // more like a secret/intentional room that way. Instead, now, it can be a room with multiple paths/exits.
         private void GenerateBacktrackingObstacles()
-        {
+        {            
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            
+            // Find a room NOT in the path from player to stairs. Lock it. DONE.
+            var roomsInPath = RoomsInPathFromStairsToStairs();
+            var roomsNotInPath = this.rooms.Where(r => !roomsInPath.Contains(r));
 
             if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
             {
@@ -460,16 +467,31 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.Zapper] - 1)
             {
-                // Find a room NOT in the path from player to stairs. Lock it. DONE.
-                var roomsInPath = RoomsInPathFromStairsToStairs();
-                var extraLockedRoom = this.rooms.Where(r => !roomsInPath.Contains(r)).OrderBy(r => globalRandom.Next()).First();
-                this.AddDoorsToRoom(extraLockedRoom, true, true);
+                // Find a room NOT in the path from player to stairs. Lock it on all sides. DONE.
+                var nonCriticalRoom = roomsNotInPath.OrderBy(r => globalRandom.Next()).First();
+                this.AddDoorsToRoom(nonCriticalRoom, true, true);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1)
             {
+                // Find a room NOT in the path from player to stairs. Plasma it. DONE.
+                var nonCriticalRoom = roomsNotInPath.OrderBy(r => globalRandom.Next()).First();
+                this.FillWithGravity(nonCriticalRoom, true);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1)
             {
+                // Fill the interior with chasms, so you can't get in without teleporting.
+                var nonCriticalRoom = roomsNotInPath.OrderBy(r => globalRandom.Next()).First();
+                for (var x = nonCriticalRoom.MinExtentX; x <= nonCriticalRoom.MaxExtentX; x++)
+                {
+                    this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, x, nonCriticalRoom.MinExtentY));
+                    this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, x, nonCriticalRoom.MaxExtentY));
+                }
+                // Don't create duplicates on the top/bottom, ignore min/max y
+                for (var y = nonCriticalRoom.MinExtentY + 1; y <= nonCriticalRoom.MaxExtentY - 1; y++)
+                {
+                    this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, nonCriticalRoom.MinExtentX, y));
+                    this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, nonCriticalRoom.MaxExtentX, y));
+                }
             }
         }
 
