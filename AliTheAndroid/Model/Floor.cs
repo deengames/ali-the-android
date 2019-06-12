@@ -335,6 +335,16 @@ namespace DeenGames.AliTheAndroid.Model
             return isTileDiscovered.ContainsKey(key) && isTileDiscovered[key] == true;
         }
 
+        public bool IsWalkable(int x, int y)
+        {
+            if (this.Chasms.Any(c => c.X == x && c.Y == y))
+            {
+                return false;
+            }
+
+            return this.IsFlyable(x, y);
+        }
+
         // Get the set of tiles spanning a path from the stairs up to the stairs down. Get all rooms that encompass those tiles.
         private List<GoRogue.Rectangle> RoomsInPathFromStairsToStairs()
         {
@@ -650,16 +660,22 @@ namespace DeenGames.AliTheAndroid.Model
 
             var iterations = 0;  // Iterations because: hard to tell if we ran out of hallway tiles.
             var candidates = hallwayTiles.Where(h => this.IsChasmCandidate(h)).OrderBy(c => this.globalRandom.Next()).ToList();
-            
+            var defaultCoord = new GoRogue.Coord(0, 0);
+
             // Make sure we don't generate chasms too close to each other. This can make hallways impossible to traverse.
             // https://trello.com/c/HxpLSDMt/3-map-generates-a-stuck-map-seed-740970391
             while (iterations++ < 10000 && this.Chasms.Count < NumChasms) {
                 var candidate = candidates.FirstOrDefault();
-                if (candidate != null) {
-                    if (!this.Chasms.Any()) {
+                candidates.Remove(candidate);
+                // Coord is a struct, so we get (0, 0) (not Coord.NONE, strangely) sometimes...
+                if (candidate != defaultCoord)
+                {
+                    if (!this.Chasms.Any())
+                    {
                         this.GenerateChasmAt(candidate);
-                        candidates.Remove(candidate);
-                    } else {
+                    }
+                    else
+                    {
                         var isGenerated = this.GenerateChasmIfNotTooClose(candidate);
                         if (isGenerated)
                         {
@@ -673,10 +689,13 @@ namespace DeenGames.AliTheAndroid.Model
             while (this.Chasms.Count < NumChasms) 
             {
                 var spot = this.FindEmptySpot();
-                this.GenerateChasmIfNotTooClose(spot);
+                // Changing this to IsChasmCandidate causes tests to hang, because we don't have enough chasm-candidate
+                // spots in some dungeons/maps.
+                if (spot != StairsUpLocation && spot != StairsDownLocation)
+                {
+                    this.GenerateChasmIfNotTooClose(spot);
+                }
             }
-
-            Console.WriteLine("Floor " + floorNum + " has " + this.Chasms.Count + " chasms");
         }
 
         private bool GenerateChasmIfNotTooClose(GoRogue.Coord spot)
@@ -716,15 +735,21 @@ namespace DeenGames.AliTheAndroid.Model
             return false;
         }
 
+        ///
+        // This tricky method is used for two things: generating if a spot is a legitimate chasm (spans a hallway -
+        // meaning it has walkable tiles left/right or up/down), and filling in any square as a chasm (so we generate 'em).
+        // In the former case, we check using IsChasmCandidate, which checks for up/down or left/right. If not, we check
+        // using just a simple stairs-block check, so we don't generate chasms on the stairs, which is a bug
+        // (see: https://trello.com/c/fmynV9Qa/41-test-fails-because-chasm-generates-on-stairs-up).
         private void GenerateChasmAt(GoRogue.Coord location) {
-            if (IsChasmCandidate(location))
+            if (location != StairsUpLocation && location != StairsDownLocation)
             {
                 this.Chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, location.X, location.Y));
             }
 
             foreach (var adjacency in this.GetAdjacentFloors(location))
             {
-                if (IsChasmCandidate(adjacency))
+                if (adjacency != StairsUpLocation && adjacency != StairsDownLocation)
                 {
                     this.Chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, adjacency.X, adjacency.Y));
                 }
@@ -1619,15 +1644,6 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             return true;
-        }
-        private bool IsWalkable(int x, int y)
-        {
-            if (this.Chasms.Any(c => c.X == x && c.Y == y))
-            {
-                return false;
-            }
-
-            return this.IsFlyable(x, y);
         }
 
         private void MarkAsSeen(int x, int y)

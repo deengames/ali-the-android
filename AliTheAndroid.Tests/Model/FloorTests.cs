@@ -348,5 +348,31 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             // For all steps, there are no fake walls.
             Assert.That(path.Steps.Any(p => floor.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y)));
         }
+
+        // https://trello.com/c/fmynV9Qa/41-test-fails-because-chasm-generates-on-stairs-up
+        [Test]
+        public void StairsUpAndDownAreAlwaysWalkable()
+        {
+            var dungeon = new Dungeon(24, 31, gameSeed: 1036496413);
+            while (dungeon.CurrentFloorNum < 9)
+            {
+                dungeon.GoToNextFloor();
+                var floor = dungeon.CurrentFloor;
+                
+                // keep him from being on the stairs, thus causing our asserts to fail
+                floor.Player.X = 999;
+                floor.Player.Y = 999;
+
+                if (dungeon.CurrentFloorNum < 9)
+                {
+                    Assert.That(floor.IsWalkable(floor.StairsDownLocation.X, floor.StairsDownLocation.Y), $"Stairs down on B{dungeon.CurrentFloorNum + 1} is not walkable!");
+                }
+
+                if (dungeon.CurrentFloorNum >= 1)
+                {
+                    Assert.That(floor.IsWalkable(floor.StairsUpLocation.X, floor.StairsUpLocation.Y), $"Stairs up on B{dungeon.CurrentFloorNum + 1} is not walkable!");
+                }
+            }
+        }
     }
 }

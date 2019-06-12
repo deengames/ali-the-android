@@ -36,7 +36,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void ConstructorSetsPlayerAndWidthAndHeight()
         {
-            var dungeon = new Dungeon(24, 31, gameSeed: 1036496413);
+            var dungeon = new Dungeon(24, 31, gameSeed: 1234);
             Assert.That(dungeon.Player, Is.Not.Null);
             Assert.That(dungeon.Width, Is.EqualTo(24));
             Assert.That(dungeon.Height, Is.EqualTo(31));
