@@ -9,7 +9,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         [Test]
         public void PickUpInvokesOnPickUpCallback()
         {
-            var powerUp = new PowerUp(10, 17, 103);
+            var powerUp = new PowerUp(10, 17, false, 103);
             var wasCalled = false;
             powerUp.OnPickUp(() => wasCalled = true);
 
@@ -21,15 +21,15 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         [Test]
         public void PickUpDoesNothingIfCallbackIsNull()
         {
-            var powerUp = new PowerUp(0, 0, 10);
+            var powerUp = new PowerUp(0, 0, false, 10);
             Assert.DoesNotThrow(() => powerUp.PickUp());
         }
 
         [Test]
         public void PairSymmetricallyPairsPowerUps()
         {
-            var p1 = new PowerUp(0, 0, 100);
-            var p2 = new PowerUp(0, 0, 50);
+            var p1 = new PowerUp(0, 0, false, 100);
+            var p2 = new PowerUp(0, 0, false, 50);
             PowerUp.Pair(p1, p2);
 
             Assert.That(p1.PairedTo, Is.EqualTo(p2));

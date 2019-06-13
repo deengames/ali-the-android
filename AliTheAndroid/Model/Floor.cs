@@ -53,6 +53,7 @@ namespace DeenGames.AliTheAndroid.Model
         
         // Internal for unit testing
         internal ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
+        internal IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
         private int floorNum = 0;
         private int width = 0;
@@ -62,7 +63,6 @@ namespace DeenGames.AliTheAndroid.Model
         // Used for non-deterministic things, like monster movement
         private Random random = new Random(); 
 
-        private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
         // Super hack. Key is "x, y", value is IsDiscovered.
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
@@ -471,7 +471,8 @@ namespace DeenGames.AliTheAndroid.Model
             
             if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
             {
-                this.GenerateSecretRooms(rooms, 1, true);
+                var secretRooms = this.GenerateSecretRooms(rooms, 1, true);
+                this.GeneratePowerUpsInRoom(secretRooms.Single());
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.Zapper] - 1)
             {
@@ -488,12 +489,14 @@ namespace DeenGames.AliTheAndroid.Model
                     this.Doors.Add(new Door(nonCriticalRoom.MinExtentX, y, true, true));
                     this.Doors.Add(new Door(nonCriticalRoom.MaxExtentX, y, true, true));
                 }
+                this.GeneratePowerUpsInRoom(nonCriticalRoom);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1)
             {
                 // Generate a 9x9 here so the player can't easily get the power-ups
                 var nonCriticalRoom = this.CreateIsolatedRoom(9, 9);
                 this.FillWithGravity(nonCriticalRoom, true);
+                this.GeneratePowerUpsInRoom(nonCriticalRoom);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1)
             {
@@ -510,11 +513,46 @@ namespace DeenGames.AliTheAndroid.Model
                     this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, nonCriticalRoom.MinExtentX, y));
                     this.Chasms.Add(Entity.Create(SimpleEntity.Chasm, nonCriticalRoom.MaxExtentX, y));
                 }
+                this.GeneratePowerUpsInRoom(nonCriticalRoom);
             }
+        }
+
+        private void GeneratePowerUpsInRoom(GoRogue.Rectangle room)
+        {
+            // Always generate them horizontally, just off-center.
+            var types = new string[] {"health", "strength", "defense", "vision" };
+            var picked = types.OrderBy(r => globalRandom.Next()).Take(2).ToList();
+
+            var powerups = new List<PowerUp>();
+
+            foreach (var type in picked)
+            {
+                switch (type) {
+                    case "health":
+                        powerups.Add(new PowerUp(0, room.Center.Y, true, healthBoost: PowerUp.TypicalHealthBoost));
+                        break;
+                     case "strength":
+                        powerups.Add(new PowerUp(0, room.Center.Y, true, strengthBoost: PowerUp.TypicalStrengthBoost));
+                        break;
+                     case "defense":
+                        powerups.Add(new PowerUp(0, room.Center.Y, true, defenseBoost: PowerUp.TypicalDefenseBoost));
+                        break;
+                     case "vision":
+                        powerups.Add(new PowerUp(0, room.Center.Y, true, visionBoost: PowerUp.TypicalVisionBoost));
+                        break;
+                }
+            }
+
+            PowerUp.Pair(powerups[0], powerups[1]);
+            powerups[0].X = room.Center.X - 1;
+            powerups[1].X = room.Center.X + 1;
+
+            powerups.ForEach(p => this.PowerUps.Add(p));       
         }
 
         // Creates an isolated 5x5 room by locating and then tunnelling out a 5x5 area of walls.
         // Then, finds the nearest room, and connects it to that naively (L-shaped tunnel).
+        // BUG: generates a 1-tile larger room. If you say 7x7, it generates an 8x8. Dunno why.
         private GoRogue.Rectangle CreateIsolatedRoom(int width = 5, int height = 5)
         {
             var startSpot = new GoRogue.Coord(globalRandom.Next(this.width), globalRandom.Next(this.height));
@@ -773,6 +811,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
         // the player's choice. So we pass the list to each floor, and let each floor consume/update it appropriately.
+        // TODO: put this back in GenerateMap
         public void GeneratePowerUps()
         {
             if (!this.generatedPowerUps)
@@ -887,7 +926,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
         }
 
-        private void GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms, int numRooms = 2, bool flagWallsAsBacktracking = false)
+        private IEnumerable<GoRogue.Rectangle> GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms, int numRooms = 2, bool flagWallsAsBacktracking = false)
         {
             var actualFloorNum = this.floorNum + 1;
 
@@ -918,7 +957,8 @@ namespace DeenGames.AliTheAndroid.Model
                     this.FakeWalls.Add(new FakeWall(secretX, y, flagWallsAsBacktracking));
                 }
             }
-            
+
+            return secretRooms.Select(r => r.Rectangle);
         }
 
         private void GenerateDoors()

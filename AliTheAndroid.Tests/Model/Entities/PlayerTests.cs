@@ -10,7 +10,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         [Test]
         public void AbsorbAbsorbsPowerUpStats()
         {
-            var powerUp = new PowerUp(0, 0, 1, 2, 3, 5);
+            var powerUp = new PowerUp(0, 0, false, 1, 2, 3, 5);
             
             var player = new Player();
             var startHealth = player.TotalHealth;

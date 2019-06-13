@@ -216,7 +216,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void GenerateMapGeneratesBacktrackingFakeWallsOnFirstMap()
+        public void GenerateMapGeneratesBacktrackingFakeWallsOnFirstMapWithPairedPowerUps()
         {
             var random = new StandardGenerator(354);
             var noPowerUps =  new List<PowerUp>();
@@ -224,6 +224,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var firstFloor = new Floor(30, 30, 0, random, noPowerUps);
             Assert.That(firstFloor.FakeWalls.Any());
             Assert.That(firstFloor.FakeWalls.All(w => w.IsBacktrackingWall));
+
+            // Make sure the power-ups are backtracking and paired
+            var powerUps = firstFloor.PowerUps.Where(p => p.IsBacktrackingPowerUp).ToArray();
+            Assert.That(powerUps.Count(), Is.EqualTo(2));
+
+            var p1 = powerUps[0];
+            var p2 = powerUps[1];
+
+            Assert.That(p1.PairedTo, Is.EqualTo(p2));
+            Assert.That(p2.PairedTo, Is.EqualTo(p1));
         }
 
         [Test]
@@ -238,21 +248,31 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void GenerateMapGeneratesBacktrackingLockedDoorsOnZapperFloorMinusOne()
+        public void GenerateMapGeneratesBacktrackingLockedDoorsOnZapperFloorMinusOneWithPairedPowerUps()
         {
             const int ZapperFloor = 4; // B4
             var random = new StandardGenerator(355);
             var noPowerUps =  new List<PowerUp>();
 
-            var previousFloor = new Floor(30, 30, ZapperFloor - 2, random, noPowerUps);
-            Assert.That(previousFloor.Doors.Any(d => d.IsLocked && d.IsBacktrackingDoor));
-            Assert.That(previousFloor.Doors.Count(d => d.IsLocked && !d.IsBacktrackingDoor), Is.EqualTo(0));
+            var floor = new Floor(30, 30, ZapperFloor - 2, random, noPowerUps);
+            Assert.That(floor.Doors.Any(d => d.IsLocked && d.IsBacktrackingDoor));
+            Assert.That(floor.Doors.Count(d => d.IsLocked && !d.IsBacktrackingDoor), Is.EqualTo(0));
+            
+            // Make sure the power-ups are backtracking and paired
+            var powerUps = floor.PowerUps.Where(p => p.IsBacktrackingPowerUp).ToArray();
+            Assert.That(powerUps.Count(), Is.EqualTo(2));
+
+            var p1 = powerUps[0];
+            var p2 = powerUps[1];
+
+            Assert.That(p1.PairedTo, Is.EqualTo(p2));
+            Assert.That(p2.PairedTo, Is.EqualTo(p1));
 
             // Generated in a new room, make sure it's accessible
-            var firstLock = previousFloor.Doors.First(d => d.IsLocked && d.IsBacktrackingDoor);
+            var firstLock = floor.Doors.First(d => d.IsLocked && d.IsBacktrackingDoor);
             var firstLockCoordinates = new GoRogue.Coord(firstLock.X, firstLock.Y);
-            var pathFinder = new AStar(previousFloor.map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(previousFloor.StairsUpLocation, firstLockCoordinates, true);
+            var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(floor.StairsUpLocation, firstLockCoordinates, true);
         }
 
         [Test]
@@ -268,21 +288,31 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void GenerateMapGeneratesBacktrackingGravityWavesOneFloorAboveGravityCannon()
+        public void GenerateMapGeneratesBacktrackingGravityWavesOneFloorAboveGravityCannonWithPairedPowerUps()
         {
             const int GravityCannonFloor = 6; // B6
             var random = new StandardGenerator(356);
             var noPowerUps =  new List<PowerUp>();
             
-            var previousFloor = new Floor(30, 30, GravityCannonFloor - 2, random, noPowerUps);
-            Assert.That(previousFloor.GravityWaves.Any());
-            Assert.That(previousFloor.GravityWaves.All(g => g.IsBacktrackingWave));
+            var floor = new Floor(30, 30, GravityCannonFloor - 2, random, noPowerUps);
+            Assert.That(floor.GravityWaves.Any());
+            Assert.That(floor.GravityWaves.All(g => g.IsBacktrackingWave));
+
+            // Make sure the power-ups are backtracking and paired
+            var powerUps = floor.PowerUps.Where(p => p.IsBacktrackingPowerUp).ToArray();
+            Assert.That(powerUps.Count(), Is.EqualTo(2));
+
+            var p1 = powerUps[0];
+            var p2 = powerUps[1];
+
+            Assert.That(p1.PairedTo, Is.EqualTo(p2));
+            Assert.That(p2.PairedTo, Is.EqualTo(p1));
 
             // Generated in a new room, make sure it's accessible
-            var firstGravity = previousFloor.GravityWaves.First();
+            var firstGravity = floor.GravityWaves.First();
             var firstGravityCoordinates = new GoRogue.Coord(firstGravity.X, firstGravity.Y);
-            var pathFinder = new AStar(previousFloor.map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(previousFloor.StairsUpLocation, firstGravityCoordinates, true);
+            var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(floor.StairsUpLocation, firstGravityCoordinates, true);
         }
 
         [Test]
@@ -297,28 +327,38 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void GenreateMapGeneratesBacktrackingChasmsOneFloorBeforeTeleporter()
+        public void GenreateMapGeneratesBacktrackingChasmsOneFloorBeforeTeleporterWithPairedPowerUps()
         {
             const int InstaTeleporterFloor = 8; // B8
             var random = new StandardGenerator(357);
             var noPowerUps =  new List<PowerUp>();
 
-            var previousFloor = new Floor(30, 30, InstaTeleporterFloor - 2, random, noPowerUps);
-            Assert.That(previousFloor.Chasms.Any());
+            var floor = new Floor(30, 30, InstaTeleporterFloor - 2, random, noPowerUps);
+            Assert.That(floor.Chasms.Any());
 
             // Chasms don't have a "backtracking" property. Instead, Check that all the chasms are in one room.
             // Well, we can't check that either; so check that they're all adjacent to two other chasms. /shrug
-            foreach (var chasm in previousFloor.Chasms)
+            foreach (var chasm in floor.Chasms)
             {
-                var adjacencies = previousFloor.Chasms.Where(c => c != chasm && Math.Sqrt(Math.Pow(c.X - chasm.X, 2) + Math.Pow(c.Y - chasm.Y, 2)) == 1);
+                var adjacencies = floor.Chasms.Where(c => c != chasm && Math.Sqrt(Math.Pow(c.X - chasm.X, 2) + Math.Pow(c.Y - chasm.Y, 2)) == 1);
                 Assert.That(adjacencies.Count(), Is.EqualTo(2));
             }
 
+            // Make sure the power-ups are backtracking and paired
+            var powerUps = floor.PowerUps.Where(p => p.IsBacktrackingPowerUp).ToArray();
+            Assert.That(powerUps.Count(), Is.EqualTo(2));
+
+            var p1 = powerUps[0];
+            var p2 = powerUps[1];
+
+            Assert.That(p1.PairedTo, Is.EqualTo(p2));
+            Assert.That(p2.PairedTo, Is.EqualTo(p1));
+
             // Generated in a new room, make sure it's accessible
-            var firstChasm = previousFloor.Chasms.First();
+            var firstChasm = floor.Chasms.First();
             var firstChasmCoordinates = new GoRogue.Coord(firstChasm.X, firstChasm.Y);
-            var pathFinder = new AStar(previousFloor.map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(previousFloor.StairsUpLocation, firstChasmCoordinates, true);
+            var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(floor.StairsUpLocation, firstChasmCoordinates, true);
             
         }
 

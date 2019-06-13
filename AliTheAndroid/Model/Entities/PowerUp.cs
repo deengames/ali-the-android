@@ -23,6 +23,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int DefenseBoost { get; private set; }
         public int VisionBoost { get; private set; }
         public PowerUp PairedTo { get; private set; }
+        public bool IsBacktrackingPowerUp { get; private set; }
         private Action onPickUp { get; set; }
 
         public static void Pair(PowerUp p1, PowerUp p2)
@@ -31,13 +32,14 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             p2.PairedTo = p1;
         }
 
-        public PowerUp(int x, int y, int healthBoost = 0, int strengthBoost = 0, int defenseBoost = 0, int visionBoost = 0)
+        public PowerUp(int x, int y, bool isBacktrackingPowerUp = false, int healthBoost = 0, int strengthBoost = 0, int defenseBoost = 0, int visionBoost = 0)
         : base(x, y, DisplayCharacter, Palette.White)
         {
             this.HealthBoost = healthBoost;
             this.StrengthBoost = strengthBoost;
             this.DefenseBoost = defenseBoost;
             this.VisionBoost = visionBoost;
+            this.IsBacktrackingPowerUp = isBacktrackingPowerUp;
         }
 
         public string Message { get {
