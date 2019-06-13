@@ -15,7 +15,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
     public class GenerateAllDungeonsTests
     {
         // One dungeon takes roughly 1s to generate. In 12 hours, we can generate ~43200 dungeons.
-        const float HoursToRun = 0.5f;
+        const float HoursToRun = 0.005f;
         const string LogFilePath = "GenerateAllDungeonsTest.txt";
         const int RealGameWidth = 80;
         const int RealGameHeight = 32;
@@ -51,9 +51,9 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         }
 
         // These seeds used to freeze, in Days Gone By. Now, they shouldn't.
-        // [TestCase(740970391)]
-        // [TestCase(1036496413)]
-        // [TestCase(1234)]
+        [TestCase(740970391)]
+        [TestCase(1036496413)]
+        [TestCase(1234)]
         [TestCase(924473797)]
         public void GenerateDungeonDoesntFreezeForKnownFreezingSeeds(int seed)
         {
