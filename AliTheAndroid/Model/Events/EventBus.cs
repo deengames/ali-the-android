@@ -6,13 +6,27 @@ namespace DeenGames.AliTheAndroid.Model.Events
 {
     public class EventBus
     {
-        private IDictionary<GameEvent, List<Action<object>>> eventListeners = new Dictionary<GameEvent, List<Action<object>>>();
+        // For parallel testing, don't share the EventBus instance; that leads to collection modification
+        // exceptions because all the threads use the same event bus (same event listener collections).
+        public static bool UseConcurrentModel = false; 
 
-        public static EventBus Instance { get; private set; } = new EventBus();
+        private IDictionary<GameEvent, List<Action<object>>> eventListeners = new Dictionary<GameEvent, List<Action<object>>>();
+        private static EventBus instance = new EventBus();
+
+        public static EventBus Instance { get {
+            if (!UseConcurrentModel)
+            {
+                return Instance; // prod workflow
+            }
+            else
+            {
+                return new EventBus();  // parallelized tests flow
+            }
+        } }
 
         private EventBus()
         {
-            EventBus.Instance = this;
+            EventBus.instance = this;
         }
 
         public void AddListener(GameEvent eventName, Action<object> listener)
