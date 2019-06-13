@@ -127,13 +127,14 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 powerUp.PickUp();
             }
 
+            powerups = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).ToArray();
             Assert.That(powerups.Count, Is.EqualTo(0));
+
             // Act
             floor.GeneratePowerUps();
 
             // Assert
             Assert.That(powerups.Count, Is.EqualTo(0));
-
         }
 
         [TestCase(0, true, true)]
