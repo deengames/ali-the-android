@@ -551,7 +551,10 @@ namespace DeenGames.AliTheAndroid.Model
 
             foreach (var powerUp in powerups)
             {
-                powerUp.OnPickUp(() => this.PowerUps.Remove(powerUp.PairedTo));
+                powerUp.OnPickUp(() => {
+                    this.PowerUps.Remove(powerUp); // Redundant but easier to test
+                    this.PowerUps.Remove(powerUp.PairedTo);
+                });
             }
 
             powerups.ForEach(p => this.PowerUps.Add(p));    

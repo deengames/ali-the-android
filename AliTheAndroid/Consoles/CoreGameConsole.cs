@@ -142,7 +142,8 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             foreach (var powerUp in this.dungeon.CurrentFloor.PowerUps) {
-                if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y)) {
+                // B1 has power-ups under the fake wall. Don't show it.
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y) && !this.dungeon.CurrentFloor.FakeWalls.Any(f => f.X == powerUp.X && f.Y == powerUp.Y)) {
                     var elapsedSeconds = this.gameTime.TotalMilliseconds;
                     var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % PowerUp.DisplayColors.Length;
                     this.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, PowerUp.DisplayColors[colourIndex]);
