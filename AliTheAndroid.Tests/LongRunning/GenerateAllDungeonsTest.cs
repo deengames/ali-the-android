@@ -14,9 +14,11 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
     [TestFixture]
     public class GenerateAllDungeonsTests
     {
-        // One dungeon takes roughly 0.5s to generate. In 12 hours, we can generate ~86400 dungeons.
-        const float HoursToRun = 0.001f;
+        // One dungeon takes roughly 1s to generate. In 12 hours, we can generate ~43200 dungeons.
+        const float HoursToRun = 0.5f;
         const string LogFilePath = "GenerateAllDungeonsTest.txt";
+        const int RealGameWidth = 80;
+        const int RealGameHeight = 32;
 
         [OneTimeSetUp]
         public void SetupKeyboard()
@@ -30,7 +32,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         {
             DateTime startTime = DateTime.Now;
             File.Delete(LogFilePath);
-            Log($"Starting on {startTime}");
+            Log($"Starting on {startTime} - generating for {HoursToRun} hours.");
 
             var random = new Random();
             var numGenerated = 0;
@@ -38,9 +40,9 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
             while ((DateTime.Now - startTime).TotalHours <= HoursToRun)
             {
                 var seed = random.Next();
-                Log($"Generating dungeon #{seed} ...", false);
-                var dungeon = new Dungeon(80, 32, seed); // production size
-                Log($"Done\n", false);
+                Log($"{DateTime.Now} | Generating dungeon #{seed} ... ", false);
+                var dungeon = new Dungeon(RealGameWidth, RealGameHeight, seed); // production size
+                Log($"done\n", false);
                 numGenerated++;
             }
 
@@ -48,12 +50,22 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
             Log($"Generated ~{numGenerated} dungeons in {HoursToRun} hours.");
         }
 
+        // These seeds used to freeze, in Days Gone By. Now, they shouldn't.
+        // [TestCase(740970391)]
+        // [TestCase(1036496413)]
+        // [TestCase(1234)]
+        [TestCase(924473797)]
+        public void GenerateDungeonDoesntFreezeForKnownFreezingSeeds(int seed)
+        {
+            var dungeon = new Dungeon(RealGameWidth, RealGameHeight, seed);
+        }
+
         private void Log(string message, bool writeNewLine = true)
         {
-            var finalMessage = $"{DateTime.Now} | ";
-            if (!writeNewLine)
+            var finalMessage = "";
+            if (writeNewLine)
             {
-                finalMessage = "";
+                finalMessage += $"{DateTime.Now} | ";
             }
             finalMessage += message;
             if (writeNewLine) {
