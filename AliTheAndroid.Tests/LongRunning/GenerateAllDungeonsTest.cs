@@ -30,7 +30,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         {
             DateTime startTime = DateTime.Now;
             File.Delete(LogFilePath);
-            File.AppendAllText(LogFilePath, $"Starting on {startTime}\n");
+            Log($"Starting on {startTime}");
 
             var random = new Random();
             var numGenerated = 0;
@@ -38,14 +38,29 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
             while ((DateTime.Now - startTime).TotalHours <= HoursToRun)
             {
                 var seed = random.Next();
-                File.AppendAllText(LogFilePath, $"Generating dungeon #{seed} ... ");
+                Log($"Generating dungeon #{seed} ...", false);
                 var dungeon = new Dungeon(80, 32, seed); // production size
-                File.AppendAllText(LogFilePath, $"done\n");
+                Log($"Done\n", false);
                 numGenerated++;
             }
 
             Console.WriteLine($"Generated ~{numGenerated} dungeons in {HoursToRun} hours. Log file is {LogFilePath}\n");
-            File.AppendAllText(LogFilePath, $"Generated ~{numGenerated} dungeons in {HoursToRun} hours.\n");
+            Log($"Generated ~{numGenerated} dungeons in {HoursToRun} hours.");
+        }
+
+        private void Log(string message, bool writeNewLine = true)
+        {
+            var finalMessage = $"{DateTime.Now} | ";
+            if (!writeNewLine)
+            {
+                finalMessage = "";
+            }
+            finalMessage += message;
+            if (writeNewLine) {
+                finalMessage += '\n';
+            }
+
+            File.AppendAllText(LogFilePath, finalMessage);
         }
     }
 }

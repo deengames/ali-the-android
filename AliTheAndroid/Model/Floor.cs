@@ -493,8 +493,10 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.GravityCannon] - 1)
             {
-                // Generate a 9x9 here so the player can't easily get the power-ups
-                var nonCriticalRoom = this.CreateIsolatedRoom(9, 9);
+                // We need a 9x9 to guarantee the player can't get these by brute-force.
+                // Well, anyway, let them if they choose to. Some maps don't have a patch
+                // of 9x9 walls (eg. seed 1234, B4).
+                var nonCriticalRoom = this.CreateIsolatedRoom();
                 this.FillWithGravity(nonCriticalRoom, true);
                 this.GeneratePowerUpsInRoom(nonCriticalRoom);
             }
