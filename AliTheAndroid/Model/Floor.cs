@@ -468,11 +468,28 @@ namespace DeenGames.AliTheAndroid.Model
         private void GenerateBacktrackingObstacles()
         {            
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
-            
+            GoRogue.Rectangle room;
+
             if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
             {
                 var secretRooms = this.GenerateSecretRooms(rooms, 1, true);
-                this.GeneratePowerUpsInRoom(secretRooms.Single());
+                if (secretRooms.Any())
+                {
+                    room = secretRooms.First();
+                }
+                else
+                {
+                    // Some dungeon layouts leave no space for secret rooms, because every room
+                    // is either close to the edge or has a hallway poking out of the other side.
+                    // https://trello.com/c/3xHowpLR/42-dungeon-crashes-because-it-cant-have-secret-rooms
+                    room = this.CreateIsolatedRoom();
+                    for (var y = room.MinExtentY; y <= room.MaxExtentY; y++) {
+                        for (var x = room.MinExtentX; x <= room.MaxExtentX; x++) {
+                            this.FakeWalls.Add(new FakeWall(x, y, true));
+                        }
+                    }
+                }
+                this.GeneratePowerUpsInRoom(room);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.Zapper] - 1)
             {
