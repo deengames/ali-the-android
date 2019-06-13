@@ -860,7 +860,9 @@ namespace DeenGames.AliTheAndroid.Model
                     floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
                 }
 
-                var locations = floorsNearStairs.OrderBy(f => globalRandom.Next()).Take(2).ToArray();
+                // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
+                // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
+                var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
                 var powerUps = this.GuaranteedPowerUps.Take(2).ToArray();
 
                 // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
