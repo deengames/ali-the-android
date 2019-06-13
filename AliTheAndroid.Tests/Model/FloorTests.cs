@@ -65,7 +65,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void PickingUpPowerUpsRemovesThemFromTheCollectionAndRemovesTheOtherOption()
         {
-            // Generate three power-ups; you pick up one. The other two show up next floor.
+            // Generate three power-ups; you pick up one. The other two (unpicked + third) show up next floor.
             var powerUps = new List<PowerUp>() { 
                 new PowerUp(0, 0, healthBoost: 100),
                 new PowerUp(0, 0, strengthBoost: 10),
@@ -78,7 +78,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             floor.GeneratePowerUps();
 
-            var twins = floor.PowerUps; // TODO: later, this could include backtracking power-ups
+            var twins = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp);
             Assert.That(twins.Count, Is.EqualTo(2));
             var twin = twins.First();
             twin.PickUp();
@@ -88,8 +88,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             // Progress to next floor, see the other two
             nextFloor.GeneratePowerUps();
-            Assert.That(nextFloor.PowerUps.Count, Is.EqualTo(2));
-            foreach (var p in nextFloor.PowerUps)
+            Assert.That(nextFloor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).Count, Is.EqualTo(2));
+            foreach (var p in nextFloor.PowerUps.Where(p => !p.IsBacktrackingPowerUp))
             {
                 Assert.That(powerUps.Contains(p));
             }
@@ -105,20 +105,23 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             var floor = new Floor(30, 30, 0, new StandardGenerator(1), powerUps);
             floor.GeneratePowerUps();
-            Assert.That(floor.PowerUps.Count, Is.EqualTo(2));
 
             // Create a copy so we don't modify the collection during enumeration
-            foreach (var powerUp in floor.PowerUps.ToArray())
+            var powerups = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).ToArray();
+
+            Assert.That(powerups.Count, Is.EqualTo(2));
+
+            foreach (var powerUp in powerups)
             {
                 powerUp.PickUp();
             }
 
-            Assert.That(floor.PowerUps.Count, Is.EqualTo(0));
+            Assert.That(powerups.Count, Is.EqualTo(0));
             // Act
             floor.GeneratePowerUps();
 
             // Assert
-            Assert.That(floor.PowerUps.Count, Is.EqualTo(0));
+            Assert.That(powerups.Count, Is.EqualTo(0));
 
         }
 

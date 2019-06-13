@@ -549,7 +549,12 @@ namespace DeenGames.AliTheAndroid.Model
             powerups[0].X = room.Center.X - 1;
             powerups[1].X = room.Center.X + 1;
 
-            powerups.ForEach(p => this.PowerUps.Add(p));       
+            foreach (var powerUp in powerups)
+            {
+                powerUp.OnPickUp(() => this.PowerUps.Remove(powerUp.PairedTo));
+            }
+
+            powerups.ForEach(p => this.PowerUps.Add(p));    
         }
 
         // Creates an isolated 5x5 room by locating and then tunnelling out a 5x5 area of walls.
@@ -1372,7 +1377,7 @@ namespace DeenGames.AliTheAndroid.Model
                 destinationX = Player.X;
                 destinationY = Player.Y;
             }
-            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
+            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Key.OemComma) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
             {
                 Dungeon.Instance.GoToPreviousFloor();
                 destinationX = Player.X;

@@ -9,6 +9,7 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Common
         Right,
         Space,
         OemPeriod,
+        OemComma,
         A,
         D,
         E,
