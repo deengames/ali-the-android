@@ -23,6 +23,10 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         public CoreGameConsole(int width, int height) : base(width, height)
         {
+            // Remove FPS counter
+            var fpsCounter = SadConsole.Game.Instance.Components.Single(c => c is SadConsole.Game.FPSCounterComponent);
+            SadConsole.Game.Instance.Components.Remove(fpsCounter);
+            
             this.dungeon = new Dungeon(width, height);
             this.dungeon.GoToNextFloor();
         }
