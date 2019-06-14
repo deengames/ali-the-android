@@ -99,7 +99,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void PickingUpBackTrackingPowerUpRemovesPairedPowerUp()
         {
             // 0 = B1 = has two power-ups behind a fake wall
-            var floor = new Floor(80, 32, 0, new StandardGenerator(23985), new List<PowerUp>());
+            var floor = new Floor(80, 30, 0, new StandardGenerator(23985), new List<PowerUp>());
             var backTrackingPowerUps = floor.PowerUps.Where(p => p.IsBacktrackingPowerUp);
             // Probably two
             backTrackingPowerUps.First().PickUp();

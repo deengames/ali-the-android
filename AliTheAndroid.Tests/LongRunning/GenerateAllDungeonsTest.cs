@@ -20,7 +20,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         const int MaxExpectedGenerationTimeSecondsForDungeon = 2;
 
         const int RealGameWidth = 80;
-        const int RealGameHeight = 32;
+        const int RealGameHeight = 30;
 
         [OneTimeSetUp]
         public void SetupKeyboard()
