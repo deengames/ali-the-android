@@ -14,7 +14,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
     [TestFixture]
     public class GenerateAllDungeonsTests
     {
-        // One dungeon takes roughly 1s to generate. In 12 hours, we can generate ~43200 dungeons.
+        // One dungeon takes roughly 1s to generate. Generates ~4200 dungeons per hour.
         const float HoursToRun = 0.005f;
         const string LogFilePath = "GenerateAllDungeonsTest.txt";
         const int RealGameWidth = 80;
