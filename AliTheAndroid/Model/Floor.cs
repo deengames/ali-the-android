@@ -71,6 +71,7 @@ namespace DeenGames.AliTheAndroid.Model
         private string lastMessage = "";
         private IKeyboard keyboard;
         private bool generatedPowerUps = false;
+        private GoRogue.FOV playerFieldOfView;
 
         // 2 = B2
         private static readonly IDictionary<string, int> monsterFloors = new Dictionary<string, int>() {
@@ -115,6 +116,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.PlasmaResidue = new List<Plasma>();
 
             this.GenerateMap();
+            this.playerFieldOfView = new GoRogue.FOV(map);
 
             var eventBus = EventBus.Instance;
 
@@ -165,6 +167,7 @@ namespace DeenGames.AliTheAndroid.Model
             if (playerTookTurn)
             {
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
+                this.RecalculatePlayerFov();
             }
 
             if (this.EffectEntities.Any()) {
@@ -318,15 +321,14 @@ namespace DeenGames.AliTheAndroid.Model
         
         public bool IsInPlayerFov(int x, int y)
         {
+
+#pragma warning disable
             if (Options.EnableOmniSight) {
                 return true;
             }
-
-#pragma warning disable
-            // Doesn't use LoS calculations, just simple range check
-            var distance = Math.Sqrt(Math.Pow(Player.X - x, 2) + Math.Pow(Player.Y - y, 2));
 #pragma warning restore
-            return distance <= Player.VisionRange;
+
+            return playerFieldOfView.BooleanFOV[x, y] == true;
         }
 
         public bool IsSeen(int x, int y)
@@ -343,6 +345,12 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             return this.IsFlyable(x, y);
+        }
+
+        public void RecalculatePlayerFov()
+        {
+            // Recalculate FOV
+            playerFieldOfView.Calculate(Player.X, Player.Y, Player.VisionRange);
         }
 
         // Get the set of tiles spanning a path from the stairs up to the stairs down. Get all rooms that encompass those tiles.

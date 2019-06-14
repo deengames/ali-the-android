@@ -73,7 +73,8 @@ namespace DeenGames.AliTheAndroid.Model
             this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.StairsUpLocation.X;
             this.Player.Y = this.CurrentFloor.StairsUpLocation.Y;
-            
+            this.CurrentFloor.RecalculatePlayerFov();
+
             this.CurrentFloor.GeneratePowerUps();
         }
 
@@ -85,6 +86,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.StairsDownLocation.X;
             this.Player.Y = this.CurrentFloor.StairsDownLocation.Y;
+            this.CurrentFloor.RecalculatePlayerFov();
         }
 
         internal void Update(TimeSpan delta)
