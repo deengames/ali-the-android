@@ -3,6 +3,7 @@ using System.Text;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
+using DeenGames.AliTheAndroid.Loggers;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
@@ -70,6 +71,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public void PickUp()
         {
+            LastGameLogger.Instance.Log($"Picked up a {(this.IsBacktrackingPowerUp ? "Backtracking" : "")} power-up: {this.Message}");
+            
             if (this.onPickUp != null)
             {
                 this.onPickUp.Invoke();

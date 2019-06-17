@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Infrastructure.Common;
-using Ninject;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
+using DeenGames.AliTheAndroid.Loggers;
+using System.Diagnostics;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -22,7 +22,7 @@ namespace DeenGames.AliTheAndroid.Model
         public int Height { get; private set; }
         public int CurrentFloorNum { get; private set; } = -1;
 
-        public readonly int? GameSeed = null; // null = random each time
+        public readonly int? GameSeed = 783493901; // null = random each time
         private readonly IGenerator globalRandom;
         private readonly List<Floor> floors = new List<Floor>(NumFloors);
         private readonly List<PowerUp> guaranteedPowerUps = new List<PowerUp>();
@@ -53,7 +53,10 @@ namespace DeenGames.AliTheAndroid.Model
                 this.GameSeed = gameSeed;
             }
             
-            System.Console.WriteLine($"Universe #{GameSeed.Value}");
+            LastGameLogger.Instance.Log($"Generating dungeon {this.GameSeed} ...");
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             this.globalRandom = new StandardGenerator(GameSeed.Value);
             this.Player = new Player();
 
@@ -63,12 +66,16 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 this.floors.Add(new Floor(this.Width, this.Height, i, this.globalRandom, this.guaranteedPowerUps));
             }
+
+            stopwatch.Stop();
+            LastGameLogger.Instance.Log($"Generated in {stopwatch.Elapsed.TotalSeconds}s");
         }
 
         public void GoToNextFloor()
         {
             this.CurrentFloorNum++;
             this.CurrentFloor = this.floors[this.CurrentFloorNum];
+            LastGameLogger.Instance.Log($"Descended to B{this.CurrentFloorNum + 1}");
             
             this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.StairsUpLocation.X;
@@ -82,6 +89,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.CurrentFloorNum--;
             this.CurrentFloor = this.floors[this.CurrentFloorNum];
+            LastGameLogger.Instance.Log($"Ascended to B{this.CurrentFloorNum + 1}");
 
             this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.StairsDownLocation.X;

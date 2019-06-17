@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
 using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Loggers;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
@@ -56,6 +57,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public void Acquire(Weapon weapon)
         {
+            LastGameLogger.Instance.Log($"Acquired weapon: {weapon}");
             if (!this.weapons.Contains(weapon))
             {
                 this.weapons.Add(weapon);

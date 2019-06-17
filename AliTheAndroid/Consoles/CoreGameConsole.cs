@@ -1,14 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using GoRogue.MapViews;
-using Troschuetz.Random;
-using Troschuetz.Random.Generators;
-using Global = SadConsole.Global;
 using DeenGames.AliTheAndroid.Enums;
-using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model;
 

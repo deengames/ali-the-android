@@ -14,6 +14,7 @@ using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Infrastructure.Sad;
 using Ninject;
 using DeenGames.AliTheAndroid.Model.Events;
+using DeenGames.AliTheAndroid.Loggers;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -132,7 +133,8 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 if (Dungeon.Instance.CurrentFloorNum == this.floorNum && e == Player)
                 {
-                    this.LatestMessage = "YOU DIE!!!";
+                    LastGameLogger.Instance.Log($"Player died!!!");
+                    this.LatestMessage = "YOU DIE!!! Press ESC to quit.";
                     this.Player.Character = '%';
                     this.Player.Color = Palette.DarkBurgandyPurple;
                 }
@@ -1335,6 +1337,11 @@ namespace DeenGames.AliTheAndroid.Model
         private bool ProcessPlayerInput()
         {            
             if (Player.IsDead) {
+                if (this.keyboard.IsKeyPressed(Key.Escape))
+                {
+                    System.Environment.Exit(0);    
+                }
+
                 return false; // don't pass time
             }
 
