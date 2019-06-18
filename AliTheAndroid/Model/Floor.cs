@@ -5,13 +5,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using GoRogue.MapViews;
 using Troschuetz.Random;
-using Troschuetz.Random.Generators;
-using Global = SadConsole.Global;
 using DeenGames.AliTheAndroid.Enums;
 using GoRogue.Pathing;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
-using DeenGames.AliTheAndroid.Infrastructure.Sad;
 using Ninject;
 using DeenGames.AliTheAndroid.Model.Events;
 
@@ -19,6 +16,7 @@ namespace DeenGames.AliTheAndroid.Model
 {
     public class Floor
     {
+        internal const int MinimumDistanceFromMonsterToStairs = 3; // Close, but not too close
         private const int MaxRooms = 10;
         // These are exterior sizes (walls included)
         private const int MinRoomSize = 7;
@@ -321,6 +319,10 @@ namespace DeenGames.AliTheAndroid.Model
         
         public bool IsInPlayerFov(int x, int y)
         {
+            if (x < 0 || y < 0 || x >= this.width || y >= this.height)
+            {
+                return false; // Out of bounds = not visible
+            }
 
 #pragma warning disable
             if (Options.EnableOmniSight) {
@@ -427,9 +429,10 @@ namespace DeenGames.AliTheAndroid.Model
 
             this.GenerateMapRooms();
             this.GenerateDoors();
-            this.GenerateMonsters();
-            
+
+            // Stairs before monsters because monsters don't generate close to stairs!
             this.GenerateStairs();
+            this.GenerateMonsters();
 
             var actualFloorNum = this.floorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
@@ -1634,33 +1637,55 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 var spot = this.FindEmptySpot();
 
-                var template = "";
-                if (numZugs > 0) {
-                    template = "Zug";
-                    numZugs--;
-                } else if (numTenLegs > 0) {
-                    template = "TenLegs";
-                    numTenLegs--;
-                } else if (numSlinks > 0) {
-                    template = "Slink";
-                    numSlinks--;
-                } else {
-                    template = "Fuseling";
-                    numFuselings--;
-                }
+                // https://trello.com/c/DNXtSLW5/33-monsters-generate-next-to-player-when-descends-stairs
+                // Make sure monsters don't generate right next to the player
+                var distanceToStairsUp = Math.Sqrt(Math.Pow(spot.X - StairsUpLocation.X, 2) + Math.Pow(spot.Y - StairsUpLocation.Y, 2));
+                var distanceToStairsDown = Math.Sqrt(Math.Pow(spot.X - StairsDownLocation.X, 2) + Math.Pow(spot.Y - StairsDownLocation.Y, 2));
 
-                var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
-                this.Monsters.Add(monster);
+                if (distanceToStairsUp >= MinimumDistanceFromMonsterToStairs && distanceToStairsDown >= MinimumDistanceFromMonsterToStairs)
+                {
+                    var template = "";
+                    if (numZugs > 0) {
+                        template = "Zug";
+                        numZugs--;
+                    } else if (numTenLegs > 0) {
+                        template = "TenLegs";
+                        numTenLegs--;
+                    } else if (numSlinks > 0) {
+                        template = "Slink";
+                        numSlinks--;
+                    } else {
+                        template = "Fuseling";
+                        numFuselings--;
+                    }
 
-                // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
-                if (template == "Slink") {
-                    var numSubSlinks = this.globalRandom.Next(3, 7); // 3-6 in a bunch
-                    var spots = this.GetAdjacentFloors(spot);
-                    var spotsToUse = spots.Where(s => IsWalkable(s.X, s.Y)).OrderBy(s => this.globalRandom.Next()).Take(Math.Min(spots.Count, numSubSlinks));
+                    var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
+                    this.Monsters.Add(monster);
 
-                    foreach (var slinkSpot in spotsToUse) {
-                        monster = Entity.CreateFromTemplate(template, slinkSpot.X, slinkSpot.Y);
-                        this.Monsters.Add(monster);
+                    // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
+                    if (template == "Slink") {
+                        var numSubSlinks = this.globalRandom.Next(3, 7); // 3-6 in a bunch
+                        var spots = this.GetAdjacentFloors(spot);
+                        var spotsToUse = spots.Where(s => IsWalkable(s.X, s.Y)).OrderBy(s => this.globalRandom.Next());
+                        
+                        var leftInGroup = Math.Min(spots.Count, numSubSlinks);
+
+                        foreach (var slinkSpot in spotsToUse)
+                        {
+                            distanceToStairsUp = Math.Sqrt(Math.Pow(slinkSpot.X - StairsUpLocation.X, 2) + Math.Pow(slinkSpot.Y - StairsUpLocation.Y, 2));
+                            distanceToStairsDown = Math.Sqrt(Math.Pow(slinkSpot.X - StairsDownLocation.X, 2) + Math.Pow(slinkSpot.Y - StairsDownLocation.Y, 2));
+                            if (distanceToStairsUp >= MinimumDistanceFromMonsterToStairs && distanceToStairsDown >= MinimumDistanceFromMonsterToStairs)
+                            {
+                                monster = Entity.CreateFromTemplate(template, slinkSpot.X, slinkSpot.Y);
+                                this.Monsters.Add(monster);
+                                leftInGroup--;
+                            }
+
+                            if (leftInGroup == 0)
+                            {
+                                break;
+                            }
+                        }
                     }
                 }
             }

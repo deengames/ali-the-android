@@ -23,6 +23,37 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             DependencyInjection.kernel.Bind<IKeyboard>().To<DeadKeyboard>();
         }
 
+        // Crash bug exposed by using 2D FOV map instead of our homebrew distance formula
+        [TestCase(-10, -29)] 
+        [TestCase(-7, 2)]
+        [TestCase(10, -29)]
+        [TestCase(220, 290)]
+        [TestCase(110, 9)]
+        [TestCase(3, 87)]
+        public void IsInPlayerFovReturnsFalseWhenOutOfBounds(int x, int y)
+        {
+            var floor = new Floor(30, 20, 1, new StandardGenerator(), new List<PowerUp>());
+            Assert.That(floor.IsInPlayerFov(x, y), Is.False);
+        }
+
+        [Test]
+        public void MonstersDontGenerateNextToStairs()
+        {
+            var prng = new StandardGenerator(1325677035);
+            for (var i = 0; i < 10; i++) {
+                // Real seed from a real bug; this failed on B6 (going down) then B3 (going up)
+                // Also, this finds a slink group on B6 that generates one guy too close to stairs up
+                var floor = new Floor(80, 32, i, prng, new List<PowerUp>());
+                foreach (var monster in floor.Monsters)
+                {
+                    var distanceToStairsUp = Math.Sqrt(Math.Pow(monster.X - floor.StairsUpLocation.X, 2) + Math.Pow(monster.Y - floor.StairsUpLocation.Y, 2));
+                    var distanceToStairsDown = Math.Sqrt(Math.Pow(monster.X - floor.StairsDownLocation.X, 2) + Math.Pow(monster.Y - floor.StairsDownLocation.Y, 2));
+                    Assert.That(distanceToStairsUp >= Floor.MinimumDistanceFromMonsterToStairs, $"Stairs UP for {monster.Character} at {monster.X}, {monster.Y} on floor B{i + 1} are at d={distanceToStairsUp} (min is {Floor.MinimumDistanceFromMonsterToStairs})");
+                    Assert.That(distanceToStairsDown >= Floor.MinimumDistanceFromMonsterToStairs, $"Stairs DOWN for {monster.Character} at {monster.X}, {monster.Y} on floor B{i + 1} are at d={distanceToStairsDown} (min is {Floor.MinimumDistanceFromMonsterToStairs})");
+                }
+            }
+        }
+
         [Test]
         public void OnPlayerMovedAbsorbsPowerUpUnderPlayer()
         {
@@ -35,6 +66,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var oldHealth = player.TotalHealth;
             player.X = powerUp.X;
             player.Y = powerUp.Y;
+
+            floor.RecalculatePlayerFov();
 
             // Act
             floor.OnPlayerMoved();
