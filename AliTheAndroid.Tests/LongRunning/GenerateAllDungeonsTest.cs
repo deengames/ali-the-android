@@ -14,11 +14,6 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
     [TestFixture]
     public class GenerateAllDungeonsTests
     {
-        // One dungeon takes roughly 1s to generate.
-        const float HoursToRun = 0.005f;
-        const string LogFilePath = "GenerateAllDungeonsTest.txt";
-        const int MaxExpectedGenerationTimeSecondsForDungeon = 2;
-
         const int RealGameWidth = 80;
         const int RealGameHeight = 30;
 

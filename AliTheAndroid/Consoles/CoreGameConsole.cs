@@ -149,6 +149,8 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             var weaponPickUp = this.dungeon.CurrentFloor.WeaponPickUp;
+            // Weapons are always visible. This adds tension/arrow-of-play. You need them to 
+            // get through obstacles on later floors. #notabug
             if (weaponPickUp != null) {
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotateWeaponColorEveryMilliseconds) % WeaponPickUp.DisplayColors.Length;
