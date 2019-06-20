@@ -357,6 +357,140 @@ namespace DeenGames.AliTheAndroid.Model
             playerFieldOfView.Calculate(Player.X, Player.Y, Player.VisionRange);
         }
 
+        // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
+        // the player's choice. So we pass the list to each floor, and let each floor consume/update it appropriately.
+        // TODO: put this back in GenerateMap
+        public void GeneratePowerUps()
+        {
+            if (!this.generatedPowerUps)
+            {
+                var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+                if (floorsNearStairs.Count < 2)
+                {
+                    // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
+                    var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
+                    var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
+                    var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
+                    var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
+
+                    var moreTiles = this.GetAdjacentFloors(aboveStairs);
+                    moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
+                    moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
+                    moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
+
+                    floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+                }
+
+                // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
+                // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
+                var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
+                var powerUps = this.GuaranteedPowerUps.Take(2).ToArray();
+
+                // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
+                var choicePowerUps = new List<PowerUp>();
+
+                for (var i = 0; i < locations.Count(); i++)
+                {
+                    var powerUp = this.GuaranteedPowerUps[i];
+                    var location = locations[i];
+
+                    powerUp.X = location.X;
+                    powerUp.Y = location.Y;
+
+                    choicePowerUps.Add(powerUp);
+                    this.PowerUps.Add(powerUp);
+                }
+
+                PowerUp.Pair(powerUps[0], powerUps[1]);
+
+                foreach (var powerUp in choicePowerUps)
+                {
+                    powerUp.OnPickUp(() => {
+                        this.GuaranteedPowerUps.Remove(powerUp);
+                        this.PowerUps.Remove(powerUp);
+                        this.PowerUps.Remove(powerUp.PairedTo);
+                    });
+                }
+                
+                this.generatedPowerUps = true;
+            }
+        }
+
+        
+        // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
+        internal int CountAdjacentFloors(GoRogue.Coord coordinates) {
+            return GetAdjacentFloors(coordinates).Count;
+        }
+
+        internal List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
+            return this.GetAdjacentFloors(coordinates.X, coordinates.Y);
+        }
+
+        internal List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY) {
+            var toReturn = new List<GoRogue.Coord>();
+
+            for (var y = centerY - 1; y <= centerY + 1; y++) {
+                for (var x = centerX - 1; x <= centerX + 1; x++) {
+                    if (IsWalkable(x, y))
+                    {
+                        toReturn.Add(new GoRogue.Coord(x, y));
+                    }
+                }
+            }
+
+            toReturn.Remove(toReturn.Find(c => c.X == centerX && c.Y == centerY));
+            return toReturn;
+        }
+
+        
+        internal void OnPlayerMoved()
+        {
+            Player.CanFireGravityCannon = true;
+            // This is too late - player already moved. For the prototype, we can live with this.
+            int viewRadius = (int)Math.Ceiling(Player.VisionRange / 2.0);
+            for (var y = Player.Y - viewRadius; y <= Player.Y + viewRadius; y++)
+            {
+                for (var x = Player.X - viewRadius; x <= Player.X + viewRadius; x++)
+                {
+                    // Just to be sure
+                    if (IsInPlayerFov(x, y))
+                    {
+                        this.MarkAsSeen(x, y);
+                    }
+                }
+            }
+
+            this.LatestMessage = "";
+
+            // Damaged by plasma residue
+            var plasmaUnderPlayer = this.PlasmaResidue.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
+            if (plasmaUnderPlayer != null) {
+                this.LatestMessage = $"The plasma burns through your suit! {PlasmaResidueDamage} damage!";
+                Player.Damage(PlasmaResidueDamage);
+                this.PlasmaResidue.Remove(plasmaUnderPlayer);
+            }
+
+            this.PlasmaResidue.ForEach(p => p.Degenerate());
+
+            var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
+            if (powerUpUnderPlayer != null)
+            {
+                this.PowerUps.Remove(powerUpUnderPlayer);
+                Player.Absorb(powerUpUnderPlayer);
+                powerUpUnderPlayer.PickUp();
+                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
+            }
+
+            if (this.WeaponPickUp != null && WeaponPickUp.X == Player.X && WeaponPickUp.Y == Player.Y)
+            {
+                this.Player.Acquire(this.WeaponPickUp.Weapon);
+                var key = this.GetKeyFor(this.WeaponPickUp.Weapon);
+                var keyText = key.ToString().Replace("NumPad", "");
+                this.LatestMessage = $"You assimilate the {this.WeaponPickUp.Weapon}. Press {keyText} to equip it.";
+                this.WeaponPickUp = null;
+            }
+        }
+
         // Get the set of tiles spanning a path from the stairs up to the stairs down. Get all rooms that encompass those tiles.
         private List<GoRogue.Rectangle> RoomsInPathFromStairsToStairs()
         {
@@ -849,64 +983,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.StairsDownLocation = spot;
         }
 
-        // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
-        // the player's choice. So we pass the list to each floor, and let each floor consume/update it appropriately.
-        // TODO: put this back in GenerateMap
-        public void GeneratePowerUps()
-        {
-            if (!this.generatedPowerUps)
-            {
-                var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-                if (floorsNearStairs.Count < 2)
-                {
-                    // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
-                    var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
-                    var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
-                    var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
-                    var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
-
-                    var moreTiles = this.GetAdjacentFloors(aboveStairs);
-                    moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
-                    moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
-                    moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
-
-                    floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-                }
-
-                // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
-                // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
-                var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
-                var powerUps = this.GuaranteedPowerUps.Take(2).ToArray();
-
-                // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
-                var choicePowerUps = new List<PowerUp>();
-
-                for (var i = 0; i < locations.Count(); i++)
-                {
-                    var powerUp = this.GuaranteedPowerUps[i];
-                    var location = locations[i];
-
-                    powerUp.X = location.X;
-                    powerUp.Y = location.Y;
-
-                    choicePowerUps.Add(powerUp);
-                    this.PowerUps.Add(powerUp);
-                }
-
-                PowerUp.Pair(powerUps[0], powerUps[1]);
-
-                foreach (var powerUp in choicePowerUps)
-                {
-                    powerUp.OnPickUp(() => {
-                        this.GuaranteedPowerUps.Remove(powerUp);
-                        this.PowerUps.Remove(powerUp);
-                        this.PowerUps.Remove(powerUp.PairedTo);
-                    });
-                }
-                
-                this.generatedPowerUps = true;
-            }
-        }
 
         private void GenerateMapRooms() {
             var actualFloorNum = this.floorNum + 1;
@@ -1071,15 +1147,6 @@ namespace DeenGames.AliTheAndroid.Model
             ((IsWalkable(x - 1, y) && IsWalkable(x + 1, y)) || (IsWalkable(x, y - 1) && IsWalkable(x, y + 1)));
         }
 
-        // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
-        internal int CountAdjacentFloors(GoRogue.Coord coordinates) {
-            return GetAdjacentFloors(coordinates).Count;
-        }
-
-        internal List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
-            return this.GetAdjacentFloors(coordinates.X, coordinates.Y);
-        }
-
         private IEnumerable<ConnectedRoom> FindPotentialSecretRooms(IEnumerable<GoRogue.Rectangle> rooms)
         {
             // rooms has a strange invariant. It claims the room is 7x7 even though the interior is 5x5.
@@ -1159,22 +1226,6 @@ namespace DeenGames.AliTheAndroid.Model
                     }
                 }
             }
-        }
-
-        internal List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY) {
-            var toReturn = new List<GoRogue.Coord>();
-
-            for (var y = centerY - 1; y <= centerY + 1; y++) {
-                for (var x = centerX - 1; x <= centerX + 1; x++) {
-                    if (IsWalkable(x, y))
-                    {
-                        toReturn.Add(new GoRogue.Coord(x, y));
-                    }
-                }
-            }
-
-            toReturn.Remove(toReturn.Find(c => c.X == centerX && c.Y == centerY));
-            return toReturn;
         }
 
         private void AddNonDupeEntity<T>(T entity, List<T> collection) where T : AbstractEntity {
@@ -1470,54 +1521,6 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             return processedInput;
-        }
-
-        internal void OnPlayerMoved()
-        {
-            Player.CanFireGravityCannon = true;
-            // This is too late - player already moved. For the prototype, we can live with this.
-            int viewRadius = (int)Math.Ceiling(Player.VisionRange / 2.0);
-            for (var y = Player.Y - viewRadius; y <= Player.Y + viewRadius; y++)
-            {
-                for (var x = Player.X - viewRadius; x <= Player.X + viewRadius; x++)
-                {
-                    // Just to be sure
-                    if (IsInPlayerFov(x, y))
-                    {
-                        this.MarkAsSeen(x, y);
-                    }
-                }
-            }
-
-            this.LatestMessage = "";
-
-            // Damaged by plasma residue
-            var plasmaUnderPlayer = this.PlasmaResidue.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
-            if (plasmaUnderPlayer != null) {
-                this.LatestMessage = $"The plasma burns through your suit! {PlasmaResidueDamage} damage!";
-                Player.Damage(PlasmaResidueDamage);
-                this.PlasmaResidue.Remove(plasmaUnderPlayer);
-            }
-
-            this.PlasmaResidue.ForEach(p => p.Degenerate());
-
-            var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
-            if (powerUpUnderPlayer != null)
-            {
-                this.PowerUps.Remove(powerUpUnderPlayer);
-                Player.Absorb(powerUpUnderPlayer);
-                powerUpUnderPlayer.PickUp();
-                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
-            }
-
-            if (this.WeaponPickUp != null && WeaponPickUp.X == Player.X && WeaponPickUp.Y == Player.Y)
-            {
-                this.Player.Acquire(this.WeaponPickUp.Weapon);
-                var key = this.GetKeyFor(this.WeaponPickUp.Weapon);
-                var keyText = key.ToString().Replace("NumPad", "");
-                this.LatestMessage = $"You assimilate the {this.WeaponPickUp.Weapon}. Press {keyText} to equip it.";
-                this.WeaponPickUp = null;
-            }
         }
 
         private Keys GetKeyFor(Weapon weapon)
