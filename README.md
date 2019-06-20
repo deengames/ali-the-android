@@ -6,7 +6,6 @@ Distant-future sci-fi narrative horror roguelike/metroidvania fusion built aroun
 
 - **Goal:** Ship something small, like *really* small. Fuse metroidvania with roguelike.
 
-- Backstory: ship attacked, crashed on planet, beat the queen (maybe she stole a critical ship part).
 - 10 floors in total
 	- The first eight floors are four pairs of new-skill, master-skill
 	- The ninth floor combines everything together
@@ -27,14 +26,34 @@ Distant-future sci-fi narrative horror roguelike/metroidvania fusion built aroun
 
 # Content + Spoilers
 
-- You are an android with lots of missing memories (you explode when you die)
-- You're a prototype, so you power up as you go
-- Your last body was destroyed, so you start from zero
-- You're also a fantastic engineer, so you can reclaim ancient civilizations' artifacts and integrate them into your system
-- You were sent here because ... well. You're the android. Your previous, human version came here on a suspicion that The Good Guys captured a powerful alien and are trying to weaponize it. So he came, and found it, and they used it on him.
-- He didn't die. He fused into it and became a hideous creature. With all your powers and intelligence at his disposal.
-- Your superiors sent you as an android, because you're the best. You have to defeat yourself.
-- Fight hideous mutogenic creatures. It's like a narrative horror sci-fi metroidvania roguelike.
+## THEMES
+- Theme should fit the core gameplay. which is what?
+- Descending. Exploring.
+- Killing monsters that kill you.
+- Finding and assimilating alien technology.
+
+## STORY
+- You are sent to a derelict space station in the middle of deep space
+- This station was a research station. They were researching some sort of cure
+- Communication went dark a couple of weeks ago. No messages.
+- You arrive and find it busted up - debris (breakable walls), no power (locked doors), plasma drive leaks (plasma rooms)
+- NB: first floor with plasma, AI voice in ear says "be careful Trace, I detect plasma waves."
+- NB: once assimilated, voice should tell you "oh I can do X things now" eg. destroy debris or teleport gaps or whatever
+
+## DATA CUBES BELOW
+- It's Umbrella Corp. They're buildling a super-healing thing.
+- But there was a conflict. The Captain wanted a weapon. Scientists disagreed.
+- There was an accident. Was it sabotaged? Somehow, the prototype leaked, and infected the crew.
+- The guards - they turned into zugs. They blew out the engine ...
+- The Captain holed himself up on the last floor (captain's log). He may still be there ...
+
+## ENDING
+- ... He's the worst mutant of all. He got infected, tried the cure, so he HEALS HIMSELF. Ugh.
+- You have the cure. Your captian calls. Choose: tell them you found it? Or, it's too dangerous ...
+
+## DEEN
+
+TBD
 
 # Defer
 
