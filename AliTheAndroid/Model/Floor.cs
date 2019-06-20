@@ -1072,11 +1072,11 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
-        private int CountAdjacentFloors(GoRogue.Coord coordinates) {
+        internal int CountAdjacentFloors(GoRogue.Coord coordinates) {
             return GetAdjacentFloors(coordinates).Count;
         }
 
-        private List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
+        internal List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
             return this.GetAdjacentFloors(coordinates.X, coordinates.Y);
         }
 
@@ -1161,18 +1161,19 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY) {
+        internal List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY) {
             var toReturn = new List<GoRogue.Coord>();
 
             for (var y = centerY - 1; y <= centerY + 1; y++) {
                 for (var x = centerX - 1; x <= centerX + 1; x++) {
-                    if (x != centerX && y != centerY && IsWalkable(x, y))
+                    if (IsWalkable(x, y))
                     {
                         toReturn.Add(new GoRogue.Coord(x, y));
                     }
                 }
             }
 
+            toReturn.Remove(toReturn.Find(c => c.X == centerX && c.Y == centerY));
             return toReturn;
         }
 

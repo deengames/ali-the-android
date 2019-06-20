@@ -462,5 +462,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 }
             }
         }
+
+        // https://trello.com/c/aqjBuMJC/29-dungeon-generates-with-randomly-placed-locked-doors
+        // Turns out we were counting empty floors wrong all along. :facepalm: :facepalm: :facepalm:
+        [Test]
+        public void CountAdjacentFloorsReturnsCorrectCountExcludingCenter()
+        {
+            var floor = new Floor(80, 31, 0, new StandardGenerator(69874632), new List<PowerUp>());
+            floor.Walls.RemoveAll(w => true);
+
+            Assert.That(floor.CountAdjacentFloors(new GoRogue.Coord(2, 2)), Is.EqualTo(8));
+        }
     }
 }
