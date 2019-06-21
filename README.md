@@ -57,4 +57,4 @@ TBD
 
 # Defer
 
-Other upgrades (not needed for v1.0): health, damage, drone range, toxic suit damage blocked, missile explosion size, electric range/num-bounces/%-bounce, forcefield range, plasma number of shots
+Other upgrades (not needed for v1.0): health, damage, drone range, toxic suit damage blocked, missile explosion size, electric range/num-bounces/%-bounce, forcefield, forcefield range, plasma number of shots
