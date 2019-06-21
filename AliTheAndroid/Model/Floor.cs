@@ -1092,7 +1092,9 @@ namespace DeenGames.AliTheAndroid.Model
             if (actualFloorNum >= weaponPickUpFloors[Weapon.Zapper])
             {
                 var leftToGenerate = NumberOfLockedDoors;
-                while (leftToGenerate > 0) {
+                var iterationsLeft = 50;
+
+                while (leftToGenerate > 0 && iterationsLeft-- > 0) {
                     var spot = this.FindEmptySpot();
                     if (IsDoorCandidate(spot))
                     {

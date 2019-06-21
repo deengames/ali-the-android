@@ -480,7 +480,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void StairsUpAndDownAreAlwaysWalkable()
         {
             RestrictRuntime(() => {
-                var dungeon = new Dungeon(24, 31, gameSeed: 1036496413);
+                var dungeon = new Dungeon(80, 31, gameSeed: 1036496413);
                 while (dungeon.CurrentFloorNum < 9)
                 {
                     dungeon.GoToNextFloor();
