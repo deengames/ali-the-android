@@ -25,7 +25,9 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
             
             thread.Start();
 
-            while (System.Diagnostics.Debugger.IsAttached || (thread.ThreadState == ThreadState.Running && (DateTime.Now - startTime).TotalSeconds <= maxWaitSeconds))
+            while (thread.ThreadState == ThreadState.Running && (
+                (DateTime.Now - startTime).TotalSeconds <= maxWaitSeconds) ||
+                System.Diagnostics.Debugger.IsAttached)
             {
                 Thread.Sleep(100);
             }
