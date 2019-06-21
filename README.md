@@ -57,4 +57,6 @@ TBD
 
 # Defer
 
-Other upgrades (not needed for v1.0): health, damage, drone range, toxic suit damage blocked, missile explosion size, electric range/num-bounces/%-bounce, forcefield, forcefield range, plasma number of shots
+- Other upgrades (not needed for v1.0): health, damage, drone range, toxic suit damage blocked, missile explosion size, electric range/num-bounces/%-bounce, forcefield, forcefield range, plasma number of shots
+- Ameer Saad was working with someone named Noya. He sent him a lot of messages. AND, one of the earlier prototypes of the "cure."
+- Khalifah sent you because you're a prototype (disposable) and they can't send humans ya3ne, too risky. Suspected biological warfare.
