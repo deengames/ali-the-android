@@ -53,6 +53,7 @@ namespace DeenGames.AliTheAndroid.Model
                 this.GameSeed = gameSeed;
             }
             
+            Console.WriteLine($"Generating dungeon {this.GameSeed} ...");
             LastGameLogger.Instance.Log($"Generating dungeon {this.GameSeed} ...");
             var stopwatch = new Stopwatch();
             stopwatch.Start();
