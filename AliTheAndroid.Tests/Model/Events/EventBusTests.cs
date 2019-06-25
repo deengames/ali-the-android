@@ -3,7 +3,7 @@ using DeenGames.AliTheAndroid.Model.Events;
 using DeenGames.AliTheAndroid.Tests.Helpers;
 using NUnit.Framework;
 
-namespace DeenGames.AliTheAndroid.Tests.Prototype
+namespace DeenGames.AliTheAndroid.Tests.Model.Events
 {
     [TestFixture]
     public class EventBusTests : AbstractTest
