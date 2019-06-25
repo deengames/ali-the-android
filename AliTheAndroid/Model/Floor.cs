@@ -1414,6 +1414,7 @@ namespace DeenGames.AliTheAndroid.Model
             if (Player.IsDead) {
                 if (this.keyboard.IsKeyPressed(Key.Escape))
                 {
+                    LastGameLogger.Instance.Log("Player died!");
                     System.Environment.Exit(0);    
                 }
 
