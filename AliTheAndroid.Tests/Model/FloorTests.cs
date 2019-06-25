@@ -515,5 +515,24 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 Assert.That(floor.CountAdjacentFloors(new GoRogue.Coord(2, 2)), Is.EqualTo(8));
             });
         }
+
+        [Test]
+        public void DataCubesGenerateOnFloorsB2toB9Inclusive()
+        {
+            var generator = new StandardGenerator(452323);
+            var emptyList = new List<PowerUp>();
+
+            var firstFloor = new Floor(80, 31, 0, generator, emptyList);
+            Assert.That(firstFloor.DataCube, Is.Null);
+
+            for (var floorNum = 1; floorNum <= 8; floorNum++)
+            {
+                var floor = new Floor(80, 31, floorNum, generator, emptyList);
+                Assert.That(floor.DataCube, Is.Not.Null);
+            }
+
+            var lastFloor = new Floor(80, 31, 9, generator, emptyList);
+            Assert.That(lastFloor.DataCube, Is.Null);
+        }
     }
 }

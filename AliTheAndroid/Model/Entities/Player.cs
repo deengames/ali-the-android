@@ -14,6 +14,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public bool HasEnvironmentSuit = false;
         public bool CanFireGravityCannon { get; set; } = true;
         private List<Weapon> weapons { get; } = new List<Weapon>() { Weapon.Blaster };
+        private List<DataCube> dataCubes { get; } = new List<DataCube>();
 
         public Player() : base("You", '@', Color.White, 0, 0, 50, 70, 50, 4)
         {
@@ -62,6 +63,12 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             {
                 this.weapons.Add(weapon);
             }
+        }
+
+        public void GotDataCube(DataCube cube)
+        {
+            LastGameLogger.Instance.Log($"Found data cube on {cube.FloorNumber}");
+            this.dataCubes.Add(cube);
         }
 
         internal void TurnCounterClockwise()

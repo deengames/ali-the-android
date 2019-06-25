@@ -49,6 +49,7 @@ namespace DeenGames.AliTheAndroid.Model
         public Player Player;
         public IList<PowerUp> GuaranteedPowerUps = new List<PowerUp>();
         public WeaponPickUp WeaponPickUp = null;
+        public DataCube DataCube = null;
         
         // Internal for unit testing
         internal ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
@@ -327,12 +328,12 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
 #pragma warning disable
+// VS Code doesn't understand that the last code is reachable if OmniSight is off
             if (Options.EnableOmniSight) {
                 return true;
             }
-#pragma warning restore
-
             return playerFieldOfView.BooleanFOV[x, y] == true;
+#pragma warning restore
         }
 
         public bool IsSeen(int x, int y)
@@ -489,6 +490,13 @@ namespace DeenGames.AliTheAndroid.Model
                 this.LatestMessage = $"You assimilate the {this.WeaponPickUp.Weapon}. Press {keyText} to equip it.";
                 this.WeaponPickUp = null;
             }
+
+            if (this.DataCube != null && DataCube.X == Player.X && DataCube.Y == Player.Y)
+            {
+                this.Player.GotDataCube(this.DataCube);
+                this.LatestMessage = "Acquired data cube. Access it from the Data Cubes menu.";
+                this.DataCube = null;
+            }
         }
 
         // Get the set of tiles spanning a path from the stairs up to the stairs down. Get all rooms that encompass those tiles.
@@ -605,6 +613,16 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             this.GenerateWeaponPickUp();
+            this.GenerateDataCube();
+        }
+
+        private void GenerateDataCube()
+        {
+            if (this.floorNum > 0 && this.floorNum < 9)
+            {
+                var spot = this.FindEmptySpot();
+                this.DataCube = new DataCube(spot.X, spot.Y, this.floorNum, "DATA CORRUPTED.");
+            }
         }
 
         // Generates things out-of-depth (eg. fake walls before the missile launcher pick-up or gaps before the teleporter pick-up).

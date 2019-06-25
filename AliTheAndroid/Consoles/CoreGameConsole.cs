@@ -157,6 +157,14 @@ namespace DeenGames.AliTheAndroid.Consoles
                 this.SetGlyph(weaponPickUp.X, weaponPickUp.Y, weaponPickUp.Character, WeaponPickUp.DisplayColors[colourIndex]);
             }
 
+            var dataCube = this.dungeon.CurrentFloor.DataCube;
+            if (dataCube != null && this.dungeon.CurrentFloor.IsInPlayerFov(dataCube.X, dataCube.Y))
+            {
+                var elapsedSeconds = this.gameTime.TotalMilliseconds;
+                var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % DataCube.DisplayColors.Length;
+                this.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, DataCube.DisplayColors[colourIndex]);
+            }
+
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
 
             foreach (var effect in this.dungeon.CurrentFloor.EffectEntities) {
