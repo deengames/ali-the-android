@@ -41,7 +41,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.Text = text;
         }
 
-        // floor number is 5 for B5
+        // floor number is 2 for B2
         public static DataCube GetCube(int floorNumber, GoRogue.Coord coordinates)
         {
             if (floorNumber < 2 || floorNumber > cubeTexts.Count + 1)
