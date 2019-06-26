@@ -522,16 +522,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var generator = new StandardGenerator(452323);
             var emptyList = new List<PowerUp>();
 
-            var firstFloor = new Floor(80, 31, 0, generator, emptyList);
+            var firstFloor = new Floor(80, 31, 1, generator, emptyList);
             Assert.That(firstFloor.DataCube, Is.Null);
 
-            for (var floorNum = 1; floorNum <= 8; floorNum++)
+            for (var floorNum = 2; floorNum <= 9; floorNum++)
             {
                 var floor = new Floor(80, 31, floorNum, generator, emptyList);
                 Assert.That(floor.DataCube, Is.Not.Null);
             }
 
-            var lastFloor = new Floor(80, 31, 9, generator, emptyList);
+            var lastFloor = new Floor(80, 31, 10, generator, emptyList);
             Assert.That(lastFloor.DataCube, Is.Null);
         }
     }

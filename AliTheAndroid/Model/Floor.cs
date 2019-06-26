@@ -494,7 +494,7 @@ namespace DeenGames.AliTheAndroid.Model
             if (this.DataCube != null && DataCube.X == Player.X && DataCube.Y == Player.Y)
             {
                 this.Player.GotDataCube(this.DataCube);
-                this.LatestMessage = "Acquired data cube. Access it from the Data Cubes menu.";
+                this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.' Access it from the menu.";
                 this.DataCube = null;
             }
         }
@@ -618,10 +618,11 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateDataCube()
         {
-            if (this.floorNum > 0 && this.floorNum < 9)
+            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            if (actualFloorNumber >= 2 && actualFloorNumber <= 9)
             {
                 var spot = this.FindEmptySpot();
-                this.DataCube = new DataCube(spot.X, spot.Y, this.floorNum, "DATA CORRUPTED.");
+                this.DataCube = DataCube.GetCube(actualFloorNumber, spot);
             }
         }
 
@@ -1472,13 +1473,13 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 Player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (this.keyboard.IsKeyPressed(Key.NumPad4) && Player.Has(Weapon.PlasmaCannon))
-            {
-                Player.CurrentWeapon = Weapon.PlasmaCannon;
-            }
-            else if (this.keyboard.IsKeyPressed(Key.NumPad5) && Player.Has(Weapon.GravityCannon))
+            else if (this.keyboard.IsKeyPressed(Key.NumPad4) && Player.Has(Weapon.GravityCannon))
             {
                 Player.CurrentWeapon = Weapon.GravityCannon;
+            }
+            else if (this.keyboard.IsKeyPressed(Key.NumPad5) && Player.Has(Weapon.PlasmaCannon))
+            {
+                Player.CurrentWeapon = Weapon.PlasmaCannon;
             }
             else if (this.keyboard.IsKeyPressed(Key.T))
             {
