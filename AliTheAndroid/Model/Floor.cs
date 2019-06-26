@@ -18,11 +18,12 @@ namespace DeenGames.AliTheAndroid.Model
     public class Floor
     {
         internal const int MinimumDistanceFromMonsterToStairs = 3; // Close, but not too close
+        internal const int ExplosionRadius = 2;
+
         private const int MaxRooms = 10;
         // These are exterior sizes (walls included)
         private const int MinRoomSize = 7;
         private const int MaxRoomSize = 10;
-        private const int ExplosionRadius = 2;
         private const int NumberOfLockedDoors = 3;
         private const int PlasmaResidueDamage = 10;
         private const int GravityRadius = 3;
@@ -496,6 +497,17 @@ namespace DeenGames.AliTheAndroid.Model
                 this.Player.GotDataCube(this.DataCube);
                 this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.' Access it from the menu.";
                 this.DataCube = null;
+            }
+        }
+
+        internal void CreateExplosion(int centerX, int centerY) {
+            for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++) {
+                for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++) {
+                    var distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
+                    if (distance <= ExplosionRadius) {
+                        this.EffectEntities.Add(new Explosion(x, y));
+                    }
+                }
             }
         }
 
@@ -1254,20 +1266,6 @@ namespace DeenGames.AliTheAndroid.Model
                 collection.Add(entity);
             }
         }
-
-        private void CreateExplosion(int centerX, int centerY) {
-            for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++) {
-                for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++) {
-                    // Skip: don't create an explosion on the epicenter itself. Double damage.
-                    if (x == centerX && y == centerY) { continue; }
-                    var distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
-                    if (distance <= ExplosionRadius) {
-                        this.EffectEntities.Add(new Explosion(x, y));
-                    }
-                }
-            }
-        }
-
 
         private int CalculateDamage(char weaponCharacter)
         {

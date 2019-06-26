@@ -534,5 +534,35 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var lastFloor = new Floor(80, 31, 10, generator, emptyList);
             Assert.That(lastFloor.DataCube, Is.Null);
         }
+
+        // https://trello.com/c/2QRUML4b/57-some-fake-walls-just-cant-be-broken
+        // Shooting a missile and directly hitting a fake wall, doesn't destroy it.
+        // That's because we (incorrectly) don't spawn an explosion at the epicenter,
+        // in order to avoid double-damaging monsters.
+        [Test]
+        public void CreateExplosionCreatesTilesAroundAndIncludingMissileEpicenter()
+        {
+            var generator = new StandardGenerator(313821775);
+
+            var floor = new Floor(80, 31, 0, generator, new List<PowerUp>());
+            var epicenter = new GoRogue.Coord(5, 5);
+            var radius = Floor.ExplosionRadius;
+
+            floor.CreateExplosion(epicenter.X, epicenter.Y);
+
+            // Just for clarity, yes it's redundant
+            Assert.That(floor.EffectEntities.Any(e => e.X == epicenter.X && e.Y == epicenter.Y && e is Explosion), $"Didn't find explosion at epicenter!");
+
+            for (var y = epicenter.Y - radius; y <= epicenter.Y + radius; y++)
+            {
+                for (var x = epicenter.X - radius; x <= epicenter.X + radius; x++)
+                {
+                    var distance = Math.Sqrt(Math.Pow(x - epicenter.X, 2) + Math.Pow(y - epicenter.Y, 2));
+                    if (distance <= radius) {
+                        Assert.That(floor.EffectEntities.Any(e => e.X == x && e.Y == y && e is Explosion), $"Didn't find explosion at {x}, {y}");
+                    }
+                }
+            }
+        }
     }
 }
