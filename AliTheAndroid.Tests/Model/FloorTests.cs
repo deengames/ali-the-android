@@ -32,7 +32,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [TestCase(3, 87)]
         public void IsInPlayerFovReturnsFalseWhenOutOfBounds(int x, int y)
         {
-            var floor = new Floor(30, 20, 1, new StandardGenerator(), new List<PowerUp>());
+            var floor = new Floor(30, 20, 1, new StandardGenerator());
             Assert.That(floor.IsInPlayerFov(x, y), Is.False);
         }
 
@@ -44,7 +44,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 for (var i = 0; i < 10; i++) {
                     // Real seed from a real bug; this failed on B6 (going down) then B3 (going up)
                     // Also, this finds a slink group on B6 that generates one guy too close to stairs up
-                    var floor = new Floor(80, 32, i, prng, new List<PowerUp>());
+                    var floor = new Floor(80, 32, i, prng);
                     foreach (var monster in floor.Monsters)
                     {
                         var distanceToStairsUp = Math.Sqrt(Math.Pow(monster.X - floor.StairsUpLocation.X, 2) + Math.Pow(monster.Y - floor.StairsUpLocation.Y, 2));
@@ -62,7 +62,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             RestrictRuntime(() => {
                 // Arrange
                 var player = new Player();
-                var floor = new Floor(30, 30, 0, new StandardGenerator(1111), new List<PowerUp>());
+                var floor = new Floor(30, 30, 0, new StandardGenerator(1111));
                 floor.Player = player;
                 var powerUp = new PowerUp(0, 0, healthBoost:30);
                 floor.PowerUps.Add(powerUp);
@@ -83,21 +83,21 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void GeneratePowerUpsPicksTwoChoicesOutOfConstructorValue()
+        public void GeneratePowerUpsPicksTwoRandomChoices()
         {
             RestrictRuntime(() => {
-                var powerUps = new List<PowerUp>() { 
-                    new PowerUp(0, 0, healthBoost: 100),
-                    new PowerUp(0, 0, strengthBoost: 10),
-                    new PowerUp(0, 0, defenseBoost: 7)
-                };
+                var floor1 = new Floor(40, 30, 7, new StandardGenerator(1234));
+                floor1.GeneratePowerUps();
 
-                var floor = new Floor(40, 30, 7, new StandardGenerator(1234), powerUps);
-                Assert.That(!floor.PowerUps.Any());
-                floor.GeneratePowerUps();
+                var floor2 = new Floor(40, 30, 7, new StandardGenerator(4321));
+                floor2.GeneratePowerUps();
 
-                Assert.That(floor.PowerUps.Any());
-                Assert.That(floor.PowerUps.All(p => powerUps.Contains(p)));
+                Assert.That(floor1.PowerUps.Any());
+                Assert.That(floor2.PowerUps.Any());
+                foreach (var p1 in floor1.PowerUps)
+                {
+                    Assert.That(!floor2.PowerUps.Contains(p1));
+                }
             });
         }
 
@@ -105,16 +105,9 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void PickingUpPowerUpsRemovesThemFromTheCollectionAndRemovesTheOtherOption()
         {
             RestrictRuntime(() => {
-                // Generate three power-ups; you pick up one. The other two (unpicked + third) show up next floor.
-                var powerUps = new List<PowerUp>() { 
-                    new PowerUp(0, 0, healthBoost: 100),
-                    new PowerUp(0, 0, strengthBoost: 10),
-                    new PowerUp(0, 0, defenseBoost: 7)
-                };
-
                 var globalRandom = new StandardGenerator(0);
-                var floor = new Floor(100, 100, 3, globalRandom, powerUps);
-                var nextFloor = new Floor(25, 50, 4, globalRandom, powerUps);
+                var floor = new Floor(100, 100, 3, globalRandom);
+                var nextFloor = new Floor(25, 50, 4, globalRandom);
 
                 floor.GeneratePowerUps();
 
@@ -124,15 +117,6 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 twin.PickUp();
 
                 Assert.That(!twins.Any());
-                Assert.That(powerUps, Does.Not.Contain(twin));
-
-                // Progress to next floor, see the other two
-                nextFloor.GeneratePowerUps();
-                Assert.That(nextFloor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).Count, Is.EqualTo(2));
-                foreach (var p in nextFloor.PowerUps.Where(p => !p.IsBacktrackingPowerUp))
-                {
-                    Assert.That(powerUps.Contains(p));
-                }
             });
         }
 
@@ -141,7 +125,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             RestrictRuntime(() => {
                 // 0 = B1 = has two power-ups behind a fake wall
-                var floor = new Floor(80, 30, 0, new StandardGenerator(23985), new List<PowerUp>());
+                var floor = new Floor(80, 30, 0, new StandardGenerator(23985));
                 var backTrackingPowerUps = floor.PowerUps.Where(p => p.IsBacktrackingPowerUp);
                 // Probably two
                 backTrackingPowerUps.First().PickUp();
@@ -153,12 +137,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void GenerateFloorDoesntRegeneratePowerUps()
         {
             RestrictRuntime(() => {
-                var powerUps = new List<PowerUp>() { 
-                    new PowerUp(0, 0, strengthBoost: 8),
-                    new PowerUp(0, 0, defenseBoost: 8)
-                };
-
-                var floor = new Floor(30, 30, 0, new StandardGenerator(1), powerUps);
+                var floor = new Floor(30, 30, 0, new StandardGenerator(1));
                 floor.GeneratePowerUps();
 
                 // Create a copy so we don't modify the collection during enumeration
@@ -189,7 +168,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             RestrictRuntime(() => {
                 var globalRandom = new StandardGenerator(10201);
-                var floor = new Floor(35, 25, floorNum, globalRandom, new List<PowerUp>());
+                var floor = new Floor(35, 25, floorNum, globalRandom);
 
                 if (expectStairsDown) {
                     Assert.That(floor.StairsDownLocation, Is.Not.EqualTo(GoRogue.Coord.NONE));
@@ -211,7 +190,6 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             RestrictRuntime(() => {
                 // Slinks on B2, TenLegs on B4, Zugs on B6
                 var random = new StandardGenerator(1021);
-                var noPowerUps = new List<PowerUp>();
                 var width = 50;
                 var height = 40;
 
@@ -219,7 +197,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 // i => B1, B2, etc. base 1)
                 for (var i = 1; i <= 8; i++)
                 {
-                    floors.Add(new Floor(width, height, i - 1, random, noPowerUps));
+                    floors.Add(new Floor(width, height, i - 1, random));
                 }
 
                 // Assert, starting with B1
@@ -240,10 +218,9 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 // Number of monsters is quasi-random. Pick the first floor with all monsters (B6) and the last; every monster should be more in number.
                 // This won't pass with all seeds; only a carefully-selected seed. You may get a low number of zugs (1-3 => 1) then a +1 on the next floor.
                 var random = new StandardGenerator(999);
-                var noPowerUps = new List<PowerUp>();
 
-                var b6 = new Floor(40, 40, 5, random, noPowerUps);
-                var b10 = new Floor(40, 40, 9, random, noPowerUps);
+                var b6 = new Floor(40, 40, 5, random);
+                var b10 = new Floor(40, 40, 9, random);
 
                 Assert.That(b10.Monsters.Where(m => m.Name == "Fuseling").Count(), Is.GreaterThanOrEqualTo(b6.Monsters.Where(m => m.Name == "Fuseling").Count()));
                 Assert.That(b10.Monsters.Where(m => m.Name == "Slink").Count(), Is.GreaterThanOrEqualTo(b6.Monsters.Where(m => m.Name == "Slink").Count()));
@@ -261,9 +238,9 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             RestrictRuntime(() => {
                 var random = new StandardGenerator(93524);
-                var noPowerUps = new List<PowerUp>();
                 
-                var floor = new Floor(30, 30, basementNumber - 1, random, noPowerUps);
+                
+                var floor = new Floor(30, 30, basementNumber - 1, random);
                 Assert.That(floor.WeaponPickUp, Is.Not.Null);
                 Assert.That(floor.WeaponPickUp.Weapon, Is.EqualTo(expectedWeapon));
             });
@@ -277,7 +254,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(354);
                 var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(30, 30, MiniMissileFloor - 1, random, noPowerUps);
+                var floor = new Floor(30, 30, MiniMissileFloor - 1, random);
                 Assert.That(floor.FakeWalls.Any());
                 Assert.That(floor.FakeWalls.All(w => !w.IsBacktrackingWall));
             });
@@ -290,7 +267,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(354);
                 var noPowerUps =  new List<PowerUp>();
 
-                var firstFloor = new Floor(30, 30, 0, random, noPowerUps);
+                var firstFloor = new Floor(30, 30, 0, random);
                 Assert.That(firstFloor.FakeWalls.Any());
                 Assert.That(firstFloor.FakeWalls.All(w => w.IsBacktrackingWall));
 
@@ -314,7 +291,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(355);
                 var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(30, 30, ZapperFloor - 1, random, noPowerUps);
+                var floor = new Floor(30, 30, ZapperFloor - 1, random);
                 Assert.That(floor.Doors.Any(d => d.IsLocked && !d.IsBacktrackingDoor));
             });
         }
@@ -327,7 +304,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(355);
                 var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(30, 30, ZapperFloor - 2, random, noPowerUps);
+                var floor = new Floor(30, 30, ZapperFloor - 2, random);
                 Assert.That(floor.Doors.Any(d => d.IsLocked && d.IsBacktrackingDoor));
                 Assert.That(floor.Doors.Count(d => d.IsLocked && !d.IsBacktrackingDoor), Is.EqualTo(0));
                 
@@ -357,7 +334,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(356);
                 var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(80, 30, GravityCannonFloor - 1, random, noPowerUps);
+                var floor = new Floor(80, 30, GravityCannonFloor - 1, random);
                 Assert.That(floor.GravityWaves.Any());
                 Assert.That(floor.GravityWaves.All(g => !g.IsBacktrackingWave)); 
             });
@@ -371,7 +348,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(356);
                 var noPowerUps =  new List<PowerUp>();
                 
-                var floor = new Floor(30, 30, GravityCannonFloor - 2, random, noPowerUps);
+                var floor = new Floor(30, 30, GravityCannonFloor - 2, random);
                 Assert.That(floor.GravityWaves.Any());
                 Assert.That(floor.GravityWaves.All(g => g.IsBacktrackingWave));
 
@@ -401,7 +378,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(357);
                 var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(30, 30, InstaTeleporterFloor - 1, random, noPowerUps);
+                var floor = new Floor(30, 30, InstaTeleporterFloor - 1, random);
                 Assert.That(floor.Chasms.Any());
             });
         }
@@ -414,7 +391,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(357);
                 var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(30, 30, InstaTeleporterFloor - 2, random, noPowerUps);
+                var floor = new Floor(30, 30, InstaTeleporterFloor - 2, random);
                 Assert.That(floor.Chasms.Any());
 
                 // Chasms don't have a "backtracking" property. Instead, Check that all the chasms are in one room.
@@ -454,7 +431,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var noPowerUps =  new List<PowerUp>();
                 for (var i = 0; i < 100; i++) {
                     var random = new StandardGenerator(seed + i);
-                    var floor = new Floor(30, 30, 10, random, noPowerUps);
+                    var floor = new Floor(30, 30, 10, random);
                     Assert.That(floor.Chasms.Count, Is.GreaterThanOrEqualTo(ExpectedChasmCount));
                 }
             });
@@ -464,7 +441,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void GenerateGeneratesFakeWallBetweenStairs()
         {
             RestrictRuntime(() => {
-                var floor = new Floor(90, 45, 7, new StandardGenerator(777), new List<PowerUp>());
+                var floor = new Floor(90, 45, 7, new StandardGenerator(777));
 
                 var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
                 var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
@@ -509,7 +486,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void CountAdjacentFloorsReturnsCorrectCountExcludingCenter()
         {
             RestrictRuntime(() => {
-                var floor = new Floor(80, 31, 0, new StandardGenerator(69874632), new List<PowerUp>());
+                var floor = new Floor(80, 31, 0, new StandardGenerator(69874632));
                 floor.Walls.RemoveAll(w => true);
 
                 Assert.That(floor.CountAdjacentFloors(new GoRogue.Coord(2, 2)), Is.EqualTo(8));
@@ -520,18 +497,17 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void DataCubesGenerateOnFloorsB2toB9Inclusive()
         {
             var generator = new StandardGenerator(452323);
-            var emptyList = new List<PowerUp>();
 
-            var firstFloor = new Floor(80, 31, 0, generator, emptyList);
+            var firstFloor = new Floor(80, 31, 0, generator);
             Assert.That(firstFloor.DataCube, Is.Null);
 
             for (var floorNum = 1; floorNum < 9; floorNum++)
             {
-                var floor = new Floor(80, 31, floorNum, generator, emptyList);
+                var floor = new Floor(80, 31, floorNum, generator);
                 Assert.That(floor.DataCube, Is.Not.Null);
             }
 
-            var lastFloor = new Floor(80, 31, 10, generator, emptyList);
+            var lastFloor = new Floor(80, 31, 10, generator);
             Assert.That(lastFloor.DataCube, Is.Null);
         }
 
@@ -544,7 +520,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             var generator = new StandardGenerator(313821775);
 
-            var floor = new Floor(80, 31, 0, generator, new List<PowerUp>());
+            var floor = new Floor(80, 31, 0, generator);
             var epicenter = new GoRogue.Coord(5, 5);
             var radius = Floor.ExplosionRadius;
 

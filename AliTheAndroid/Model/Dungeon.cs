@@ -22,7 +22,7 @@ namespace DeenGames.AliTheAndroid.Model
         public int Height { get; private set; }
         public int CurrentFloorNum { get; private set; } = -1;
 
-        public readonly int? GameSeed = 1441433861 ; // null = random each time
+        public readonly int? GameSeed = null ; // null = random each time
         private readonly IGenerator globalRandom;
         private readonly List<Floor> floors = new List<Floor>(NumFloors);
         private readonly List<PowerUp> guaranteedPowerUps = new List<PowerUp>();
@@ -61,11 +61,9 @@ namespace DeenGames.AliTheAndroid.Model
             this.globalRandom = new StandardGenerator(GameSeed.Value);
             this.Player = new Player();
 
-            this.GeneratePowerUpDistribution();
-
             for (var i = 0; i < NumFloors; i++)
             {
-                this.floors.Add(new Floor(this.Width, this.Height, i, this.globalRandom, this.guaranteedPowerUps));
+                this.floors.Add(new Floor(this.Width, this.Height, i, this.globalRandom));
             }
 
             stopwatch.Stop();
@@ -82,8 +80,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.Player.X = this.CurrentFloor.StairsUpLocation.X;
             this.Player.Y = this.CurrentFloor.StairsUpLocation.Y;
             this.CurrentFloor.RecalculatePlayerFov();
-
-            this.CurrentFloor.GeneratePowerUps();
         }
 
         public void GoToPreviousFloor()
@@ -101,41 +97,6 @@ namespace DeenGames.AliTheAndroid.Model
         internal void Update(TimeSpan delta)
         {
             this.CurrentFloor.Update(delta);
-        }
-        
-        private void GeneratePowerUpDistribution()
-        {
-            this.guaranteedPowerUps.Clear(); // Just in-case
-
-            // Guarantee: two vision, two health, and one strength/defense; the rest are random.
-            this.guaranteedPowerUps.Add(new PowerUp(0, 0, healthBoost: PowerUp.TypicalHealthBoost));
-            this.guaranteedPowerUps.Add(new PowerUp(0, 0, healthBoost: PowerUp.TypicalHealthBoost));
-            this.guaranteedPowerUps.Add(new PowerUp(0, 0, visionBoost: PowerUp.TypicalVisionBoost));
-            this.guaranteedPowerUps.Add(new PowerUp(0, 0, visionBoost: PowerUp.TypicalVisionBoost));
-            this.guaranteedPowerUps.Add(new PowerUp(0, 0, strengthBoost: PowerUp.TypicalStrengthBoost));
-            this.guaranteedPowerUps.Add(new PowerUp(0, 0, defenseBoost: PowerUp.TypicalDefenseBoost));
-
-            // Add +1 because you always have a choice of two power-ups; so we need one extra.
-            while (this.guaranteedPowerUps.Count < NumFloors + 1)
-            {
-                // Vision is not useful after two boosts
-                var next = globalRandom.Next(100);
-                if (next < 33)
-                {
-                    this.guaranteedPowerUps.Add(new PowerUp(0, 0, healthBoost: PowerUp.TypicalHealthBoost));
-                }
-                else if (next >= 33 && next <= 66)
-                {
-                    this.guaranteedPowerUps.Add(new PowerUp(0, 0, strengthBoost: PowerUp.TypicalStrengthBoost));
-                }
-                else
-                {
-                    this.guaranteedPowerUps.Add(new PowerUp(0, 0, defenseBoost: PowerUp.TypicalDefenseBoost));
-                }
-            }
-
-            // Shuffle
-            this.guaranteedPowerUps.OrderBy(r => globalRandom.Next());
         }
     }
 }

@@ -48,7 +48,6 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
         public Player Player;
-        public IList<PowerUp> GuaranteedPowerUps = new List<PowerUp>();
         public WeaponPickUp WeaponPickUp = null;
         public DataCube DataCube = null;
         
@@ -105,13 +104,12 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        public Floor(int width, int height, int floorNum, IGenerator globalRandom, IList<PowerUp> guaranteedPowerUps)
+        public Floor(int width, int height, int floorNum, IGenerator globalRandom)
         {
             this.width = width;
             this.height = height;
             this.floorNum = floorNum;
             this.globalRandom = globalRandom;
-            this.GuaranteedPowerUps = guaranteedPowerUps;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
@@ -386,29 +384,27 @@ namespace DeenGames.AliTheAndroid.Model
                 // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
                 // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
                 var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
-                var powerUps = this.GuaranteedPowerUps.Take(2).ToArray();
+                var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
 
                 // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
-                var choicePowerUps = new List<PowerUp>();
 
                 for (var i = 0; i < locations.Count(); i++)
                 {
-                    var powerUp = this.GuaranteedPowerUps[i];
+                    var powerUp = powerUps[i];
                     var location = locations[i];
 
                     powerUp.X = location.X;
                     powerUp.Y = location.Y;
 
-                    choicePowerUps.Add(powerUp);
                     this.PowerUps.Add(powerUp);
                 }
 
                 PowerUp.Pair(powerUps[0], powerUps[1]);
 
-                foreach (var powerUp in choicePowerUps)
+                foreach (var powerUp in powerUps)
                 {
                     powerUp.OnPickUp(() => {
-                        this.GuaranteedPowerUps.Remove(powerUp);
+                        this.PowerUps.Remove(powerUp);
                         this.PowerUps.Remove(powerUp);
                         this.PowerUps.Remove(powerUp.PairedTo);
                     });
@@ -624,6 +620,7 @@ namespace DeenGames.AliTheAndroid.Model
                 this.StairsDownLocation = GoRogue.Coord.NONE;
             }
 
+            this.GeneratePowerUps();
             this.GenerateWeaponPickUp();
             this.GenerateDataCube();
         }

@@ -4,15 +4,23 @@ using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
 using DeenGames.AliTheAndroid.Loggers;
+using Troschuetz.Random;
+using System.Collections.Generic;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class PowerUp : AbstractEntity
     {
-        public static readonly int TypicalHealthBoost = 20;
-        public static readonly int TypicalStrengthBoost = 4;
-        public static readonly int TypicalDefenseBoost = 3;
-        public static readonly int TypicalVisionBoost = 1;
+        // We don't want too many. Even if we don't get any, s'ok.
+        public const int VisionPowerUpProbability = 10;
+        public const int HealthPowerUpProbability = 30;
+        public const int StrengthPowerUpProbability = 30;
+        public const int DefensePowerUpProbability = 30;
+
+        public const int TypicalHealthBoost = 20;
+        public const int TypicalStrengthBoost = 4;
+        public const int TypicalDefenseBoost = 3;
+        public const int TypicalVisionBoost = 1;
 
         // TODO: character/colour should NOT be part of model!
         private const char DisplayCharacter = (char)175; // »
@@ -26,6 +34,38 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public PowerUp PairedTo { get; private set; }
         public bool IsBacktrackingPowerUp { get; private set; }
         private Action onPickUp { get; set; }
+
+        public static PowerUp Generate(IGenerator generator)
+        {
+            var buckets = new Dictionary<string, int>();
+            buckets["Vision"] = VisionPowerUpProbability;
+            buckets["Health"] = VisionPowerUpProbability + HealthPowerUpProbability;
+            buckets["Strength"] = VisionPowerUpProbability + HealthPowerUpProbability + StrengthPowerUpProbability;
+            buckets["Defense"] = VisionPowerUpProbability + HealthPowerUpProbability + StrengthPowerUpProbability + DefensePowerUpProbability;
+
+            var next = generator.Next(VisionPowerUpProbability + HealthPowerUpProbability + StrengthPowerUpProbability + DefensePowerUpProbability);
+            
+            if (next <= buckets["Vision"])
+            {
+                return new PowerUp(0, 0, visionBoost: TypicalVisionBoost);
+            }
+            else if (next >= buckets["Vision"] && next <= buckets["Health"])
+            {
+                return new PowerUp(0, 0, healthBoost: TypicalHealthBoost);
+            }
+            else if (next >= buckets["Health"] && next <= buckets["Strength"])
+            {
+                return new PowerUp(0, 0, healthBoost: TypicalHealthBoost);
+            }
+            else if (next >= buckets["Strength"] && next <= buckets["Defense"])
+            {
+                return new PowerUp(0, 0, healthBoost: TypicalHealthBoost);
+            }
+            else
+            {
+                throw new InvalidOperationException("Failed to generate appropriate power-up. Please report this bug.");
+            }
+        }
 
         public static void Pair(PowerUp p1, PowerUp p2)
         {
