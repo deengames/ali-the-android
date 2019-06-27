@@ -65,11 +65,7 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
 
             //Global.MouseState.ProcessMouseWhenOffScreen = true;
 
-            // We'll instead use our demo consoles that show various features of SadConsole.
-            Global.CurrentScreen = new SadConsole.ScreenObject();
-
-            // Initialize the windows
-            Global.CurrentScreen.Children.Add(new CoreGameConsole(widthInTiles, heightInTiles));
+            Global.CurrentScreen = new CoreGameConsole(widthInTiles, heightInTiles);
         }
 
         private void Update(GameTime time)

@@ -8,24 +8,28 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class InGameSubMenuConsole : SadConsole.Console
     {
+        // Press escape. It spwans and despawns a menu really fast. keyboard.Clear() isn't enough.
+        // So, wait for a limited amount of time.
+        private const double SecondsAfterCreationBeforeInputWorks = 0.25;
         private const int DefaultWidth = 35;
         private const int DefaultHeight = 20;
-        private readonly SadConsole.Cell BorderCell = new SadConsole.Cell(Palette.White);
+        private readonly SadConsole.Cell BorderCell = new SadConsole.Cell(Palette.White, Palette.White, ' ');        
         private IKeyboard keyboard;
+        private DateTime createdOn;
 
         public InGameSubMenuConsole() : base(DefaultWidth, DefaultHeight)
         {
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
+            this.keyboard.Clear();
+            this.createdOn = DateTime.Now;
         }
 
         override public void Update(System.TimeSpan delta)
         {
-            Console.Write("!");
-            this.RedrawEverything();
+            this.RedrawEverything();            
 
-            if (this.keyboard.IsKeyPressed(Key.Escape))
+            if ((DateTime.Now - this.createdOn).TotalSeconds >= SecondsAfterCreationBeforeInputWorks && this.keyboard.IsKeyPressed(Key.Escape))
             {
-                Console.WriteLine("IN: hide");
                 EventBus.Instance.Broadcast(GameEvent.HideSubMenu, this);
             }
         }

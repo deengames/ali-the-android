@@ -11,5 +11,10 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
             var sadKey = (Keys)Enum.Parse(typeof(Keys), key.ToString());
             return SadConsole.Global.KeyboardState.IsKeyPressed(sadKey);
         }
+
+        public void Clear()
+        {
+            SadConsole.Global.KeyboardState.Clear();
+        }
     }
 }

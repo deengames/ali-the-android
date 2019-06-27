@@ -15,6 +15,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         private const int RotateWeaponColorEveryMilliseconds = 300;
         private TimeSpan gameTime;
         private Dungeon dungeon;
+        private InGameSubMenuConsole subMenuConsole = null;
 
 
         public CoreGameConsole(int width, int height) : base(width, height)
@@ -26,15 +27,21 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             EventBus.Instance.AddListener(GameEvent.ShowSubMenu, (obj) =>
             {
-                Console.WriteLine("TLD show menu");
-                this.Children.Add(new InGameSubMenuConsole());
+                if (this.subMenuConsole == null)
+                {
+                    this.subMenuConsole = new InGameSubMenuConsole();
+                    this.subMenuConsole.Position = new Point((Width - this.subMenuConsole.Width) / 2, (Height - this.subMenuConsole.Height) / 2);
+                    this.Children.Add(this.subMenuConsole);
+                }
             });
 
             EventBus.Instance.AddListener(GameEvent.HideSubMenu, (data) =>
             {
-                var subMenu = data as InGameSubMenuConsole;
-                Console.WriteLine("TLD hide menu");
-                this.Children.Remove(subMenu);
+                if (this.subMenuConsole != null)
+                {
+                    this.Children.Remove(this.subMenuConsole);
+                    this.subMenuConsole = null;
+                }
             });
         }
 
@@ -42,11 +49,10 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             this.dungeon.Update(delta);
             gameTime += delta;
-
-            this.RedrawEverything();
+            this.RedrawEverything(delta);
         }
 
-        private void RedrawEverything()
+        private void RedrawEverything(TimeSpan delta)
         {
             this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
 
@@ -192,6 +198,8 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.DrawHealthAndPowerUpIndicators();
             this.Print(0, this.dungeon.Height - 1, this.dungeon.CurrentFloor.LatestMessage, Palette.White);
             this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloorNum + 1}", Palette.White);
+
+            this.DrawSubMenu(delta);
         }
 
         private void DrawHealthAndPowerUpIndicators()
@@ -227,6 +235,14 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             this.Print(1, this.dungeon.Height - 1, powerUpMessage, Palette.White);
+        }
+
+        private void DrawSubMenu(TimeSpan delta)
+        {
+            if (this.subMenuConsole != null)
+            {
+                this.subMenuConsole.Update(delta);
+            }
         }
 
         private void RemoveFpsCounter()

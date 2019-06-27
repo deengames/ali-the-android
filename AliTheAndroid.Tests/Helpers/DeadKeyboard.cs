@@ -8,5 +8,7 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
         {
             return false;
         }
+
+        public void Clear() { }
     }
 }
