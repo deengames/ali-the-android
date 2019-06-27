@@ -25,7 +25,7 @@ namespace DeenGames.AliTheAndroid.Model.Events
             this.eventListeners[eventName].Add(listener);
         }
 
-        public void Broadcast(GameEvent eventName, object data)
+        public void Broadcast(GameEvent eventName, object data = null)
         {
             if (this.eventListeners.ContainsKey(eventName))
             {

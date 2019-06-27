@@ -5,6 +5,7 @@ using GoRogue.MapViews;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model;
+using DeenGames.AliTheAndroid.Model.Events;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
@@ -15,20 +16,33 @@ namespace DeenGames.AliTheAndroid.Consoles
         private TimeSpan gameTime;
         private Dungeon dungeon;
 
+
         public CoreGameConsole(int width, int height) : base(width, height)
         {
-            // Remove FPS counter
-            var fpsCounter = SadConsole.Game.Instance.Components.Single(c => c is SadConsole.Game.FPSCounterComponent);
-            SadConsole.Game.Instance.Components.Remove(fpsCounter);
-            
+            this.RemoveFpsCounter();
+
             this.dungeon = new Dungeon(width, height);
             this.dungeon.GoToNextFloor();
+
+            EventBus.Instance.AddListener(GameEvent.ShowSubMenu, (obj) =>
+            {
+                Console.WriteLine("TLD show menu");
+                this.Children.Add(new InGameSubMenuConsole());
+            });
+
+            EventBus.Instance.AddListener(GameEvent.HideSubMenu, (data) =>
+            {
+                var subMenu = data as InGameSubMenuConsole;
+                Console.WriteLine("TLD hide menu");
+                this.Children.Remove(subMenu);
+            });
         }
 
         override public void Update(TimeSpan delta)
         {
             this.dungeon.Update(delta);
             gameTime += delta;
+
             this.RedrawEverything();
         }
 
@@ -213,6 +227,13 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             this.Print(1, this.dungeon.Height - 1, powerUpMessage, Palette.White);
+        }
+
+        private void RemoveFpsCounter()
+        {
+            // Remove FPS counter
+            var fpsCounter = SadConsole.Game.Instance.Components.Single(c => c is SadConsole.Game.FPSCounterComponent);
+            SadConsole.Game.Instance.Components.Remove(fpsCounter);
         }
     }
 }

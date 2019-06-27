@@ -1425,7 +1425,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (this.keyboard.IsKeyPressed(Key.Escape))
             {
-                Environment.Exit(0);
+                EventBus.Instance.Broadcast(GameEvent.ShowSubMenu);
             }
             
             var destinationX = this.Player.X;
