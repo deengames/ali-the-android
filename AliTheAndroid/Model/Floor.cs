@@ -1,17 +1,18 @@
+using DeenGames.AliTheAndroid.Enums;
+using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Infrastructure.Common;
+using DeenGames.AliTheAndroid.Model.Events;
+using DeenGames.AliTheAndroid.Loggers;
+using DeenGames.AliTheAndroid.Consoles;
+using GoRogue.MapViews;
+using GoRogue.Pathing;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using Ninject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using GoRogue.MapViews;
 using Troschuetz.Random;
-using DeenGames.AliTheAndroid.Enums;
-using GoRogue.Pathing;
-using DeenGames.AliTheAndroid.Model.Entities;
-using DeenGames.AliTheAndroid.Infrastructure.Common;
-using Ninject;
-using DeenGames.AliTheAndroid.Model.Events;
-using DeenGames.AliTheAndroid.Loggers;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -1419,6 +1420,11 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (!Player.CanMove) {
                 return false;
+            }
+
+            if (InGameSubMenuConsole.IsOpen)
+            {
+                return false; // sub-menu will handle input
             }
 
             var processedInput = false;

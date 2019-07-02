@@ -8,6 +8,8 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class InGameSubMenuConsole : SadConsole.Console
     {
+        internal static bool IsOpen = false;
+
         // Press escape. It spwans and despawns a menu really fast. keyboard.Clear() isn't enough.
         // So, wait for a limited amount of time.
         private const double SecondsAfterCreationBeforeInputWorks = 0.25;
@@ -22,6 +24,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
             this.keyboard.Clear();
             this.createdOn = DateTime.Now;
+            InGameSubMenuConsole.IsOpen = true;
         }
 
         override public void Update(System.TimeSpan delta)

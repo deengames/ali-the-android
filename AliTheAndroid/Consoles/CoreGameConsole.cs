@@ -41,6 +41,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     this.Children.Remove(this.subMenuConsole);
                     this.subMenuConsole = null;
+                    InGameSubMenuConsole.IsOpen = false;
                 }
             });
         }
