@@ -1,4 +1,5 @@
 using System;
+using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model.Events;
@@ -18,9 +19,11 @@ namespace DeenGames.AliTheAndroid.Consoles
         private readonly SadConsole.Cell BorderCell = new SadConsole.Cell(Palette.White, Palette.White, ' ');        
         private IKeyboard keyboard;
         private DateTime createdOn;
+        private ISubConsoleStrategy currentStrategy = new TopLevelMenuStrategy();
 
         public InGameSubMenuConsole() : base(DefaultWidth, DefaultHeight)
         {
+            this.IsFocused = true;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
             this.keyboard.Clear();
             this.createdOn = DateTime.Now;
@@ -28,12 +31,15 @@ namespace DeenGames.AliTheAndroid.Consoles
         }
 
         override public void Update(System.TimeSpan delta)
-        {
-            this.RedrawEverything();            
-
+        {            
             if ((DateTime.Now - this.createdOn).TotalSeconds >= SecondsAfterCreationBeforeInputWorks && this.keyboard.IsKeyPressed(Key.Escape))
             {
                 EventBus.Instance.Broadcast(GameEvent.HideSubMenu, this);
+            }
+            else
+            {
+                this.RedrawEverything();
+                this.currentStrategy.ProcessInput(this.keyboard);
             }
         }
 
@@ -41,6 +47,12 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
             this.DrawBox(new Microsoft.Xna.Framework.Rectangle(0, 0, this.Width, this.Height), BorderCell);
+            this.currentStrategy.Draw(this);
+        }
+
+        private enum SubMenuState {
+            ShowOptions,
+            ShowingDataCubes
         }
     }
 }
