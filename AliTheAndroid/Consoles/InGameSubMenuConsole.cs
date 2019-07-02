@@ -12,7 +12,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         internal static bool IsOpen = false;
 
         // Press escape. It spwans and despawns a menu really fast. keyboard.Clear() isn't enough.
-        // So, wait for a limited amount of time.
+        // So, wait for a limited amount of time, after spawning, before we allow despawning.
         private const double SecondsAfterCreationBeforeInputWorks = 0.25;
         private const int DefaultWidth = 35;
         private const int DefaultHeight = 20;
