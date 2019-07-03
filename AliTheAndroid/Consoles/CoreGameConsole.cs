@@ -29,7 +29,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             {
                 if (this.subMenuConsole == null)
                 {
-                    this.subMenuConsole = new InGameSubMenuConsole();
+                    this.subMenuConsole = new InGameSubMenuConsole(this.dungeon.CurrentFloor.Player);
                     this.subMenuConsole.Position = new Point((Width - this.subMenuConsole.Width) / 2, (Height - this.subMenuConsole.Height) / 2);
                     this.Children.Add(this.subMenuConsole);
                 }

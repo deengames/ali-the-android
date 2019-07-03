@@ -7,5 +7,6 @@ namespace DeenGames.AliTheAndroid.Model.Events
         EggHatched,
         ShowSubMenu, // Player wants to see the in-game menu
         HideSubMenu, // Player wants to see the in-game menu
+        ChangeSubMenu,
     }
 }

@@ -1,10 +1,18 @@
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
+using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Model.Events;
 
 namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 {
-    public class TopLevelMenuStrategy : ISubConsoleStrategy
+    public class TopLevelMenuStrategy : AbstractConsole, ISubConsoleStrategy
     {
+        private Player player; 
+        public TopLevelMenuStrategy(int width, int height, Player player) : base(width, height)
+        {
+            this.player = player;
+        }
+
         public void Draw(SadConsole.Console console)
         {
             console.Print(2, 2, "[1] Review data cubes", Palette.White);
@@ -14,9 +22,16 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
         public void ProcessInput(IKeyboard keyboard)
         {
-            if (keyboard.IsKeyPressed(Key.Q))
+            if (this.ShouldProcessInput())
             {
-                System.Environment.Exit(0);    
+                if (keyboard.IsKeyPressed(Key.Q))
+                {
+                    System.Environment.Exit(0);    
+                }
+                else if (keyboard.IsKeyPressed(Key.NumPad1))
+                {
+                    EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
+                }
             }
         }
     }

@@ -2,44 +2,54 @@ using System;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
+using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 using Ninject;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
-    public class InGameSubMenuConsole : SadConsole.Console
+    public class InGameSubMenuConsole : AbstractConsole
     {
         internal static bool IsOpen = false;
 
-        // Press escape. It spwans and despawns a menu really fast. keyboard.Clear() isn't enough.
-        // So, wait for a limited amount of time, after spawning, before we allow despawning.
-        private const double SecondsAfterCreationBeforeInputWorks = 0.25;
+        
         private const int DefaultWidth = 35;
         private const int DefaultHeight = 20;
         private readonly SadConsole.Cell BorderCell = new SadConsole.Cell(Palette.White, Palette.White, ' ');        
         private IKeyboard keyboard;
-        private DateTime createdOn;
-        private ISubConsoleStrategy currentStrategy = new TopLevelMenuStrategy();
+        private ISubConsoleStrategy currentStrategy;
+        private Player player;
 
-        public InGameSubMenuConsole() : base(DefaultWidth, DefaultHeight)
+        public InGameSubMenuConsole(Player player) : base(DefaultWidth, DefaultHeight)
         {
+            this.player = player;
+            this.currentStrategy = new TopLevelMenuStrategy(DefaultWidth, DefaultHeight, player);
             this.IsFocused = true;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
             this.keyboard.Clear();
-            this.createdOn = DateTime.Now;
             InGameSubMenuConsole.IsOpen = true;
+            EventBus.Instance.AddListener(GameEvent.ChangeSubMenu, (strategyType) =>
+            {
+                Type type = (Type)strategyType;
+                // Constructor: width, height, player
+                ISubConsoleStrategy instance = Activator.CreateInstance(type, new object[] { DefaultWidth, DefaultHeight, player }) as ISubConsoleStrategy;
+                this.currentStrategy = instance;
+            });
         }
 
         override public void Update(System.TimeSpan delta)
-        {            
-            if ((DateTime.Now - this.createdOn).TotalSeconds >= SecondsAfterCreationBeforeInputWorks && this.keyboard.IsKeyPressed(Key.Escape))
+        {
+            if (this.ShouldProcessInput())
             {
-                EventBus.Instance.Broadcast(GameEvent.HideSubMenu, this);
-            }
-            else
-            {
-                this.RedrawEverything();
-                this.currentStrategy.ProcessInput(this.keyboard);
+                if (this.currentStrategy is TopLevelMenuStrategy && this.keyboard.IsKeyPressed(Key.Escape))
+                {
+                    EventBus.Instance.Broadcast(GameEvent.HideSubMenu, this);
+                }
+                else
+                {
+                    this.RedrawEverything();
+                    this.currentStrategy.ProcessInput(this.keyboard);
+                }
             }
         }
 

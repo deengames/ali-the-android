@@ -9,6 +9,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     {
         public static readonly Color[] DisplayColors = new Color[] { Palette.White, Palette.Cyan, Palette.Blue };
 
+        internal const int FirstDataCubeFloor = 2; // 2 = B2
+        internal static int NumCubes { get { return cubeTexts.Count; } }
+
         // Buzz-words: Experiment Chamber, AllCure, prototype #37, Ameer
         // Tuple of (title, text)
         private static List<Tuple<string, string>> cubeTexts = new List<Tuple<string, string>>()
@@ -25,7 +28,6 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             new Tuple<string, string>("Too Late", @"If you're reading this, I'm dead. The Ameer finished the AllCure and infected himself, then killed everyone. His wounds heal instantly. I don't know how to stop him.")
         };
 
-        private const int FirstDataCubeFloor = 1; // 1 = B2
 
         private const char DisplayCharacter = (char)240; // ≡
 
@@ -44,12 +46,12 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         // floor number is 2 for B2
         public static DataCube GetCube(int floorNumber, GoRogue.Coord coordinates)
         {
-            if (floorNumber < 2 || floorNumber > cubeTexts.Count + 1)
+            if (floorNumber < FirstDataCubeFloor || floorNumber > FirstDataCubeFloor + cubeTexts.Count - 1)
             {
                 throw new InvalidOperationException($"There is no data cube for B{floorNumber}");
             }
 
-            var index = floorNumber - 2;
+            var index = floorNumber - DataCube.FirstDataCubeFloor;
             var data = cubeTexts[index];
             return new DataCube(coordinates.X, coordinates.Y, floorNumber, data.Item1, data.Item2);
         }
