@@ -1,6 +1,6 @@
 # Ali the Android
 
-Distant-future sci-fi narrative horror roguelike/metroidvania fusion built around learning/mastering abilities.
+Distant-future sci-fi narrative horror roguelike/metroidvania fusion built around acquiring weapons which affect the environment in different ways.
 
 # Game Design
 
