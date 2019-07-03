@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 
 namespace DeenGames.AliTheAndroid.Tests.Helpers
@@ -7,6 +8,11 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
         public bool IsKeyPressed(Key key)
         {
             return false;
+        }
+
+        public List<Key> GetKeysReleased()
+        {
+            return new List<Key>();
         }
 
         public void Clear() { }

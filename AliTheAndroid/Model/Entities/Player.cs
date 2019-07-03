@@ -20,6 +20,14 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public Player() : base("You", '@', Color.White, 0, 0, 50, 70, 50, 4)
         {
             this.DirectionFacing = Direction.Up;
+            if (Options.PlayerHasAllDataCubes)
+            {
+                for (var i = DataCube.FirstDataCubeFloor; i < DataCube.FirstDataCubeFloor + DataCube.NumCubes; i++)
+                {
+                    var cube = DataCube.GetCube(i, new GoRogue.Coord(0, 0));
+                    this.GotDataCube(cube);
+                }
+            }
         }
 
         public void OnMove(int previousX, int previousY)

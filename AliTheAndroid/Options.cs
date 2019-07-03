@@ -6,5 +6,6 @@ namespace DeenGames.AliTheAndroid
         public const bool EnableOmniSight = true;
         public const bool ShowFakeWalls = true;
         public const bool CanUseStairsFromAnywhere = true;
+        public const bool PlayerHasAllDataCubes = true;
     }
 }
