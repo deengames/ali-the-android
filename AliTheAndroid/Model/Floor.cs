@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Troschuetz.Random;
+using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -492,7 +493,13 @@ namespace DeenGames.AliTheAndroid.Model
             if (this.DataCube != null && DataCube.X == Player.X && DataCube.Y == Player.Y)
             {
                 this.Player.GotDataCube(this.DataCube);
-                this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.' Access it from the menu.";
+                
+                // Trigger the data cube screen and select the cube in question
+                EventBus.Instance.Broadcast(GameEvent.ShowSubMenu);
+                EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
+                EventBus.Instance.Broadcast(GameEvent.ShowDataCube, this.DataCube);
+
+                this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.'";
                 this.DataCube = null;
             }
         }

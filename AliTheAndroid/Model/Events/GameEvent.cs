@@ -8,5 +8,6 @@ namespace DeenGames.AliTheAndroid.Model.Events
         ShowSubMenu, // Player wants to see the in-game menu
         HideSubMenu, // Player wants to see the in-game menu
         ChangeSubMenu,
+        ShowDataCube, // Show a specific data-cube that we just picked up
     }
 }
