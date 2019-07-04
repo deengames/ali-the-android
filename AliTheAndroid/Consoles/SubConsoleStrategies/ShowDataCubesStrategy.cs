@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
+using Microsoft.Xna.Framework;
 
 namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 {
@@ -83,8 +85,34 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
         private void ShowSelectedCube(SadConsole.Console console)
         {
-            console.Print(2, 2, cubeShown.Title, Palette.White);
-            console.Print(2, 4, cubeShown.Text, Palette.OffWhite);
+            console.Print(2, 2, cubeShown.Title, Palette.LightRed);
+            this.PrettyPrint(console, 2, 4, cubeShown.Text, Palette.OffWhite);
+        }
+
+        // Prints a continuous text, breaking at word-boundaries instead of mid-word,
+        // and taking into account the border and padding around the edge of the window.
+        private void PrettyPrint(SadConsole.Console console, int x, int y, string text, Color colour)
+        {
+            var words = text.Split(' ');
+            const int StartX = 2; // border + padding
+            var maxX = this.Width - 2; // border + padding
+
+            var currentX = x;
+            var currentY = y;
+
+            foreach (var word in words)
+            {
+                var stopX = currentX + 1 + word.Length;
+                if (stopX > maxX)
+                {
+                    currentY += 1;
+                    currentX = StartX;
+                }
+
+                var toPrint = $"{word} ";
+                console.Print(currentX, currentY, toPrint, colour);
+                currentX += toPrint.Length;
+            }
         }
     }
 }
