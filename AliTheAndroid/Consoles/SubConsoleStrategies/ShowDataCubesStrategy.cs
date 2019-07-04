@@ -30,7 +30,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 this.ShowSelectedCube(console);
             }
 
-            console.Print(2, console.Height - 4, "[ESC] Back to main menu", Palette.White);
+            console.Print(2, console.Height - 4, "[ESC] Go back", Palette.White);
         }
 
         public void ProcessInput(IKeyboard keyboard)
@@ -47,7 +47,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     {
                         // My, this is a hack. Convert keys to strings ("boxed" ints) and if we have that floor's cube, show it.
                         // Expect just one key. If you press more, /shrug
-                        var keyPressed = keyboard.GetKeysReleased().Select(k => k.ToString().Substring(k.ToString().Length - 1)).SingleOrDefault();
+                        var keyPressed = GetNumberKeyPressed(keyboard);
                         if (keyPressed != null)
                         {
                             var matchingCube = this.player.DataCubes.SingleOrDefault(c => c.FloorNumber.ToString() == keyPressed);
@@ -60,11 +60,45 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 }
                 else
                 {
-                    if (keyboard.GetKeysReleased().Any())
+                    if (keyboard.IsKeyPressed(Key.Escape))
                     {
                         this.cubeShown = null;
                     }
                 }
+            }
+        }
+
+        private string GetNumberKeyPressed(IKeyboard keyboard)
+        {
+            if (keyboard.IsKeyPressed(Key.NumPad1)) {
+                return "1";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad2)) {
+                return "2";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad3)) {
+                return "3";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad4)) {
+                return "4";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad5)) {
+                return "5";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad6)) {
+                return "6";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad7)) {
+                return "7";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad8)) {
+                return "8";
+            }
+            else if (keyboard.IsKeyPressed(Key.NumPad9)) {
+                return "9";
+            }
+            else {
+                return null;
             }
         }
 

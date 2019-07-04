@@ -10,11 +10,6 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
             return false;
         }
 
-        public List<Key> GetKeysReleased()
-        {
-            return new List<Key>();
-        }
-
         public void Clear() { }
     }
 }
