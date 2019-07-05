@@ -2,7 +2,6 @@ using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Enums
 {
-    // Values from Fleja palette: https://lospec.com/palette-list/fleja-master-palette
     public static class Palette
     {
        public static Color BlackAlmost= FromHex("#25131a");
