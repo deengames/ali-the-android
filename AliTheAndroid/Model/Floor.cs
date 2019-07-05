@@ -619,7 +619,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNum == Dungeon.NumFloors)
             {
-                this.GenerateBosses();
+                this.GenerateBoss();
             }
 
             // Appropriately, remove stairs here, after we no longer need it for path-finding
@@ -880,9 +880,17 @@ namespace DeenGames.AliTheAndroid.Model
             return reachable;
         }
 
-        private void GenerateBosses()
+        private void GenerateBoss()
         {
-            var bossLocation = this.StairsDownLocation;
+            var actualFloorNum = this.floorNum + 1;
+            if (actualFloorNum == 10) // 10 = B10
+            {
+                var bossLocation = this.StairsDownLocation;
+                var boss = new Ameer();
+                this.Monsters.Add(boss);
+                boss.X = bossLocation.X;
+                boss.Y = bossLocation.Y;
+            }
         }
 
         private void GenerateChasms()

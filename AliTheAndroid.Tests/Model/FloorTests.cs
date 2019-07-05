@@ -540,5 +540,24 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 }
             }
         }
+
+        [Test]
+        public void BossGeneratesOnB10()
+        {
+            var generator = new StandardGenerator(6846452);
+            var floor = new Floor(80, 30, 9, generator);
+            Assert.That(floor.Monsters.Where(m => m is Ameer).Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BossDoesntGenerateBeforeB10()
+        {
+            var generator = new StandardGenerator(4653256);            
+            for (var i = 0; i < 9; i++)
+            {
+                var floor = new Floor(80, 30, i, generator);
+                Assert.That(floor.Monsters.All(m => !(m is Ameer)));
+            }
+        }
     }
 }
