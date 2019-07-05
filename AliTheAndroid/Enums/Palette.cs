@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Enums
 {
+    // Lux2K palette: https://lospec.com/palette-list/lux2k
     public static class Palette
     {
        public static Color BlackAlmost= FromHex("#25131a");
