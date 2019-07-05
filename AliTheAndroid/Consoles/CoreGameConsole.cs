@@ -11,6 +11,8 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class CoreGameConsole : SadConsole.Console
     {
+        private static readonly Color WallColour = Palette.Grey;
+
         private const int RotatePowerUpColorEveryMilliseconds = 200;
         private const int RotateWeaponColorEveryMilliseconds = 300;
         private TimeSpan gameTime;
@@ -86,7 +88,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? Palette.DarkBlueMuted : Palette.Grey;
+                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? FakeWall.Colour : WallColour;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
