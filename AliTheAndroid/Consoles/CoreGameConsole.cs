@@ -64,11 +64,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                     {
-                        this.SetGlyph(x, y, '.', Palette.LightGrey);
+                        this.SetGlyph(x, y, '.', Palette.Grey);
                     }
                     else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                     {
-                        this.SetGlyph(x, y, '.', Palette.Grey);
+                        this.SetGlyph(x, y, '.', Palette.DarkPurple);
                     }
                 }
             }
@@ -86,7 +86,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? Palette.DarkMutedBrown : Palette.LightGrey;
+                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? Palette.DarkBlueMuted : Palette.Grey;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
