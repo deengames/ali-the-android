@@ -1501,7 +1501,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
+            else if (this.floorNum < 9 && this.keyboard.IsKeyPressed(Key.OemPeriod) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
             {
                 Dungeon.Instance.GoToNextFloor();
                 destinationX = Player.X;
