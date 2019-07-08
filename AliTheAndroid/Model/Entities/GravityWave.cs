@@ -12,7 +12,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public bool IsBacktrackingWave { get; private set; }
 
         private static Random random = new Random();
-        private const char GravityCharacter = (char)247;
+        private const char GravityCharacter = (char)247; // ≈
         private Func<int, int, bool> isWalkableCheck;
         private int floorNum;
 
