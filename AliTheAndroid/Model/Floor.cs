@@ -1050,13 +1050,26 @@ namespace DeenGames.AliTheAndroid.Model
             
             for (var y = 0; y < this.height; y++) {
                 for (var x = 0; x < this.width; x++) {
-                    if (!map[x, y]) {
-                        this.Walls.Add(AbstractEntity.Create(SimpleEntity.Wall, x, y));
+                    if (!map[x, y]) {      
+                        var wall = AbstractEntity.Create(SimpleEntity.Wall, x, y);
+
+                        // B9/B10 use alternate colour scheme for walls
+                        if (AreLastTwoFloors())
+                        {
+                            wall.Color = Palette.DarkMutedBrown;
+                        }
+
+                        this.Walls.Add(wall);
                     }
                 }
             }
 
             return rooms.ToList();
+        }
+
+        private bool AreLastTwoFloors()
+        {
+            return this.floorNum >= 8;
         }
 
         private void GenerateFakeWallClusters()
@@ -1242,7 +1255,8 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 if (this.AreAdjacentFloors(new GoRogue.Coord(wall.X, wall.Y)))
                 {
-                    wall.Color = Palette.LightGrey;
+                    // Last two floors use alternate colours
+                    wall.Color = this.AreLastTwoFloors() ? Palette.DarkSkinBrown : Palette.LightGrey;
                 }
             }
         }
@@ -1706,7 +1720,7 @@ namespace DeenGames.AliTheAndroid.Model
             numFuselings += this.floorNum; // +1 fuseling per floor
             numSlinks += (int)Math.Floor((this.floorNum - monsterFloors["slink"]) / 2f); // +1 slink every other floor (B4, B6, B8, B10)
             numTenLegs += (int)Math.Floor((this.floorNum - monsterFloors["tenlegs"]) / 3f); // +1 tenlegs every third floor (B4, B7, B10)
-            numZugs += floorNum >= 8 ? 1 : 0; // +1 zug on floors B9+
+            numZugs += this.AreLastTwoFloors() ? 1 : 0; // +1 zug on floors B9+
 
             while (numFuselings > 0)
             {
