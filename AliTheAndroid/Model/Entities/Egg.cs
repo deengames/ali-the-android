@@ -11,7 +11,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private const int hatchProbability = 25; // 20 => 20%
 
         const char DisplayCharacter = (char)233; // Θ
-        public Egg(int x, int y) : base("Egg", DisplayCharacter, Palette.OffWhite, x, y, 1, 0, 0, 0)
+        public Egg(int x, int y) : base("Egg", DisplayCharacter, Palette.Cyan, x, y, 1, 0, 0, 0)
         {
             EventBus.Instance.AddListener(GameEvent.PlayerTookTurn, this.TryToHatch);
         }
