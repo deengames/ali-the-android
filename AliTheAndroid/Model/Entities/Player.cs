@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Enums;
-using Microsoft.Xna.Framework;
-using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Loggers;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
