@@ -1031,13 +1031,14 @@ namespace DeenGames.AliTheAndroid.Model
         private void GenerateMapRooms() {
             var actualFloorNum = this.floorNum + 1;
 
-            this.rooms = this.GenerateWalls();            
+            this.rooms = this.GenerateWalls();
+            this.HighlightWalls();
             this.GenerateFakeWallClusters();
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
                 this.GenerateSecretRooms(rooms);
-            }            
+            }
         }
 
         private IList<GoRogue.Rectangle> GenerateWalls()
@@ -1222,7 +1223,8 @@ namespace DeenGames.AliTheAndroid.Model
             return candidateRooms;
         }
 
-        private bool IsAreaWalled(int startX, int startY, int stopX, int stopY) {
+        private bool IsAreaWalled(int startX, int startY, int stopX, int stopY)
+        {
             for (var y = startY; y < stopY; y++) {
                 for (var x = startX; x < stopX; x++) {
                     if (!this.Walls.Any(w => w.X == x && w.Y == y)) {
@@ -1233,7 +1235,31 @@ namespace DeenGames.AliTheAndroid.Model
 
             return true;
         }
-        
+
+        private void HighlightWalls()
+        {
+            foreach (var wall in this.Walls)
+            {
+                if (this.AreAdjacentFloors(new GoRogue.Coord(wall.X, wall.Y)))
+                {
+                    wall.Color = Palette.LightGrey;
+                }
+            }
+        }
+
+        private bool AreAdjacentFloors(GoRogue.Coord coord)
+        {
+            if (this.IsWalkable(coord.X - 1, coord.Y - 1)) { return true; }
+            if (this.IsWalkable(coord.X - 1, coord.Y)) { return true; }
+            if (this.IsWalkable(coord.X - 1, coord.Y + 1)) { return true; }
+            if (this.IsWalkable(coord.X, coord.Y - 1)) { return true; }
+            if (this.IsWalkable(coord.X, coord.Y + 1)) { return true; }
+            if (this.IsWalkable(coord.X + 1, coord.Y - 1)) { return true; }
+            if (this.IsWalkable(coord.X + 1, coord.Y)) { return true; }
+            if (this.IsWalkable(coord.X + 1, coord.Y + 1)) { return true; }
+            return false;
+        }
+
         private void ApplyKnockbacks(Entity entity, int centerX, int centerY, int distance, Direction optionalDirection)
         {
             // Primary knockback in the direction of entity => cemter

@@ -11,8 +11,6 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class CoreGameConsole : SadConsole.Console
     {
-        private static readonly Color WallColour = Palette.Grey;
-
         private const int RotatePowerUpColorEveryMilliseconds = 200;
         private const int RotateWeaponColorEveryMilliseconds = 300;
         private TimeSpan gameTime;
@@ -59,7 +57,6 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
 
-            // One day, I will do better. One day, I will efficiently draw only what changed!
             for (var y = 0; y < this.dungeon.Height; y++)
             {
                 for (var x = 0; x < this.dungeon.Width; x++)
@@ -88,7 +85,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? FakeWall.Colour : WallColour;
+                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? FakeWall.Colour : wall.Color;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {

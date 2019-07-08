@@ -31,7 +31,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                     return new AbstractEntity(x, y, ' ', Palette.BlackAlmost);
                 case SimpleEntity.Wall:
                     // Values duplicated in FakeWall constructor
-                    return new AbstractEntity(x, y, '#', Palette.LightGrey);
+                    return new AbstractEntity(x, y, '#', Palette.Grey);
                 default:
                     throw new ArgumentException($"Not sure how to create a '{type}' entity");
             }
