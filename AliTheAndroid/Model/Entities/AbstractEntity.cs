@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
 
@@ -14,6 +15,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public char Character { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
+
+        // 219 = █
+        internal static readonly Dictionary<string, char> WallCharacter = new Dictionary<string, char> { { "ascii", '#' }, { "solid",(char)219 }};
         
         public AbstractEntity(int x, int y, char character, Color color)
         {
@@ -31,7 +35,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                     return new AbstractEntity(x, y, ' ', Palette.BlackAlmost);
                 case SimpleEntity.Wall:
                     // Values duplicated in FakeWall constructor
-                    return new AbstractEntity(x, y, '#', Palette.Grey);
+                    var wallCharacter = Options.DisplayTerrainAsSolid ? WallCharacter["solid"] : WallCharacter["ascii"];
+                    return new AbstractEntity(x, y, wallCharacter, Palette.Grey);
                 default:
                     throw new ArgumentException($"Not sure how to create a '{type}' entity");
             }

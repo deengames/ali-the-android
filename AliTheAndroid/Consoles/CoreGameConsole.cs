@@ -55,6 +55,8 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void RedrawEverything(TimeSpan delta)
         {
+            var floorCharacter = Options.DisplayTerrainAsSolid ? ' ' : '.';
+
             this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
 
             for (var y = 0; y < this.dungeon.Height; y++)
@@ -63,11 +65,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                     {
-                        this.SetGlyph(x, y, '.', Palette.Grey);
+                        this.SetGlyph(x, y, floorCharacter, Palette.Grey);
                     }
                     else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                     {
-                        this.SetGlyph(x, y, '.', Palette.DarkPurple);
+                        this.SetGlyph(x, y, floorCharacter, Palette.DarkPurple);
                     }
                 }
             }
