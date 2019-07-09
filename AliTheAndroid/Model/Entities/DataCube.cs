@@ -7,8 +7,6 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public  class DataCube : AbstractEntity
     {
-        public static readonly Color[] DisplayColors = new Color[] { Palette.White, Palette.Cyan, Palette.Blue };
-
         internal const int FirstDataCubeFloor = 2; // 2 = B2
         internal static int NumCubes { get { return cubeTexts.Count; } }
 

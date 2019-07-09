@@ -25,8 +25,6 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         // TODO: character/colour should NOT be part of model!
         private const char DisplayCharacter = (char)175; // »
 
-        public static readonly Color[] DisplayColors = new Color[] { Palette.White, Palette.LightLilacPink, Palette.LilacPinkPurple, Palette.Purple };
-
         public int HealthBoost { get; private set; }
         public int StrengthBoost { get; private set; }
         public int DefenseBoost { get; private set; }

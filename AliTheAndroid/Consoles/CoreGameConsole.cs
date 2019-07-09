@@ -11,8 +11,8 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class CoreGameConsole : SadConsole.Console
     {
-        private const int RotatePowerUpColorEveryMilliseconds = 200;
-        private const int RotateWeaponColorEveryMilliseconds = 300;
+        private const int RotatePowerUpColorEveryMilliseconds = 334;
+        private const int RotateWeaponColorEveryMilliseconds = 400;
         private TimeSpan gameTime;
         private Dungeon dungeon;
         private InGameSubMenuConsole subMenuConsole = null;
@@ -165,8 +165,9 @@ namespace DeenGames.AliTheAndroid.Consoles
                 // B1 has power-ups under the fake wall. Don't show it.
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y) && !this.dungeon.CurrentFloor.FakeWalls.Any(f => f.X == powerUp.X && f.Y == powerUp.Y)) {
                     var elapsedSeconds = this.gameTime.TotalMilliseconds;
-                    var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % PowerUp.DisplayColors.Length;
-                    this.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, PowerUp.DisplayColors[colourIndex]);
+                    var colours = Options.CurrentPalette.PowerUpColours;
+                    var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
+                    this.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, colours[colourIndex]);
                 }
             }
 
@@ -175,16 +176,18 @@ namespace DeenGames.AliTheAndroid.Consoles
             // get through obstacles on later floors. #notabug
             if (weaponPickUp != null) {
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
-                var colourIndex = (int)Math.Floor(elapsedSeconds / RotateWeaponColorEveryMilliseconds) % WeaponPickUp.DisplayColors.Length;
-                this.SetGlyph(weaponPickUp.X, weaponPickUp.Y, weaponPickUp.Character, WeaponPickUp.DisplayColors[colourIndex]);
+                var colours = Options.CurrentPalette.WeaponColours;
+                var colourIndex = (int)Math.Floor(elapsedSeconds / RotateWeaponColorEveryMilliseconds) % colours.Count;
+                this.SetGlyph(weaponPickUp.X, weaponPickUp.Y, weaponPickUp.Character, colours[colourIndex]);
             }
 
             var dataCube = this.dungeon.CurrentFloor.DataCube;
             if (dataCube != null && this.dungeon.CurrentFloor.IsInPlayerFov(dataCube.X, dataCube.Y))
             {
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
-                var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % DataCube.DisplayColors.Length;
-                this.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, DataCube.DisplayColors[colourIndex]);
+                var colours = Options.CurrentPalette.DataCubeColours;
+                var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
+                this.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, colours[colourIndex]);
             }
 
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
