@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 using DeenGames.AliTheAndroid.Tests.Helpers;
@@ -12,7 +13,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         [Test]
         public void TryToHatchBroadcastsHatchedEvent()
         {
-            var egg = new Egg(10, 10);
+            var egg = new Egg(10, 10, Options.CurrentPalette.Monster3Colour);
             bool isHatched = false;
             var player = new Player();
             var monsters = new List<Entity>();

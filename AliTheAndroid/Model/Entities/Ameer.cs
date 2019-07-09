@@ -5,7 +5,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     // The one and only final boss. He's invulnerable (insta-heals each turn).
     public class Ameer : Entity
     {
-        public Ameer() : base("The Ameer", '@', Palette.LightRed, 0, 0, 50, 70, 50, 4)
+        // Same colour as Zug or strongest monster
+        public Ameer() : base("The Ameer", '@', Options.CurrentPalette.Monster4Colour, 0, 0, 50, 70, 50, 4)
         {
         }
 

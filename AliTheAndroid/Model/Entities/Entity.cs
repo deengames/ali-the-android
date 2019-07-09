@@ -24,15 +24,15 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         {
             // This code makes me cry.
             switch (name.ToLower()) {
-                case "egg": return new Egg(x, y);
+                case "egg": return new Egg(x, y, Options.CurrentPalette.Monster3Colour);
                 // Regular enemy. Takes a bit of skill to kill.
-                case "fuseling": return new Entity("Fuseling", 'f', Palette.Blue, x, y, 42, 9, 4);
+                case "fuseling": return new Entity("Fuseling", 'f', Options.CurrentPalette.Monster1Colour, x, y, 42, 9, 4);
                 // Fodder. Generates in big groups, though.
-                case "slink": return new Entity("Slink", 's', Palette.Aqua, x, y, 33, 6, 2);
+                case "slink": return new Entity("Slink", 's', Options.CurrentPalette.Monster2Colour, x, y, 33, 6, 2);
                 // Spawner. Tough, and lays eggs frequently.
-                case "tenlegs": return new Spawner("TenLegs", 't', Palette.Cyan, x, y, 60, 12, 5);
+                case "tenlegs": return new Spawner("TenLegs", 't', Options.CurrentPalette.Monster3Colour, x, y, 60, 12, 5);
                 // Tank. REALLY hard to kill.
-                case "zug":  return new Entity("Zug", 'z', Palette.CyanMuted, x, y, 90, 18, 8);
+                case "zug":  return new Entity("Zug", 'z', Options.CurrentPalette.Monster4Colour, x, y, 90, 18, 8);
                 default: throw new ArgumentException($"Not sure how to create a {name} template entity");
             }
         }
