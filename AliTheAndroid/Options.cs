@@ -7,8 +7,8 @@ namespace DeenGames.AliTheAndroid
         public static bool DisplayTerrainAsSolid = true;
 
         // Debug stuff
-        public const bool EnableOmniSight = false;
-        public const bool CanUseStairsFromAnywhere = false;
+        public const bool EnableOmniSight = true;
+        public const bool CanUseStairsFromAnywhere = true;
         public const bool PlayerHasAllDataCubes = false;
     }
 }
