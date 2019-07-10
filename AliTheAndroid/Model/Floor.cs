@@ -637,12 +637,33 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GeneratePlasmaDrive()
         {
+            // Find the room whose center is closest to the map center
+            var mapCenter = new GoRogue.Coord(this.width / 2, this.height / 2);
+            var closestRoom = this.rooms[0];
+            var closestDistance = DistanceFrom(mapCenter, closestRoom.Center);
+
+            foreach (var room in this.rooms)
+            {
+                var distance = DistanceFrom(room.Center, mapCenter);
+                if (distance < closestDistance)
+                {
+                    closestRoom = room;
+                    closestDistance = distance;
+                }
+            }
+
+            var location = closestRoom.Center;
+            
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
             if (actualFloorNumber == 10)
             {
-                var location = this.FindEmptySpot(); // for now
                 this.PlasmaDrive = new PlasmaDrive(location.X, location.Y);
             }
+        }
+
+        private double DistanceFrom(GoRogue.Coord c1, GoRogue.Coord c2)
+        {
+            return Math.Sqrt(Math.Pow(c1.X - c2.X, 2) + Math.Pow(c1.Y - c2.Y, 2));
         }
 
         private void GenerateDataCube()
