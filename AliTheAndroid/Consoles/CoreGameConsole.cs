@@ -13,6 +13,7 @@ namespace DeenGames.AliTheAndroid.Consoles
     {
         private const int RotatePowerUpColorEveryMilliseconds = 334;
         private const int RotateWeaponColorEveryMilliseconds = 400;
+        private const int RotatePlasmaDriveColorEveryMilliseconds = 250;
         private TimeSpan gameTime;
         private Dungeon dungeon;
         private InGameSubMenuConsole subMenuConsole = null;
@@ -188,6 +189,14 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var colours = Options.CurrentPalette.DataCubeColours;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
                 this.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, colours[colourIndex]);
+            }
+
+            var plasmaDrive = this.dungeon.CurrentFloor.PlasmaDrive;
+            if (plasmaDrive != null)
+            {
+                var elapsedSeconds = this.gameTime.TotalMilliseconds;
+                var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePlasmaDriveColorEveryMilliseconds) % PlasmaDrive.Colours.Length;
+                this.SetGlyph(plasmaDrive.X, plasmaDrive.Y, plasmaDrive.Character, PlasmaDrive.Colours[colourIndex]);
             }
 
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);

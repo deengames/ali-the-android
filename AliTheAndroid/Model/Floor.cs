@@ -52,6 +52,7 @@ namespace DeenGames.AliTheAndroid.Model
         public Player Player;
         public WeaponPickUp WeaponPickUp = null;
         public DataCube DataCube = null;
+        public PlasmaDrive PlasmaDrive = null;
         
         // Internal for unit testing
         internal ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
@@ -631,6 +632,17 @@ namespace DeenGames.AliTheAndroid.Model
             this.GeneratePowerUps();
             this.GenerateWeaponPickUp();
             this.GenerateDataCube();
+            this.GeneratePlasmaDrive();
+        }
+
+        private void GeneratePlasmaDrive()
+        {
+            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            if (actualFloorNumber == 10)
+            {
+                var location = this.FindEmptySpot(); // for now
+                this.PlasmaDrive = new PlasmaDrive(location.X, location.Y);
+            }
         }
 
         private void GenerateDataCube()
