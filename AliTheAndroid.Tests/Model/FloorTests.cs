@@ -542,7 +542,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void PlasmaDriveGeneratesOnFinalFloor()
+        public void PlasmaDriveOnlyGeneratesOnFinalFloor()
         {
             var generator = new StandardGenerator(562365845);
             for (var i = 0; i < 10; i++)
@@ -553,6 +553,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 if (expectDrive)
                 {
                     Assert.That(floor.PlasmaDrive, Is.Not.Null);
+                    for (var x = floor.PlasmaDrive.X - 1; x <= floor.PlasmaDrive.X + 1; x++)
+                    {
+                        for (var y = floor.PlasmaDrive.Y; y <= floor.PlasmaDrive.Y + 1; y++)
+                        {
+                            if (x != floor.PlasmaDrive.X && y != floor.PlasmaDrive.Y)
+                            {
+                                Assert.That(floor.FakeWalls.Any(f => f.X == x && f.Y == y));
+                            }
+                        }
+                    }
                 }
                 else
                 {

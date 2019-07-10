@@ -593,7 +593,6 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Stairs before monsters because monsters don't generate close to stairs!
             this.GenerateStairs();
-            this.GenerateMonsters();
 
             var actualFloorNum = this.floorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
@@ -633,7 +632,10 @@ namespace DeenGames.AliTheAndroid.Model
             this.GenerateWeaponPickUp();
             this.GenerateDataCube();
             this.GeneratePlasmaDrive();
+
+            this.GenerateMonsters();
         }
+        
 
         private void GeneratePlasmaDrive()
         {
@@ -658,6 +660,18 @@ namespace DeenGames.AliTheAndroid.Model
             if (actualFloorNumber == 10)
             {
                 this.PlasmaDrive = new PlasmaDrive(location.X, location.Y);
+            }
+
+            // Surround with (fake and real) walls
+            for (var y = location.Y - 1; y <= location.Y + 1; y++)
+            {
+                for (var x = location.X - 1; x <= location.X + 1; x++)
+                {
+                    if (IsWalkable(x, y))
+                    {
+                        this.FakeWalls.Add(new FakeWall(x, y));
+                    }
+                }
             }
         }
 
