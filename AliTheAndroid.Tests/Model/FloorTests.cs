@@ -542,6 +542,26 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
+        public void PlasmaDriveGeneratesOnFinalFloor()
+        {
+            var generator = new StandardGenerator(562365845);
+            for (var i = 0; i < 10; i++)
+            {
+                var floor = new Floor(80, 30, i, generator);
+                var expectDrive = i == 9;
+
+                if (expectDrive)
+                {
+                    Assert.That(floor.PlasmaDrive, Is.Not.Null);
+                }
+                else
+                {
+                    Assert.That(floor.PlasmaDrive, Is.Null);
+                }
+            }
+        }
+
+        [Test]
         public void BossGeneratesOnB10()
         {
             var generator = new StandardGenerator(6846452);
