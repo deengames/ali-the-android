@@ -191,12 +191,12 @@ namespace DeenGames.AliTheAndroid.Consoles
                 this.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, colours[colourIndex]);
             }
 
-            var plasmaDrive = this.dungeon.CurrentFloor.PlasmaDrive;
-            if (plasmaDrive != null)
+            var shipCore = this.dungeon.CurrentFloor.ShipCore;
+            if (shipCore != null)
             {
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
-                var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePlasmaDriveColorEveryMilliseconds) % PlasmaDrive.Colours.Length;
-                this.SetGlyph(plasmaDrive.X, plasmaDrive.Y, plasmaDrive.Character, PlasmaDrive.Colours[colourIndex]);
+                var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePlasmaDriveColorEveryMilliseconds) % ShipCore.Colours.Length;
+                this.SetGlyph(shipCore.X, shipCore.Y, shipCore.Character, ShipCore.Colours[colourIndex]);
             }
 
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);

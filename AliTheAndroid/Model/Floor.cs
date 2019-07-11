@@ -52,7 +52,7 @@ namespace DeenGames.AliTheAndroid.Model
         public Player Player;
         public WeaponPickUp WeaponPickUp = null;
         public DataCube DataCube = null;
-        public PlasmaDrive PlasmaDrive = null;
+        public ShipCore ShipCore = null;
         
         // Internal for unit testing
         internal ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
@@ -244,6 +244,11 @@ namespace DeenGames.AliTheAndroid.Model
                             this.AddNonDupeEntity(new Plasma(previousX, previousY), this.PlasmaResidue);
                         }
                     }
+
+                    if (ShipCore != null && ShipCore.X == plasmaShot.X && ShipCore.Y == plasmaShot.Y)
+                    {
+                        this.lastMessage = "Plasma penetrates the ship core! It explodes into a burst of quantum plasma!";
+                    }
                 }
 
                 // Destroy any effect that hit something (wall/monster/etc.)
@@ -285,9 +290,7 @@ namespace DeenGames.AliTheAndroid.Model
                     if (playerDistance <= GravityRadius) {
                         int moveBy = GravityRadius - playerDistance;
                         this.ApplyKnockbacks(Player, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
-                    }
-
-                    // if plasma core then KABOOM
+                    }                    
                 }
                 
                 // Find active gravity shots and destroy rooms full of gravity waves appropriately
@@ -633,45 +636,44 @@ namespace DeenGames.AliTheAndroid.Model
             this.GeneratePowerUps();
             this.GenerateWeaponPickUp();
             this.GenerateDataCube();
-            this.GeneratePlasmaDrive();
+            this.GenerateShipCore();
 
             this.GenerateMonsters();
         }
         
 
-        private void GeneratePlasmaDrive()
+        private void GenerateShipCore()
         {
-            // Find the room whose center is closest to the map center
-            var mapCenter = new GoRogue.Coord(this.width / 2, this.height / 2);
-            var closestRoom = this.rooms[0];
-            var closestDistance = DistanceFrom(mapCenter, closestRoom.Center);
-
-            foreach (var room in this.rooms)
-            {
-                var distance = DistanceFrom(room.Center, mapCenter);
-                if (distance < closestDistance)
-                {
-                    closestRoom = room;
-                    closestDistance = distance;
-                }
-            }
-
-            var location = closestRoom.Center;
-            
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
             if (actualFloorNumber == 10)
             {
-                this.PlasmaDrive = new PlasmaDrive(location.X, location.Y);
-            }
+                // Find the room whose center is closest to the map center
+                var mapCenter = new GoRogue.Coord(this.width / 2, this.height / 2);
+                var closestRoom = this.rooms[0];
+                var closestDistance = DistanceFrom(mapCenter, closestRoom.Center);
 
-            // Surround with (fake and real) walls
-            for (var y = location.Y - 1; y <= location.Y + 1; y++)
-            {
-                for (var x = location.X - 1; x <= location.X + 1; x++)
+                foreach (var room in this.rooms)
                 {
-                    if (IsWalkable(x, y))
+                    var distance = DistanceFrom(room.Center, mapCenter);
+                    if (distance < closestDistance)
                     {
-                        this.FakeWalls.Add(new FakeWall(x, y));
+                        closestRoom = room;
+                        closestDistance = distance;
+                    }
+                }
+
+                var location = closestRoom.Center;            
+                this.ShipCore = new ShipCore(location.X, location.Y);
+                
+                // Surround with (fake and real) walls
+                for (var y = location.Y - 1; y <= location.Y + 1; y++)
+                {
+                    for (var x = location.X - 1; x <= location.X + 1; x++)
+                    {
+                        if (IsWalkable(x, y))
+                        {
+                            this.FakeWalls.Add(new FakeWall(x, y));
+                        }
                     }
                 }
             }
@@ -1758,8 +1760,6 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateMonsters()
         {
-            this.Monsters.Clear();
-
             // floorNum + 1 because B1 is floorNum 0, the dictionary is in B2, B4 ... not 1, 3, ...
             var numFuselings = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 fuselings
             var numSlinks = this.floorNum + 1 >= monsterFloors["slink"] ? Options.MonsterMultiplier * this.globalRandom.Next(3, 5) : 0; // 3-4            

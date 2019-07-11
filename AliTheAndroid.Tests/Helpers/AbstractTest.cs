@@ -40,6 +40,7 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
             }
 
             // Thread.Abort is not supported on this platform. Leave the thread around, I guess...
+            // The test runner terminates, so the thread dies soon enough.
         }
     }
 }

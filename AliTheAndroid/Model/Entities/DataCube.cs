@@ -23,7 +23,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             new Tuple<string, string>("Plasma Drive", @"The scientists finished AllCure - the Ameer turned them into Zugs with the prototype. They damaged our warp drive ... inert gravity waves spread everywhere, moving things."),
             new Tuple<string, string>("Ameer", @"I am the last. The last scientist, the last Zug. The Ameer holed himself up on B10. He may still be there. If I can finish my plasma cannon prototype, we may have a chance."),
             // B9
-            new Tuple<string, string>("Too Late", @"The Ameer finished the AllCure, infected himself, and killed everyone. His wounds heal instantly. If I can overload the ship core with my plasma cannon, the ship goes nova, and it all ends - that abomindable AllCure ceases to exist. There are no escape pods, no way off.")
+            new Tuple<string, string>("Too Late", @"The Ameer finished the AllCure, infected himself, and killed everyone. His wounds heal instantly. If I can overload the ship core with my plasma cannon, the resulting quantum plasma will vapourize everything - that abomindable AllCure ceases to exist. There are no escape pods.")
         };
 
 
