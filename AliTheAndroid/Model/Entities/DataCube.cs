@@ -20,10 +20,10 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             new Tuple<string, string>("Weapon", @"We're not building a cure. We're building a weapon. We told the Ameer, but he didn't even blink.  He knew.  How can he support this? Doesn't he know that he will be held accountable after death?"),
             new Tuple<string, string>("Virus", @"After hours, I gained access to the Experiment Chamber through the vents.  I found and analyzed a blood sample with AllCure.  It's an air-borne virus. It's in the vents. It's everywhere."),
             new Tuple<string, string>("Infection", @"I cut myself on a metal fragment coming back from the Experiment Chamber. Felt strange. I'm infected. I can feel my senses heightening, muscles growing. What am I becoming?"),
-            new Tuple<string, string>("Plasma Drive", @"The scientists finished AllCure - the Ameer turned them into Zugs with the prototype. They damaged our Plasma Drive ... inert quantum plasma spread everywhere."),
-            new Tuple<string, string>("Ameer", @"I am the last. The last scientist, the last Zug. The Ameer holed himself up on B10. He may still be there. I hope my Plasma Cannon works ..."),
+            new Tuple<string, string>("Plasma Drive", @"The scientists finished AllCure - the Ameer turned them into Zugs with the prototype. They damaged our warp drive ... inert gravity waves spread everywhere, moving things."),
+            new Tuple<string, string>("Ameer", @"I am the last. The last scientist, the last Zug. The Ameer holed himself up on B10. He may still be there. If I can finish my plasma cannon prototype, we may have a chance."),
             // B9
-            new Tuple<string, string>("Too Late", @"If you're reading this, I'm dead. The Ameer finished the AllCure and infected himself, then killed everyone. His wounds heal instantly. I don't know how to stop him.")
+            new Tuple<string, string>("Too Late", @"The Ameer finished the AllCure, infected himself, and killed everyone. His wounds heal instantly. If I can overload the ship core with my plasma cannon, the ship goes nova, and it all ends - that abomindable AllCure ceases to exist. There are no escape pods, no way off.")
         };
 
 

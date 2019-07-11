@@ -286,6 +286,8 @@ namespace DeenGames.AliTheAndroid.Model
                         int moveBy = GravityRadius - playerDistance;
                         this.ApplyKnockbacks(Player, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
                     }
+
+                    // if plasma core then KABOOM
                 }
                 
                 // Find active gravity shots and destroy rooms full of gravity waves appropriately

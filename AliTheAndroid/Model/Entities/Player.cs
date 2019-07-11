@@ -17,7 +17,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public Player() : base("You", '@', Palette.White, 0, 0, 50, 7, 5, 4)
         {
             this.DirectionFacing = Direction.Up;
-            if (Options.PlayerHasAllDataCubes)
+            if (Options.PlayerStartsWithAllDataCubes)
             {
                 for (var i = DataCube.FirstDataCubeFloor; i < DataCube.FirstDataCubeFloor + DataCube.NumCubes; i++)
                 {
@@ -73,8 +73,11 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public void GotDataCube(DataCube cube)
         {
-            LastGameLogger.Instance.Log($"Found data cube on {cube.FloorNumber}");
-            this.DataCubes.Add(cube);
+            if (!this.DataCubes.Contains(cube))
+            {
+                LastGameLogger.Instance.Log($"Found data cube on {cube.FloorNumber}");
+                this.DataCubes.Add(cube);
+            }
         }
 
         internal void TurnCounterClockwise()
