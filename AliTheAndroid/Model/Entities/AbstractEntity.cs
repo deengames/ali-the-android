@@ -32,7 +32,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             switch (type)
             {
                 case SimpleEntity.Chasm:
-                    return new AbstractEntity(x, y, ' ', Palette.BlackAlmost);
+                    var chasmCharacter = Options.DisplayOldStyleAsciiCharacters ? ' ' : '.';
+                    return new AbstractEntity(x, y, chasmCharacter, Palette.BlackAlmost);
                 case SimpleEntity.Wall:
                     // Values duplicated in FakeWall constructor
                     var wallCharacter = Options.DisplayOldStyleAsciiCharacters ? WallCharacter["ascii"] : WallCharacter["solid"];

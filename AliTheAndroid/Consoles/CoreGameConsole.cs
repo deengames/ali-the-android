@@ -102,7 +102,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             foreach (var chasm in this.dungeon.CurrentFloor.Chasms) {
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(chasm.X, chasm.Y)) {
-                    this.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color);
+                    this.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color, Palette.DarkMutedBrown);
                 } else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y)) {
                     this.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
                 }
