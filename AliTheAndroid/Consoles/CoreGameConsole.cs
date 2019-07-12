@@ -56,7 +56,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void RedrawEverything(TimeSpan delta)
         {
-            var floorCharacter = Options.DisplayTerrainAsSolid ? ' ' : '.';
+            var floorCharacter = Options.DisplayOldStyleAsciiCharacters ? '.' : ' ';
 
             this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
 

@@ -12,7 +12,7 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
         [TearDown]
         public void ResetEventBus()
         {
-            Options.DisplayTerrainAsSolid = false;
+            Options.DisplayOldStyleAsciiCharacters = true;
 
             // Call EventBus constructor, which is private; resets EventBus.Instance
             Activator.CreateInstance(typeof(EventBus), true);
