@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Loggers;
@@ -17,12 +18,24 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public Player() : base("You", '@', Palette.White, 0, 0, 50, 7, 5, 4)
         {
             this.DirectionFacing = Direction.Up;
+
             if (Options.PlayerStartsWithAllDataCubes)
             {
                 for (var i = DataCube.FirstDataCubeFloor; i < DataCube.FirstDataCubeFloor + DataCube.NumCubes; i++)
                 {
                     var cube = DataCube.GetCube(i, new GoRogue.Coord(0, 0));
                     this.GotDataCube(cube);
+                }
+            }
+
+            if (Options.StartWithAllWeapons)
+            {
+                foreach (var weapon in (Weapon[])Enum.GetValues(typeof(Weapon)))
+                {
+                    if (!weapons.Contains(weapon))
+                    {
+                        this.Acquire(weapon);
+                    }
                 }
             }
         }

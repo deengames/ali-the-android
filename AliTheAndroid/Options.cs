@@ -5,10 +5,11 @@ namespace DeenGames.AliTheAndroid
     public static class Options
     {
         public const bool ShowFakeWalls = true; // Should always be true
-        public static bool DisplayOldStyleAsciiCharacters = false;
+        public static bool DisplayOldStyleAsciiCharacters = true;
         public static SelectablePalette CurrentPalette = SelectablePalette.SaturatedPalette;
 
         // Debug stuff
+        public const bool StartWithAllWeapons = true;
         public const bool EnableOmniSight = true;
         public const bool CanUseStairsFromAnywhere = true;
         public const bool PlayerStartsWithAllDataCubes = true;
