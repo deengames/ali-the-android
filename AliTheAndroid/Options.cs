@@ -13,6 +13,5 @@ namespace DeenGames.AliTheAndroid
         public const bool EnableOmniSight = true;
         public const bool CanUseStairsFromAnywhere = true;
         public const bool PlayerStartsWithAllDataCubes = true;
-        public const int MonsterMultiplier = 1; // 0, 1x, 10x, 20x more monsters?
     }
 }

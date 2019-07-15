@@ -171,6 +171,17 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
                 this.RecalculatePlayerFov();
+            
+                if (ShipCore != null)
+                {
+                    var distanceToCore = this.DistanceFrom(
+                        new GoRogue.Coord(this.Player.X, this.Player.Y), new GoRogue.Coord(this.ShipCore.X, this.ShipCore.Y));
+
+                    if (distanceToCore <= 1)
+                    {
+                        this.LatestMessage = "The ship core thrums and glows with energy";
+                    }
+                }
             }
 
             if (this.EffectEntities.Any()) {
@@ -352,6 +363,11 @@ namespace DeenGames.AliTheAndroid.Model
         public bool IsWalkable(int x, int y)
         {
             if (this.Chasms.Any(c => c.X == x && c.Y == y))
+            {
+                return false;
+            }
+
+            if (this.ShipCore != null && ShipCore.X == x && ShipCore.Y == y)
             {
                 return false;
             }
@@ -670,7 +686,7 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     for (var x = location.X - 1; x <= location.X + 1; x++)
                     {
-                        if (IsWalkable(x, y))
+                        if (x != location.X && y != location.Y && IsWalkable(x, y))
                         {
                             this.FakeWalls.Add(new FakeWall(x, y));
                         }
@@ -1379,7 +1395,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             switch (weaponCharacter) {
                 case '!': return this.CalculateDamage(Weapon.MiniMissile);
-                case '$': return this.CalculateDamage(Weapon.Zapper);
+                case '$': return 0; // Short-range, shouldn't damage you back
                 case 'o': return this.CalculateDamage(Weapon.PlasmaCannon);
                 case GravityCannonShot: return this.CalculateDamage(Weapon.GravityCannon);
                 case InstaTeleporterShot: return this.CalculateDamage(Weapon.InstaTeleporter);
@@ -1761,10 +1777,10 @@ namespace DeenGames.AliTheAndroid.Model
         private void GenerateMonsters()
         {
             // floorNum + 1 because B1 is floorNum 0, the dictionary is in B2, B4 ... not 1, 3, ...
-            var numFuselings = Options.MonsterMultiplier * this.globalRandom.Next(8, 9); // 8-9 fuselings
-            var numSlinks = this.floorNum + 1 >= monsterFloors["slink"] ? Options.MonsterMultiplier * this.globalRandom.Next(3, 5) : 0; // 3-4            
-            var numTenLegs = this.floorNum + 1 >= monsterFloors["tenlegs"] ? Options.MonsterMultiplier * this.globalRandom.Next(2, 4) : 0; // 2-3
-            var numZugs = this.floorNum + 1 >= monsterFloors["zug"] ? Options.MonsterMultiplier * this.globalRandom.Next(1, 3) : 0; // 1-2
+            var numFuselings = this.globalRandom.Next(8, 9); // 8-9 fuselings
+            var numSlinks = this.floorNum + 1 >= monsterFloors["slink"] ? this.globalRandom.Next(3, 5) : 0; // 3-4            
+            var numTenLegs = this.floorNum + 1 >= monsterFloors["tenlegs"] ? this.globalRandom.Next(2, 4) : 0; // 2-3
+            var numZugs = this.floorNum + 1 >= monsterFloors["zug"] ? this.globalRandom.Next(1, 3) : 0; // 1-2
 
             numFuselings += this.floorNum; // +1 fuseling per floor
             numSlinks += (int)Math.Floor((this.floorNum - monsterFloors["slink"]) / 2f); // +1 slink every other floor (B4, B6, B8, B10)
