@@ -589,5 +589,24 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 Assert.That(floor.Monsters.All(m => !(m is Ameer)));
             }
         }
+
+        [Test]
+        public void ShipCoreDoesntGenerateCloseToStairs()
+        {
+            var generator = new StandardGenerator(1090796822);
+            Floor lastFloor = null;
+
+            for (var i = 0; i < 10; i++)
+            {
+                lastFloor = new Floor(80, 30, i, generator);
+            }
+
+            Assert.That(lastFloor.ShipCore, Is.Not.Null);
+            var core = lastFloor.ShipCore;
+            var stairs = lastFloor.StairsUpLocation;
+
+            var distance = Math.Sqrt(Math.Pow(core.X - stairs.X, 2) + Math.Pow(core.Y - stairs.Y, 2));
+            Assert.That(distance, Is.GreaterThanOrEqualTo(10));
+        }
     }
 }

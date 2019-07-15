@@ -663,12 +663,14 @@ namespace DeenGames.AliTheAndroid.Model
             var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
             if (actualFloorNumber == 10)
             {
-                // Find the room whose center is closest to the map center
+                // Find the room whose center is closest to the map center. NOT the stairs-up room!
                 var mapCenter = new GoRogue.Coord(this.width / 2, this.height / 2);
-                var closestRoom = this.rooms[0];
+                var roomsWithoutStairs = this.rooms.Where(r => !r.Contains(StairsUpLocation)).ToArray();
+
+                var closestRoom = roomsWithoutStairs[0];
                 var closestDistance = DistanceFrom(mapCenter, closestRoom.Center);
 
-                foreach (var room in this.rooms)
+                foreach (var room in roomsWithoutStairs)
                 {
                     var distance = DistanceFrom(room.Center, mapCenter);
                     if (distance < closestDistance)
