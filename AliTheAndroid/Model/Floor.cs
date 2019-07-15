@@ -273,7 +273,14 @@ namespace DeenGames.AliTheAndroid.Model
                     var hitCore = destroyedEffects.SingleOrDefault(e => e.X == ShipCore.X && e.Y == ShipCore.Y);
                     if (hitCore != null)
                     {
-                        this.LatestMessage = "Energy splays harmlessly across the crystal core.";
+                        if (hitCore == plasmaShot)
+                        {
+                            this.LatestMessage = "The core absorbs the plasma, shatters, and erupts in quantum plasma!";
+                        }
+                        else
+                        {
+                            this.LatestMessage = "Energy splays harmlessly across the crystal core.";
+                        }
                     }
                 }
 
