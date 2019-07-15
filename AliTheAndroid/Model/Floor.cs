@@ -1466,7 +1466,7 @@ namespace DeenGames.AliTheAndroid.Model
                     if (distance <= 1)
                     {
                         // ATTACK~!
-                        var damage = monster.Strength - Player.Defense;
+                        var damage = Math.Max(monster.Strength - Player.Defense, 0);
                         Player.Damage(damage);
                         this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
                     }
