@@ -179,7 +179,7 @@ namespace DeenGames.AliTheAndroid.Model
 
                     if (distanceToCore <= 1)
                     {
-                        this.LatestMessage = "The ship core thrums and glows with energy";
+                        this.LatestMessage = "The ship core thrums and glows with energy.";
                     }
                 }
             }
@@ -268,6 +268,15 @@ namespace DeenGames.AliTheAndroid.Model
                 // If they hit a monster, damage it.
                 var harmedMonsters = this.Monsters.Where(m => destroyedEffects.Any(e => e.X == m.X && e.Y == m.Y)).ToArray(); // Create copy to prevent concurrent modification exception
                 
+                if (this.ShipCore != null)
+                {
+                    var hitCore = destroyedEffects.SingleOrDefault(e => e.X == ShipCore.X && e.Y == ShipCore.Y);
+                    if (hitCore != null)
+                    {
+                        this.LatestMessage = "Energy splays harmlessly across the crystal core.";
+                    }
+                }
+
                 foreach (var monster in harmedMonsters) {
                     var hitBy = destroyedEffects.Single(e => e.X == monster.X && e.Y == monster.Y);
                     var type = CharacterToWeapon(hitBy.Character);
@@ -363,11 +372,6 @@ namespace DeenGames.AliTheAndroid.Model
         public bool IsWalkable(int x, int y)
         {
             if (this.Chasms.Any(c => c.X == x && c.Y == y))
-            {
-                return false;
-            }
-
-            if (this.ShipCore != null && ShipCore.X == x && ShipCore.Y == y)
             {
                 return false;
             }
@@ -1872,6 +1876,11 @@ namespace DeenGames.AliTheAndroid.Model
         // (walls, fake walls, doors, monsters, player, etc.)
         private bool IsFlyable(int x, int y) {
             if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+                return false;
+            }
+
+            if (this.ShipCore != null && ShipCore.X == x && ShipCore.Y == y)
+            {
                 return false;
             }
 
