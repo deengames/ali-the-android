@@ -6,7 +6,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     public class Ameer : Entity
     {
         // Same colour as Zug or strongest monster
-        public Ameer() : base("The Ameer", '@', Options.CurrentPalette.Monster4Colour, 0, 0, 50, 70, 50, 4)
+        public Ameer() : base("The Ameer", '@', Options.CurrentPalette.Monster4Colour, 0, 0, 50, 7, 5, 4)
         {
         }
 
