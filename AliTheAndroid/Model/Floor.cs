@@ -524,6 +524,15 @@ namespace DeenGames.AliTheAndroid.Model
                 this.LatestMessage = "As quantum plasma rips through you, the Ameer's laughter echoes in your ears ...";
             }
 
+            // if (this.floorNum == 9) && no ameer => win
+
+            // Copy array to prevent concurrent modification exception
+            var vapourizedMonsters = this.Monsters.ToArray().Where(m => this.QuantumPlasma.Any(p => m.X == p.X && m.Y == p.Y));
+            foreach (var monster in vapourizedMonsters)
+            {
+                monster.Damage(monster.TotalHealth);
+            }
+
             var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (powerUpUnderPlayer != null)
             {
@@ -1700,7 +1709,7 @@ namespace DeenGames.AliTheAndroid.Model
                 // Skip turn
                 processedInput = true;
             }
-            
+
             return processedInput;
         }
 
