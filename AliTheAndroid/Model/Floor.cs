@@ -49,6 +49,8 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
+        public readonly List<AbstractEntity> QuantumPlasma = new List<AbstractEntity>();
+
         public Player Player;
         public WeaponPickUp WeaponPickUp = null;
         public DataCube DataCube = null;
@@ -276,6 +278,8 @@ namespace DeenGames.AliTheAndroid.Model
                         if (hitCore == plasmaShot)
                         {
                             this.LatestMessage = "The core absorbs the plasma, shatters, and erupts in quantum plasma!";
+                            this.SpawnQuantumPlasma(this.ShipCore.X, this.ShipCore.Y);
+                            this.ShipCore = null;
                         }
                         else
                         {
@@ -505,6 +509,15 @@ namespace DeenGames.AliTheAndroid.Model
 
             this.PlasmaResidue.ForEach(p => p.Degenerate());
 
+            // Copy to array to prevent concurrent modification exception
+            foreach (var plasma in this.QuantumPlasma.ToArray())
+            {
+                this.SpawnQuantumPlasma(plasma.X - 1, plasma.Y);
+                this.SpawnQuantumPlasma(plasma.X + 1, plasma.Y);
+                this.SpawnQuantumPlasma(plasma.X, plasma.Y - 1);
+                this.SpawnQuantumPlasma(plasma.X, plasma.Y + 1);
+            }
+
             var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (powerUpUnderPlayer != null)
             {
@@ -545,6 +558,15 @@ namespace DeenGames.AliTheAndroid.Model
                         this.EffectEntities.Add(new Explosion(x, y));
                     }
                 }
+            }
+        }
+
+        private void SpawnQuantumPlasma(int x, int y)
+        {
+            if (x >= 0 && x < this.width && y >= 0 && y < height && !this.Walls.Any(w => w.X == x && w.Y == y))
+            {
+                var plasma = AbstractEntity.Create(SimpleEntity.QuantumPlasma, x, y);
+                this.AddNonDupeEntity(plasma, this.QuantumPlasma);
             }
         }
 

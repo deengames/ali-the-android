@@ -29,6 +29,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public static AbstractEntity Create(SimpleEntity type, int x, int y)
         {
+            var wallCharacter = Options.DisplayOldStyleAsciiCharacters ? WallCharacter["ascii"] : WallCharacter["solid"];
+
             switch (type)
             {
                 case SimpleEntity.Chasm:
@@ -36,8 +38,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                     return new AbstractEntity(x, y, chasmCharacter, Palette.BlackAlmost);
                 case SimpleEntity.Wall:
                     // Values duplicated in FakeWall constructor
-                    var wallCharacter = Options.DisplayOldStyleAsciiCharacters ? WallCharacter["ascii"] : WallCharacter["solid"];
                     return new AbstractEntity(x, y, wallCharacter, Palette.Grey);
+                case SimpleEntity.QuantumPlasma:
+                return new AbstractEntity(x, y, wallCharacter, Palette.White);
                 default:
                     throw new ArgumentException($"Not sure how to create a '{type}' entity");
             }

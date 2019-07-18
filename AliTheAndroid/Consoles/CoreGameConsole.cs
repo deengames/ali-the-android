@@ -199,6 +199,12 @@ namespace DeenGames.AliTheAndroid.Consoles
                 this.SetGlyph(shipCore.X, shipCore.Y, shipCore.Character, ShipCore.Colours[colourIndex]);
             }
 
+            foreach (var plasma in this.dungeon.CurrentFloor.QuantumPlasma)
+            {
+                // Doesn't care about LOS. You're dead if you get cornered.
+                this.SetGlyph(plasma.X, plasma.Y, plasma.Character, plasma.Color);
+            }
+
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
 
             foreach (var effect in this.dungeon.CurrentFloor.EffectEntities) {
