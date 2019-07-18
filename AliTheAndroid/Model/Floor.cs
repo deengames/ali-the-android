@@ -518,6 +518,12 @@ namespace DeenGames.AliTheAndroid.Model
                 this.SpawnQuantumPlasma(plasma.X, plasma.Y + 1);
             }
 
+            if (this.QuantumPlasma.Any(q => q.X == Player.X && q.Y == Player.Y))
+            {
+                Player.Damage(Player.TotalHealth);
+                this.LatestMessage = "As quantum plasma rips through you, the Ameer's laughter echoes in your ears ...";
+            }
+
             var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (powerUpUnderPlayer != null)
             {
@@ -1694,12 +1700,7 @@ namespace DeenGames.AliTheAndroid.Model
                 // Skip turn
                 processedInput = true;
             }
-
-            if (Player.CurrentHealth <= 0)
-            {
-                this.LatestMessage = "YOU DIE!!!!";
-            }
-
+            
             return processedInput;
         }
 
