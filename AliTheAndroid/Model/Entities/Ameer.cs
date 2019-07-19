@@ -12,6 +12,11 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         override public void Damage(int damage, Weapon source)
         {
+            if (source == Weapon.QuantumPlasma)
+            {
+                this.CurrentHealth = 0;
+                base.Damage(0, source); // Broadcast death event
+            }
         }
     }
 }
