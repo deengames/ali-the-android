@@ -15,7 +15,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         public void DamageDoesntChangeHealth(int damage)
         {
             var ameer = new Ameer();
-            ameer.Damage(damage, Weapon.Blaster.ToString());
+            ameer.Damage(damage, Weapon.Undefined);
             Assert.That(ameer.CurrentHealth, Is.EqualTo(ameer.TotalHealth));
         }
     }

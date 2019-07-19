@@ -72,8 +72,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         public void DamageDoesNothingIfDamageIsNotPositive()
         {
             var e = new Entity("LavaMan", 'l', Color.Red, 0, 0, 10, 3, 1);
-            e.Damage(-155);
-            e.Damage(0);
+            e.Damage(-155, Weapon.Blaster);
+            e.Damage(0, Weapon.Blaster);
             
             Assert.That(e.CurrentHealth, Is.EqualTo(e.TotalHealth));
         }
@@ -83,7 +83,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         {
             var e = new Entity("LavaGuy", 'l', Color.Red, 0, 0, 20, 3, 1);
             var damage = 6;
-            e.Damage(damage);
+            e.Damage(damage, Weapon.Blaster);
             Assert.That(e.CurrentHealth, Is.EqualTo(e.TotalHealth - damage));
         }
 
@@ -94,7 +94,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
             bool eventCalled = false;
             EventBus.Instance.AddListener(GameEvent.EntityDeath, (data) => eventCalled = true);
 
-            e.Damage(999);
+            e.Damage(999, Weapon.Blaster);
 
             Assert.That(eventCalled, Is.True);
         }
