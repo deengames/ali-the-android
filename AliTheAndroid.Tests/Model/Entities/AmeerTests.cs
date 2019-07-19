@@ -37,5 +37,49 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
             Assert.That(ameer.CurrentHealth, Is.LessThanOrEqualTo(0));
             Assert.That(whoDied, Is.EqualTo(ameer));
         }
+
+        [TestCase(33)]
+        [TestCase(2)]
+        [TestCase(1)]
+        public void AmeerIsStunnedIfTurnsStunnedAreNonZero(int turnsStunned)
+        {
+            var ameer = new Ameer();
+            ameer.turnsLeftStunned = turnsStunned;            
+            Assert.That(ameer.IsStunned);
+            Assert.That(ameer.CanMove, Is.False);
+        }
+
+        [Test]
+        public void AmeerIsNotStunnedIfTrunsStunnedIsZero()
+        {
+            var ameer = new Ameer();
+            Assert.That(ameer.turnsLeftStunned, Is.Zero);
+            Assert.That(ameer.IsStunned, Is.False);
+            Assert.That(ameer.CanMove);
+        }
+
+        [Test]
+        public void OnPlayerMovedDecrementsTurnsStunned()
+        {
+            var ameer = new Ameer();
+            ameer.turnsLeftStunned = 2;
+
+            ameer.OnPlayerMoved();
+            Assert.That(ameer.turnsLeftStunned, Is.EqualTo(1));
+
+            ameer.OnPlayerMoved();
+            Assert.That(ameer.turnsLeftStunned, Is.EqualTo(0));
+            Assert.That(ameer.IsStunned, Is.False);
+            Assert.That(ameer.CanMove);
+        }
+
+        [Test]
+        public void DamageStunsIfSourceIsZapper()
+        {
+            var ameer = new Ameer();
+            ameer.Damage(0, Weapon.Zapper);
+            Assert.That(ameer.IsStunned);
+            Assert.That(ameer.turnsLeftStunned, Is.GreaterThan(0));
+        }
     }
 }

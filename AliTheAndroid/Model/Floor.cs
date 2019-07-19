@@ -1488,6 +1488,12 @@ namespace DeenGames.AliTheAndroid.Model
             
             var deadPlasma = this.PlasmaResidue.Where(p => !p.IsAlive);
             this.PlasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
+
+            var ameer = this.Monsters.SingleOrDefault(m => m is Ameer);
+            if (ameer != null)
+            {
+                ((Ameer)ameer).OnPlayerMoved();
+            }
         }
 
         private void ProcessMonsterTurns()
