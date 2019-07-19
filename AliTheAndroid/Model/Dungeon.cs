@@ -75,6 +75,10 @@ namespace DeenGames.AliTheAndroid.Model
             this.CurrentFloorNum++;
             this.CurrentFloor = this.floors[this.CurrentFloorNum];
             LastGameLogger.Instance.Log($"Descended to B{this.CurrentFloorNum + 1}");
+            if (this.CurrentFloorNum == 9)
+            {
+                this.CurrentFloor.LatestMessage = "You detect an abnormal life-form. Mad laughter echoes from afar.";
+            }
             
             this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.StairsUpLocation.X;
