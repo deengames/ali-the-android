@@ -6,6 +6,10 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     public class Ameer : Entity
     {
         // Same colour as Zug or strongest monster
+        public bool IsStunned { get { return this.turnsLeftStunned > 0; } }
+
+        private int turnsLeftStunned = 0;
+
         public Ameer() : base("The Ameer", '@', Options.CurrentPalette.Monster4Colour, 0, 0, 50, 7, 5, 4)
         {
         }
