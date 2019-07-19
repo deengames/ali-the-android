@@ -22,7 +22,7 @@ namespace DeenGames.AliTheAndroid.Model
         public int Height { get; private set; }
         public int CurrentFloorNum { get; private set; } = -1;
 
-        public readonly int? GameSeed = 1111980991 ; // null = random each time
+        public readonly int? GameSeed = null ; // null = random each time
         private readonly IGenerator globalRandom;
         private readonly List<Floor> floors = new List<Floor>(NumFloors);
         private readonly List<PowerUp> guaranteedPowerUps = new List<PowerUp>();

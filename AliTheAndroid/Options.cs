@@ -12,9 +12,9 @@ namespace DeenGames.AliTheAndroid
         public const bool ShowFakeWalls = true; // Should always be true
 
         // Debug stuff
-        public const bool StartWithAllWeapons = true;
-        public const bool EnableOmniSight = true;
-        public const bool CanUseStairsFromAnywhere = true;
-        public const bool PlayerStartsWithAllDataCubes = true;
+        public const bool StartWithAllWeapons = false;
+        public const bool EnableOmniSight = false;
+        public const bool CanUseStairsFromAnywhere = false;
+        public const bool PlayerStartsWithAllDataCubes = false;
     }
 }
