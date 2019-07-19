@@ -15,7 +15,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         private List<Weapon> weapons { get; } = new List<Weapon>() { Weapon.Blaster };
 
-        public Player() : base("You", '@', Palette.White, 0, 0, 50, 7, 5, 4)
+        public Player() : base("You", '@', Palette.White, 0, 0, 50, 70, 50, 4)
         {
             this.DirectionFacing = Direction.Up;
 
@@ -32,7 +32,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             {
                 foreach (var weapon in (Weapon[])Enum.GetValues(typeof(Weapon)))
                 {
-                    if (!weapons.Contains(weapon))
+                    if (weapon != Weapon.Undefined && weapon != Weapon.QuantumPlasma && !weapons.Contains(weapon))
                     {
                         this.Acquire(weapon);
                     }

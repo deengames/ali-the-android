@@ -204,8 +204,9 @@ namespace DeenGames.AliTheAndroid.Model
 
                 foreach (var backlash in playerBacklashes) {
                     var damage = this.CalculateDamage(backlash.Character);
+                    var source = this.CharacterToWeapon(backlash.Character);
                     Console.WriteLine("Player damaged by backlash for " + damage + " damage!");
-                    Player.Damage(damage);
+                    Player.Damage(damage, source);
                 }
 
                 // Unlock doors hit by bolts
@@ -291,9 +292,10 @@ namespace DeenGames.AliTheAndroid.Model
                 foreach (var monster in harmedMonsters) {
                     var hitBy = destroyedEffects.Single(e => e.X == monster.X && e.Y == monster.Y);
                     var type = CharacterToWeapon(hitBy.Character);
+                    var source = this.CharacterToWeapon(hitBy.Character);
                     var damage = CalculateDamage(type);
 
-                    monster.Damage(damage);
+                    monster.Damage(damage, source);
 
                     // Thunder damage hits adjacent monsters. Spawn more bolts~!
                     if (hitBy.Character == '$') {
@@ -503,7 +505,7 @@ namespace DeenGames.AliTheAndroid.Model
             var plasmaUnderPlayer = this.PlasmaResidue.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (plasmaUnderPlayer != null) {
                 this.LatestMessage = $"The plasma burns through your suit! {PlasmaResidueDamage} damage!";
-                Player.Damage(PlasmaResidueDamage);
+                Player.Damage(PlasmaResidueDamage, Weapon.Undefined);
                 this.PlasmaResidue.Remove(plasmaUnderPlayer);
             }
 
@@ -520,7 +522,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (this.QuantumPlasma.Any(q => q.X == Player.X && q.Y == Player.Y))
             {
-                Player.Damage(Player.TotalHealth);
+                Player.Damage(Player.TotalHealth, Weapon.QuantumPlasma);
                 this.LatestMessage = "As quantum plasma rips through you, the Ameer's laughter echoes in your ears ...";
             }
 
@@ -530,7 +532,7 @@ namespace DeenGames.AliTheAndroid.Model
             var vapourizedMonsters = this.Monsters.ToArray().Where(m => this.QuantumPlasma.Any(p => m.X == p.X && m.Y == p.Y));
             foreach (var monster in vapourizedMonsters)
             {
-                monster.Damage(monster.TotalHealth);
+                monster.Damage(monster.TotalHealth, Weapon.QuantumPlasma);
             }
 
             var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
@@ -1517,7 +1519,7 @@ namespace DeenGames.AliTheAndroid.Model
                     {
                         // ATTACK~!
                         var damage = Math.Max(monster.Strength - Player.Defense, 0);
-                        Player.Damage(damage);
+                        Player.Damage(damage, Weapon.Undefined);
                         this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
                     }
                     else
@@ -1550,7 +1552,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             foreach (var monster in plasmaBurnedMonsters) {
-                monster.Damage(PlasmaResidueDamage);
+                monster.Damage(PlasmaResidueDamage, Weapon.Undefined);
                 this.LatestMessage = $"{monster.Name} steps on plasma and burns!";
             }
         }
@@ -1701,7 +1703,7 @@ namespace DeenGames.AliTheAndroid.Model
                 processedInput = true;
 
                 var damage = Player.Strength - monster.Defense;
-                monster.Damage(damage);
+                monster.Damage(damage, Weapon.Undefined);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
             }
             else if (this.keyboard.IsKeyPressed(Key.OemPeriod) || this.keyboard.IsKeyPressed(Key.Space))

@@ -1,3 +1,4 @@
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
 using NUnit.Framework;
 
@@ -14,7 +15,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         public void DamageDoesntChangeHealth(int damage)
         {
             var ameer = new Ameer();
-            ameer.Damage(damage);
+            ameer.Damage(damage, Weapon.Blaster.ToString());
             Assert.That(ameer.CurrentHealth, Is.EqualTo(ameer.TotalHealth));
         }
     }

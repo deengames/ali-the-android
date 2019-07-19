@@ -55,7 +55,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.Color = Palette.DarkBurgandyPurple;
         }
 
-        public virtual void Damage(int damage)
+        public virtual void Damage(int damage, Weapon source)
         {
             if (damage < 0) 
             {

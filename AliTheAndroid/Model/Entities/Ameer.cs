@@ -10,9 +10,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         {
         }
 
-        override public void Damage(int damage)
+        override public void Damage(int damage, Weapon source)
         {
-            // He laughs at your puny efforts.
         }
     }
 }
