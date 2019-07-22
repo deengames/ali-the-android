@@ -13,13 +13,13 @@ namespace DeenGames.AliTheAndroid.Consoles
         private const int TitleY = 2;
 
         private readonly string[] titleText = new string[] {
-            "### #  o   ### # # ###",
-            "# # #  #    #  ### #- ",
-            "# # ## #    #  # # ###",
+            "#=# #  *   =#= # # #==",
+            "#=# #  #    #  ### #=",
+            "# # #= #    #  # # #==",
             "",
-            "### ## # ##  ##   ### o ## ",
-            "# # # ## # # #.#  # # # # #",
-            "# # #  # ##  #  # ### # ## ",
+            "#=# ## # ##  #=#  #=# * ## ",
+            "#=# # ## # # #=#  # # # # #",
+            "# # #  # ##  #  # #=# # ## ",
         };
 
         private readonly int MenuY;
@@ -102,6 +102,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var colour = (i == 1 || i == 5 ? MainColour : dark);
                 this.Print(x, y, line, colour);
             }
+
+            var plainX = (this.Width - "Ali the Android".Length) / 2;
+            var plainY = TitleY + this.titleText.Length + 2;
+            this.Print(plainX, plainY, "Ali the Android", dark);
+            this.Print(plainX + 4, plainY, "the", MainColour);
         }
 
         private void DrawMenu()
