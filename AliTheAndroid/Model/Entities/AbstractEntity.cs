@@ -40,7 +40,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                     // Values duplicated in FakeWall constructor
                     return new AbstractEntity(x, y, wallCharacter, Palette.Grey);
                 case SimpleEntity.QuantumPlasma:
-                return new AbstractEntity(x, y, wallCharacter, Palette.White);
+                    return new AbstractEntity(x, y, WallCharacter["solid"], Palette.White);
                 default:
                     throw new ArgumentException($"Not sure how to create a '{type}' entity");
             }
