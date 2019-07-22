@@ -218,8 +218,25 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.DrawLine(new Point(0, this.dungeon.Height - 2), new Point(this.dungeon.Width, this.dungeon.Height - 2), null, Palette.BlackAlmost, ' ');
             this.DrawLine(new Point(0, this.dungeon.Height - 1), new Point(this.dungeon.Width, this.dungeon.Height - 1), null, Palette.BlackAlmost, ' ');
             this.DrawHealthAndPowerUpIndicators();
-            this.Print(0, this.dungeon.Height - 1, this.dungeon.CurrentFloor.LatestMessage, Palette.White);
+
             this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloorNum + 1}", Palette.White);
+
+            var message = this.dungeon.CurrentFloor.LatestMessage;
+            
+            if (message.Length > this.dungeon.Width)
+            {
+                var firstLineBreak = message.Substring(0, this.dungeon.Width).LastIndexOfAny(new char[] { ' ', '.'} ) + 1;
+                var firstLine = message.Substring(0, firstLineBreak);
+                var secondLine = message.Substring(firstLineBreak);
+
+                // Overrides health momentarily.
+                this.Print(1, this.dungeon.Height - 2, firstLine, Palette.White);
+                this.Print(1, this.dungeon.Height - 1, secondLine, Palette.White);
+            }
+            else
+            {
+                this.Print(1, this.dungeon.Height - 1, message, Palette.White);
+            }
 
             this.DrawSubMenu(delta);
         }

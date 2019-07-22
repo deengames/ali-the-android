@@ -12,8 +12,16 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public bool HasEnvironmentSuit = false;
         public bool CanFireGravityCannon { get; set; } = true;
         internal List<DataCube> DataCubes { get; } = new List<DataCube>();
+        internal static readonly Dictionary<Weapon, string> WeaponPickupMessages = new Dictionary<Weapon, string>() {
+            { Weapon.MiniMissile,       "Fire missiles to destroy weak walls and debris." },
+            { Weapon.Zapper,            "Unjam sealed doors with a jolt of energy." },
+            { Weapon.GravityCannon,     "Knock back monsters and disperse gravity waves." },
+            { Weapon.InstaTeleporter,   "Teleport across insurmountable chasms." },
+            { Weapon.PlasmaCannon,      "Super-heats the floor to damage anything in its wake." },
+        };
 
         private List<Weapon> weapons { get; } = new List<Weapon>() { Weapon.Blaster };
+
 
         public Player() : base("You", '@', Palette.White, 0, 0, 50, 70, 50, 4)
         {

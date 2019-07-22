@@ -546,10 +546,12 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (this.WeaponPickUp != null && WeaponPickUp.X == Player.X && WeaponPickUp.Y == Player.Y)
             {
-                this.Player.Acquire(this.WeaponPickUp.Weapon);
-                var key = this.GetKeyFor(this.WeaponPickUp.Weapon);
+                var weaponType = this.WeaponPickUp.Weapon;
+                this.Player.Acquire(weaponType);
+                var key = this.GetKeyFor(weaponType);
                 var keyText = key.ToString().Replace("NumPad", "");
-                this.LatestMessage = $"You assimilate the {this.WeaponPickUp.Weapon}. Press {keyText} to equip it.";
+                var weaponInfo = DeenGames.AliTheAndroid.Model.Entities.Player.WeaponPickupMessages[weaponType];
+                this.LatestMessage = $"You assimilate the {weaponType}. Press {keyText} to equip it. {weaponInfo}";
                 this.WeaponPickUp = null;
             }
 
