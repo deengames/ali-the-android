@@ -15,6 +15,8 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Common
         D,
         E,
         F,
+        N,
+        O,
         Q,
         S,
         T,

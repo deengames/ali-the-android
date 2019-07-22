@@ -26,7 +26,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             {
                 if (keyboard.IsKeyPressed(Key.Q))
                 {
-                    System.Environment.Exit(0);    
+                    SadConsole.Global.CurrentScreen = new TitleConsole(Program.GameWidthInTiles, Program.GameHeightInTiles);
                 }
                 else if (keyboard.IsKeyPressed(Key.NumPad1))
                 {

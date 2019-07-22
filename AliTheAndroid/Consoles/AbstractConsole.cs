@@ -26,8 +26,11 @@ namespace DeenGames.AliTheAndroid.Consoles
         private void RemoveFpsCounter()
         {
             // Remove FPS counter
-            var fpsCounter = SadConsole.Game.Instance.Components.Single(c => c is SadConsole.Game.FPSCounterComponent);
-            SadConsole.Game.Instance.Components.Remove(fpsCounter);
+            var fpsCounter = SadConsole.Game.Instance.Components.SingleOrDefault(c => c is SadConsole.Game.FPSCounterComponent);
+            if (fpsCounter != null)
+            {
+                SadConsole.Game.Instance.Components.Remove(fpsCounter);
+            }
         }
     }
 }

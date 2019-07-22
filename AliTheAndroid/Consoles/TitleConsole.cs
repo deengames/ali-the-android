@@ -54,7 +54,11 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             if (this.keyboard.IsKeyPressed(Key.Escape))
             {
-                System.Environment.Exit(0);
+                this.Quit();
+            }
+            else if (this.keyboard.IsKeyPressed(Key.N))
+            {
+                this.StartNewGame();   
             }
 
             if (this.keyboard.IsKeyPressed(Key.Up) || this.keyboard.IsKeyPressed(Key.W))
@@ -80,7 +84,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                     case MenuItem.Options:
                         break;
                     case MenuItem.Quit:
-                        System.Environment.Exit(0);
+                        this.Quit();
                         break;
                 }
             }
@@ -105,11 +109,29 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.PrintText("[N]ew Game", 0, CurrentItem == MenuItem.NewGame ? MainColour : Palette.Grey);
             this.PrintText("[O]ptions", 1, CurrentItem == MenuItem.Options ? MainColour : Palette.Grey);
             this.PrintText("[ESC] Quit", 2, CurrentItem == MenuItem.Quit ? MainColour : Palette.Grey);
+
+            this.PrintText("Arrow keys or WASD to move, enter/space to select an item", 5, Palette.OffWhite);
         }
 
         private void PrintText(string text, int yOffset, Color colour)
         {
             this.Print((this.Width - text.Length) / 2, this.MenuY  + yOffset, text, colour);
+        }
+
+        private void StartNewGame()
+        {
+            SadConsole.Global.CurrentScreen = new CoreGameConsole(this.Width, this.Height);
+        }
+
+        private void ShowOptions()
+        {
+            // TODO: temp
+            SadConsole.Global.CurrentScreen = new TitleConsole(this.Width, this.Height);
+        }
+
+        private void Quit()
+        {
+            System.Environment.Exit(0);
         }
 
         enum MenuItem {
