@@ -968,6 +968,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         // Start at the stairs-up. Flood fill floor tiles. Return the floor tiles that you can reach, without
         // wandering through locked doors, gravity waves, fake walls, or across chasms.
+        // Excludes the stairs themselves. We don't want to spawn things there.
         private List<GoRogue.Coord> GetTilesAccessibleFromStairsWithoutWeapons()
         {
             var toExplore = new List<GoRogue.Coord>();
@@ -979,7 +980,17 @@ namespace DeenGames.AliTheAndroid.Model
             while (toExplore.Any())
             {
                 var check = toExplore.First();
-                if (IsWalkable(check.X, check.Y) && !GravityWaves.Any(g => g.X == check.X && g.Y == check.Y))
+                toExplore.Remove(check);
+                explored.Add(check);
+
+                // Explores, stopping when it sees walls, locked doors, chasms, and gravity
+                if (
+                    check.X >= 0 && check.X < this.width && check.Y >= 0 && check.Y < this.height &&
+                    !Walls.Any(w => w.X == check.X && w.Y == check.Y) &&
+                    !FakeWalls.Any(w => w.X == check.X && w.Y == check.Y) &&
+                    !Doors.Any(d => d.IsLocked && d.X == check.X && d.Y == check.Y) &&
+                    !Chasms.Any(c => c.X == check.X && c.Y == check.Y) &&
+                    !GravityWaves.Any(g => g.X == check.X && g.Y == check.Y))
                 {
                     reachable.Add(check);
 
@@ -993,11 +1004,9 @@ namespace DeenGames.AliTheAndroid.Model
                     if (!toExplore.Contains(up) &&!explored.Contains(up)) { toExplore.Add(up); }
                     if (!toExplore.Contains(down) &&!explored.Contains(down)) { toExplore.Add(down); }
                 }
-
-                explored.Add(check);
-                toExplore.Remove(check);
             }
 
+            reachable.Remove(this.StairsUpLocation);
             return reachable;
         }
 
