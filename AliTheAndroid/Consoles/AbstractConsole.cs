@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
@@ -14,11 +15,19 @@ namespace DeenGames.AliTheAndroid.Consoles
         public AbstractConsole(int width, int height) : base(width, height)
         {
             this.createdOn = DateTime.Now;
+            this.RemoveFpsCounter();
         }
 
         protected bool ShouldProcessInput()
         {
             return (DateTime.Now - this.createdOn).TotalSeconds >= SecondsAfterCreationBeforeInputWorks;
+        }
+
+        private void RemoveFpsCounter()
+        {
+            // Remove FPS counter
+            var fpsCounter = SadConsole.Game.Instance.Components.Single(c => c is SadConsole.Game.FPSCounterComponent);
+            SadConsole.Game.Instance.Components.Remove(fpsCounter);
         }
     }
 }
