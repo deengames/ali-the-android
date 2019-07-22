@@ -65,7 +65,7 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
 
             //Global.MouseState.ProcessMouseWhenOffScreen = true;
 
-            Global.CurrentScreen = new CoreGameConsole(widthInTiles, heightInTiles);
+            Global.CurrentScreen = new TitleConsole(widthInTiles, heightInTiles);
         }
 
         private void Update(GameTime time)
