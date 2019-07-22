@@ -457,7 +457,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void StairsUpAndDownAreAlwaysWalkable()
         {
             RestrictRuntime(() => {
-                var dungeon = new Dungeon(80, 31, gameSeed: 1036496413);
+                var dungeon = new Dungeon(80, 30, gameSeed: 1036496413);
                 while (dungeon.CurrentFloorNum < 9)
                 {
                     dungeon.GoToNextFloor();
@@ -486,7 +486,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void CountAdjacentFloorsReturnsCorrectCountExcludingCenter()
         {
             RestrictRuntime(() => {
-                var floor = new Floor(80, 31, 0, new StandardGenerator(69874632));
+                var floor = new Floor(80, 30, 0, new StandardGenerator(69874632));
                 floor.Walls.RemoveAll(w => true);
 
                 Assert.That(floor.CountAdjacentFloors(new GoRogue.Coord(2, 2)), Is.EqualTo(8));
@@ -498,16 +498,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             var generator = new StandardGenerator(452323);
 
-            var firstFloor = new Floor(80, 31, 0, generator);
+            var firstFloor = new Floor(80, 30, 0, generator);
             Assert.That(firstFloor.DataCube, Is.Null);
 
             for (var floorNum = 1; floorNum < 9; floorNum++)
             {
-                var floor = new Floor(80, 31, floorNum, generator);
+                var floor = new Floor(80, 30, floorNum, generator);
                 Assert.That(floor.DataCube, Is.Not.Null);
             }
 
-            var lastFloor = new Floor(80, 31, 10, generator);
+            var lastFloor = new Floor(80, 30, 10, generator);
             Assert.That(lastFloor.DataCube, Is.Null);
         }
 
@@ -520,7 +520,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             var generator = new StandardGenerator(313821775);
 
-            var floor = new Floor(80, 31, 0, generator);
+            var floor = new Floor(80, 30, 0, generator);
             var epicenter = new GoRogue.Coord(5, 5);
             var radius = Floor.ExplosionRadius;
 
@@ -607,6 +607,21 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
             var distance = Math.Sqrt(Math.Pow(core.X - stairs.X, 2) + Math.Pow(core.Y - stairs.Y, 2));
             Assert.That(distance, Is.GreaterThanOrEqualTo(10));
+        }
+
+        // Regression for https://trello.com/c/L8VK30Q4/62-player-can-generate-on-top-of-weapons
+        [Test]
+        public void WeaponsDontGenerateOnStairsUp()
+        {
+            var dungeon = new Dungeon(80, 30, 1714594838);
+            // Advance to B4
+            dungeon.GoToNextFloor();
+            dungeon.GoToNextFloor();
+            dungeon.GoToNextFloor();
+            dungeon.GoToNextFloor();
+            
+            var floor = dungeon.CurrentFloor;
+            Assert.That(new GoRogue.Coord(floor.WeaponPickUp.X, floor.WeaponPickUp.Y), Is.Not.EqualTo(floor.StairsUpLocation));
         }
     }
 }
