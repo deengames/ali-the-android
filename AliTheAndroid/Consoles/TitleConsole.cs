@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
@@ -11,6 +12,11 @@ namespace DeenGames.AliTheAndroid.Consoles
     {
         private readonly Color MainColour = Palette.Blue;
         private const int TitleY = 2;
+        private ReadOnlyCollection<string> hints = new ReadOnlyCollection<string>(new string[] {
+            "View your most recent game run details on disk in LastGame.txt.",
+            "You can switch to oldstyle ASCII graphics mode in Options.",
+            "You can change object colours to a high-saturation palette in Options."
+        });
 
         private readonly string[] titleText = new string[] {
             "#=# #  *   =#= # # #==",
@@ -48,6 +54,10 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             this.DrawTitleText();
             this.DrawMenu();
+
+            var hint = $"Hint: {this.hints.ElementAt(new Random().Next(this.hints.Count))}";
+            var x = (this.Width - hint.Length) / 2;
+            this.Print(x, this.Height - 2, hint, Palette.Blue);
         }
 
         override public void Update(System.TimeSpan delta)
