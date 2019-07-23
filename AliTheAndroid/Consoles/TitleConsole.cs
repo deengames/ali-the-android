@@ -80,8 +80,10 @@ namespace DeenGames.AliTheAndroid.Consoles
             {
                 switch (this.CurrentItem) {
                     case MenuItem.NewGame:
+                        this.StartNewGame();
                         break;
                     case MenuItem.Options:
+                        this.ShowOptions();
                         break;
                     case MenuItem.Quit:
                         this.Quit();
@@ -130,8 +132,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void ShowOptions()
         {
-            // TODO: temp
-            SadConsole.Global.CurrentScreen = new TitleConsole(this.Width, this.Height);
+            // TODO
         }
 
         private void Quit()
