@@ -16,6 +16,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         public void Draw(SadConsole.Console console)
         {
             console.Print(2, 2, "[1] Review data cubes", Palette.White);
+            console.Print(2, console.Height - 5, "[O] Options", Palette.White);
             console.Print(2, console.Height - 4, "[ESC] Back to game", Palette.White);
             console.Print(2, console.Height - 3, "[Q] Quit", Palette.White);
         }
@@ -27,6 +28,10 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 if (keyboard.IsKeyPressed(Key.Q))
                 {
                     SadConsole.Global.CurrentScreen = new TitleConsole(Program.GameWidthInTiles, Program.GameHeightInTiles);
+                }
+                else if (keyboard.IsKeyPressed(Key.O))
+                {
+                    EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(OptionsMenuStrategy));
                 }
                 else if (keyboard.IsKeyPressed(Key.NumPad1))
                 {
