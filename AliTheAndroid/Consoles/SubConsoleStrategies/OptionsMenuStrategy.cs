@@ -1,15 +1,19 @@
+using System;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
+using Ninject;
 
 namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 {
     public class OptionsMenuStrategy : AbstractConsole, ISubConsoleStrategy
     {
         private readonly SadConsole.Cell BorderCell = new SadConsole.Cell(Palette.White, Palette.White, ' ');        
-        private readonly SadConsole.Cell BackgroundCell = new SadConsole.Cell(Palette.BlackAlmost, Palette.BlackAlmost, ' ');        
+        private readonly SadConsole.Cell BackgroundCell = new SadConsole.Cell(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
+        private Action onCloseCallback;
 
-        public OptionsMenuStrategy(int width, int height) : base(width, height)
+        public OptionsMenuStrategy(int width, int height, Action onCloseCallback) : base(width, height)
         {
+            this.onCloseCallback = onCloseCallback;
         }
 
         public void Draw(SadConsole.Console console)
@@ -22,6 +26,10 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         {
             if (this.ShouldProcessInput())
             {
+                if (keyboard.IsKeyPressed(Key.Escape))
+                {
+                    this.onCloseCallback();
+                }
             }
         }
     }

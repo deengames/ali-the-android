@@ -64,11 +64,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         override public void Update(System.TimeSpan delta)
         {
-            if (optionsMenu != null)
-            {
-                optionsMenu.Draw(this);
-            }
-            else
+            if (optionsMenu == null)
             {
                 if (this.keyboard.IsKeyPressed(Key.Escape))
                 {
@@ -112,6 +108,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                             break;
                     }
                 }
+            }
+            else
+            {
+                optionsMenu.Draw(this);
+                optionsMenu.ProcessInput(this.keyboard);
             }
         }
 
@@ -157,7 +158,12 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             if (this.optionsMenu == null)
             {
-                this.optionsMenu = new OptionsMenuStrategy(40, 20);
+                this.optionsMenu = new OptionsMenuStrategy(40, 20, () => 
+                {
+                    this.Children.Remove(this.optionsMenu);
+                    this.optionsMenu = null;
+                });
+
                 this.optionsMenu.Position = new Point((this.Width - this.optionsMenu.Width) / 2, (this.Height - this.optionsMenu.Height) / 2);
                 this.Children.Add(this.optionsMenu);
             }
