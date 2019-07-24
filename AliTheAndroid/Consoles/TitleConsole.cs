@@ -158,7 +158,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             if (this.optionsMenu == null)
             {
-                this.optionsMenu = new OptionsMenuStrategy(40, 20, () => 
+                this.optionsMenu = new OptionsMenuStrategy(() => 
                 {
                     this.Children.Remove(this.optionsMenu);
                     this.optionsMenu = null;
