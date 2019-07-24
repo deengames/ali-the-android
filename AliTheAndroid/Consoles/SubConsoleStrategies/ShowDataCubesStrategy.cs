@@ -14,7 +14,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         private Player player;
         private DataCube cubeShown = null; // null = none
         
-        public ShowDataCubesStrategy(int width, int height, Player player) : base(width, height)
+        public ShowDataCubesStrategy(Player player)
         {
             this.player = player;
             EventBus.Instance.AddListener(GameEvent.ShowDataCube, (data) => this.cubeShown = data as DataCube);

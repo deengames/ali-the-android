@@ -13,7 +13,7 @@ namespace DeenGames.AliTheAndroid.Consoles
     {
         private readonly Color MainColour = Palette.Blue;
         private const int TitleY = 2;
-        private ReadOnlyCollection<string> hints = new ReadOnlyCollection<string>(new string[] {
+        private ReadOnlyCollection<string> tips = new ReadOnlyCollection<string>(new string[] {
             "View your most recent game run details on disk in LastGame.txt.",
             "You can switch to oldstyle ASCII graphics mode in Options.",
             "You can change object colours to a high-saturation palette in Options."
@@ -57,7 +57,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.DrawTitleText();
             this.DrawMenu();
 
-            var hint = $"Tip: {this.hints.ElementAt(new Random().Next(this.hints.Count))}";
+            var hint = $"Tip: {this.tips.ElementAt(new Random().Next(this.tips.Count))}";
             var x = (this.Width - hint.Length) / 2;
             this.Print(x, this.Height - 2, hint, Palette.Blue);
         }

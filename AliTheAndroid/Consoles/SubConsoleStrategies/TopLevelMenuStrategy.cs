@@ -8,15 +8,15 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
     public class TopLevelMenuStrategy : AbstractConsole, ISubConsoleStrategy
     {
         private Player player; 
-        public TopLevelMenuStrategy(int width, int height, Player player) : base(width, height)
+        public TopLevelMenuStrategy(Player player)
         {
             this.player = player;
         }
 
         public void Draw(SadConsole.Console console)
         {
-            console.Print(2, 2, "[1] Review data cubes", Palette.White);
-            console.Print(2, console.Height - 5, "[O] Options", Palette.White);
+            console.Print(2, 2, "[D] Review data cubes", Palette.White);
+            console.Print(2, 3, "[O] Options", Palette.White);
             console.Print(2, console.Height - 4, "[ESC] Back to game", Palette.White);
             console.Print(2, console.Height - 3, "[Q] Quit", Palette.White);
         }
@@ -33,7 +33,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 {
                     EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(OptionsMenuStrategy));
                 }
-                else if (keyboard.IsKeyPressed(Key.NumPad1))
+                else if (keyboard.IsKeyPressed(Key.D))
                 {
                     EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
                 }

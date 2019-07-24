@@ -7,10 +7,17 @@ namespace DeenGames.AliTheAndroid.Consoles
     // inputs don't incorrectly chain from the previous input-processing thing to us.
     public abstract class AbstractConsole : SadConsole.Console
     {
-        // Press escape. It spwans and despawns a menu really fast. keyboard.Clear() isn't enough.
+        internal const int DisplayWidth = 50;
+        internal const int DisplayHeight = 20;
+
+        // Press escape. It spawns and despawns a menu really fast. keyboard.Clear() isn't enough.
         // So, wait for a limited amount of time, after spawning, before we allow despawning.
         private const double SecondsAfterCreationBeforeInputWorks = 0.25;
         private DateTime createdOn;
+
+        public AbstractConsole() : this(DisplayWidth, DisplayHeight)
+        {
+        }
 
         public AbstractConsole(int width, int height) : base(width, height)
         {

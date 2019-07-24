@@ -12,18 +12,15 @@ namespace DeenGames.AliTheAndroid.Consoles
     {
         internal static bool IsOpen = false;
 
-        
-        private const int DefaultWidth = 35;
-        private const int DefaultHeight = 20;
         private readonly SadConsole.Cell BorderCell = new SadConsole.Cell(Palette.White, Palette.White, ' ');        
         private IKeyboard keyboard;
         private ISubConsoleStrategy currentStrategy;
         private Player player;
 
-        public InGameSubMenuConsole(Player player) : base(DefaultWidth, DefaultHeight)
+        public InGameSubMenuConsole(Player player)
         {
             this.player = player;
-            this.currentStrategy = new TopLevelMenuStrategy(DefaultWidth, DefaultHeight, player);
+            this.currentStrategy = new TopLevelMenuStrategy(player);
             this.IsFocused = true;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
             this.keyboard.Clear();
@@ -31,8 +28,8 @@ namespace DeenGames.AliTheAndroid.Consoles
             EventBus.Instance.AddListener(GameEvent.ChangeSubMenu, (strategyType) =>
             {
                 Type type = (Type)strategyType;
-                // Constructor: width, height, player
-                ISubConsoleStrategy instance = Activator.CreateInstance(type, new object[] { DefaultWidth, DefaultHeight, player }) as ISubConsoleStrategy;
+                // Expects a constructor with a single argument: player
+                ISubConsoleStrategy instance = Activator.CreateInstance(type, new object[] { player }) as ISubConsoleStrategy;
                 this.currentStrategy = instance;
             });
         }

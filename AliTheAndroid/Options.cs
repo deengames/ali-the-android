@@ -6,7 +6,7 @@ namespace DeenGames.AliTheAndroid
     {
         // Options
         public static bool DisplayOldStyleAsciiCharacters = false;
-        public static SelectablePalette CurrentPalette = SelectablePalette.SaturatedPalette;
+        public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
 
         // Constants
         public const bool ShowFakeWalls = true; // Should always be true
