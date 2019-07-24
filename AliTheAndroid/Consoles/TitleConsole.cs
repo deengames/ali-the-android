@@ -57,7 +57,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.DrawTitleText();
             this.DrawMenu();
 
-            var hint = $"Hint: {this.hints.ElementAt(new Random().Next(this.hints.Count))}";
+            var hint = $"Tip: {this.hints.ElementAt(new Random().Next(this.hints.Count))}";
             var x = (this.Width - hint.Length) / 2;
             this.Print(x, this.Height - 2, hint, Palette.Blue);
         }
@@ -137,8 +137,8 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void DrawMenu()
         {
-            this.PrintText("[N]ew Game", 0, CurrentItem == MenuItem.NewGame ? MainColour : Palette.Grey);
-            this.PrintText("[O]ptions", 1, CurrentItem == MenuItem.Options ? MainColour : Palette.Grey);
+            this.PrintText("[N] New Game", 0, CurrentItem == MenuItem.NewGame ? MainColour : Palette.Grey);
+            this.PrintText("[O] Options", 1, CurrentItem == MenuItem.Options ? MainColour : Palette.Grey);
             this.PrintText("[ESC] Quit", 2, CurrentItem == MenuItem.Quit ? MainColour : Palette.Grey);
 
             this.PrintText("Arrow keys or WASD to move, enter/space to select an item", 5, Palette.OffWhite);
