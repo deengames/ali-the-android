@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
+using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using Microsoft.Xna.Framework;
 using Ninject;
 
@@ -46,6 +47,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
         }}
 
+        private OptionsMenuStrategy optionsMenu = null;
 
         public TitleConsole(int width, int height) : base(width, height)
         {
@@ -62,42 +64,53 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         override public void Update(System.TimeSpan delta)
         {
-            if (this.keyboard.IsKeyPressed(Key.Escape))
+            if (optionsMenu != null)
             {
-                this.Quit();
+                optionsMenu.Draw(this);
             }
-            else if (this.keyboard.IsKeyPressed(Key.N))
+            else
             {
-                this.StartNewGame();   
-            }
-
-            if (this.keyboard.IsKeyPressed(Key.Up) || this.keyboard.IsKeyPressed(Key.W))
-            {
-                this.currentItemIndex -= 1;
-                if (this.currentItemIndex == -1) {
-                    this.currentItemIndex = Enum.GetValues(typeof(MenuItem)).Length - 1;
+                if (this.keyboard.IsKeyPressed(Key.Escape))
+                {
+                    this.Quit();
+                }
+                else if (this.keyboard.IsKeyPressed(Key.N))
+                {
+                    this.StartNewGame();   
+                }
+                else if (this.keyboard.IsKeyPressed(Key.O))
+                {
+                    this.ShowOptions();
                 }
 
-                this.DrawMenu();
-            }
-            else if (this.keyboard.IsKeyPressed(Key.Down) || this.keyboard.IsKeyPressed(Key.S))
-            {
-                this.currentItemIndex = (this.currentItemIndex + 1) % Enum.GetValues(typeof(MenuItem)).Length;
-                this.DrawMenu();
-            }
+                if (this.keyboard.IsKeyPressed(Key.Up) || this.keyboard.IsKeyPressed(Key.W))
+                {
+                    this.currentItemIndex -= 1;
+                    if (this.currentItemIndex == -1) {
+                        this.currentItemIndex = Enum.GetValues(typeof(MenuItem)).Length - 1;
+                    }
 
-            if (this.keyboard.IsKeyPressed(Key.Space) || this.keyboard.IsKeyPressed(Key.Enter))
-            {
-                switch (this.CurrentItem) {
-                    case MenuItem.NewGame:
-                        this.StartNewGame();
-                        break;
-                    case MenuItem.Options:
-                        this.ShowOptions();
-                        break;
-                    case MenuItem.Quit:
-                        this.Quit();
-                        break;
+                    this.DrawMenu();
+                }
+                else if (this.keyboard.IsKeyPressed(Key.Down) || this.keyboard.IsKeyPressed(Key.S))
+                {
+                    this.currentItemIndex = (this.currentItemIndex + 1) % Enum.GetValues(typeof(MenuItem)).Length;
+                    this.DrawMenu();
+                }
+
+                if (this.keyboard.IsKeyPressed(Key.Space) || this.keyboard.IsKeyPressed(Key.Enter))
+                {
+                    switch (this.CurrentItem) {
+                        case MenuItem.NewGame:
+                            this.StartNewGame();
+                            break;
+                        case MenuItem.Options:
+                            this.ShowOptions();
+                            break;
+                        case MenuItem.Quit:
+                            this.Quit();
+                            break;
+                    }
                 }
             }
         }
@@ -142,7 +155,12 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void ShowOptions()
         {
-            // TODO
+            if (this.optionsMenu == null)
+            {
+                this.optionsMenu = new OptionsMenuStrategy(40, 20);
+                this.optionsMenu.Position = new Point((this.Width - this.optionsMenu.Width) / 2, (this.Height - this.optionsMenu.Height) / 2);
+                this.Children.Add(this.optionsMenu);
+            }
         }
 
         private void Quit()
