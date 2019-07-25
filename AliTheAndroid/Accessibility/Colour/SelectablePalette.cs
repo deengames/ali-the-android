@@ -11,7 +11,7 @@ namespace DeenGames.AliTheAndroid.Accessibility.Colour
             Monster1Colour = Palette.Blue,
             Monster2Colour = Palette.Aqua,
             Monster3Colour = Palette.Cyan,
-            Monster4Colour = Palette.CyanMuted,
+            Monster4Colour = Palette.LimeGreen,
             PowerUpColours =  ImmutableList.Create(Palette.White, Palette.LightLilacPink, Palette.LilacPinkPurple, Palette.Purple),
             WeaponColours = ImmutableList.Create(Palette.Orange, Palette.YellowAlmost, Palette.White, Palette.YellowAlmost),
             DataCubeColours = ImmutableList.Create(Palette.White, Palette.Cyan, Palette.Blue),            
