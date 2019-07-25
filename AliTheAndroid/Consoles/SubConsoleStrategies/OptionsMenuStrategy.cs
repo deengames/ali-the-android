@@ -70,6 +70,17 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         {
             if (this.ShouldProcessInput())
             {
+                // TODO: process space/enter
+                if (keyboard.IsKeyPressed(Key.NumPad1))
+                {
+                    Options.DisplayOldStyleAsciiCharacters = !Options.DisplayOldStyleAsciiCharacters;
+                    this.SaveToDisk();
+                }
+                if (keyboard.IsKeyPressed(Key.NumPad2))
+                {
+                    Options.CurrentPalette = (Options.CurrentPalette == SelectablePalette.StandardPalette ? SelectablePalette.SaturatedPalette : SelectablePalette.StandardPalette);
+                    this.SaveToDisk();
+                }
                 if (keyboard.IsKeyPressed(Key.Escape))
                 {
                     this.SaveToDisk();
