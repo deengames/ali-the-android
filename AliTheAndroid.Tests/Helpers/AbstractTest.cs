@@ -19,7 +19,7 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
             Activator.CreateInstance(typeof(EventBus), true);
         }
 
-        public void RestrictRuntime(Action testCode, int maxWaitSeconds = 3)
+        public void RestrictRuntime(Action testCode, int maxWaitSeconds = 30)
         {
             ThreadStart runTest = () => testCode();
             var thread = new Thread(runTest);

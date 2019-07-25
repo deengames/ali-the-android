@@ -53,7 +53,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                         Assert.That(distanceToStairsDown >= Floor.MinimumDistanceFromMonsterToStairs, $"Stairs DOWN for {monster.Character} at {monster.X}, {monster.Y} on floor B{i + 1} are at d={distanceToStairsDown} (min is {Floor.MinimumDistanceFromMonsterToStairs})");
                     }
                 }
-            }, 5);
+            });
         }
 
         [Test]
@@ -117,7 +117,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 twin.PickUp();
 
                 Assert.That(!twins.Any());
-            }, 10);
+            });
         }
 
         [Test]
@@ -434,7 +434,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                     var floor = new Floor(30, 30, 10, random);
                     Assert.That(floor.Chasms.Count, Is.GreaterThanOrEqualTo(ExpectedChasmCount));
                 }
-            }, 10);
+            });
         }
 
         [Test]
@@ -477,7 +477,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                         Assert.That(floor.IsWalkable(floor.StairsUpLocation.X, floor.StairsUpLocation.Y), $"Stairs up on B{dungeon.CurrentFloorNum + 1} is not walkable!");
                     }
                 }
-            }, 5);
+            });
         }
 
         // https://trello.com/c/aqjBuMJC/29-dungeon-generates-with-randomly-placed-locked-doors
