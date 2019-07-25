@@ -496,20 +496,24 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void DataCubesGenerateOnFloorsB2toB9Inclusive()
         {
-            var generator = new StandardGenerator(452323);
+            RestrictRuntime(() => {
 
-            var firstFloor = new Floor(80, 30, 0, generator);
-            Assert.That(firstFloor.DataCube, Is.Null);
+                var generator = new StandardGenerator(452323);
 
-            for (var floorNum = 1; floorNum < 9; floorNum++)
-            {
-                var floor = new Floor(80, 30, floorNum, generator);
-                Assert.That(floor.DataCube, Is.Not.Null);
-            }
+                var firstFloor = new Floor(80, 30, 0, generator);
+                Assert.That(firstFloor.DataCube, Is.Null);
 
-            var lastFloor = new Floor(80, 30, 10, generator);
-            Assert.That(lastFloor.DataCube, Is.Null);
+                for (var floorNum = 1; floorNum < 9; floorNum++)
+                {
+                    var floor = new Floor(80, 30, floorNum, generator);
+                    Assert.That(floor.DataCube, Is.Not.Null);
+                }
+
+                var lastFloor = new Floor(80, 30, 10, generator);
+                Assert.That(lastFloor.DataCube, Is.Null);
+            });
         }
+        
 
         // https://trello.com/c/2QRUML4b/57-some-fake-walls-just-cant-be-broken
         // Shooting a missile and directly hitting a fake wall, doesn't destroy it.
@@ -544,31 +548,33 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void ShipCoreOnlyGeneratesOnFinalFloor()
         {
-            var generator = new StandardGenerator(562365845);
-            for (var i = 0; i < 10; i++)
-            {
-                var floor = new Floor(80, 30, i, generator);
-                var expectDrive = i == 9;
-
-                if (expectDrive)
+            RestrictRuntime(() => {
+                var generator = new StandardGenerator(562365845);
+                for (var i = 0; i < 10; i++)
                 {
-                    Assert.That(floor.ShipCore, Is.Not.Null);
-                    for (var x = floor.ShipCore.X - 1; x <= floor.ShipCore.X + 1; x++)
+                    var floor = new Floor(80, 30, i, generator);
+                    var expectDrive = i == 9;
+
+                    if (expectDrive)
                     {
-                        for (var y = floor.ShipCore.Y; y <= floor.ShipCore.Y + 1; y++)
+                        Assert.That(floor.ShipCore, Is.Not.Null);
+                        for (var x = floor.ShipCore.X - 1; x <= floor.ShipCore.X + 1; x++)
                         {
-                            if (x != floor.ShipCore.X && y != floor.ShipCore.Y)
+                            for (var y = floor.ShipCore.Y; y <= floor.ShipCore.Y + 1; y++)
                             {
-                                Assert.That(floor.FakeWalls.Any(f => f.X == x && f.Y == y));
+                                if (x != floor.ShipCore.X && y != floor.ShipCore.Y)
+                                {
+                                    Assert.That(floor.FakeWalls.Any(f => f.X == x && f.Y == y));
+                                }
                             }
                         }
                     }
+                    else
+                    {
+                        Assert.That(floor.ShipCore, Is.Null);
+                    }
                 }
-                else
-                {
-                    Assert.That(floor.ShipCore, Is.Null);
-                }
-            }
+            });
         }
 
         [Test]
@@ -582,46 +588,52 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void BossDoesntGenerateBeforeB10()
         {
-            var generator = new StandardGenerator(4653256);            
-            for (var i = 0; i < 9; i++)
-            {
-                var floor = new Floor(80, 30, i, generator);
-                Assert.That(floor.Monsters.All(m => !(m is Ameer)));
-            }
+            RestrictRuntime(() => {
+                var generator = new StandardGenerator(4653256);            
+                for (var i = 0; i < 9; i++)
+                {
+                    var floor = new Floor(80, 30, i, generator);
+                    Assert.That(floor.Monsters.All(m => !(m is Ameer)));
+                }
+            });
         }
 
         [Test]
         public void ShipCoreDoesntGenerateCloseToStairs()
         {
-            var generator = new StandardGenerator(1090796822);
-            Floor lastFloor = null;
+            RestrictRuntime(() => {
+                var generator = new StandardGenerator(1090796822);
+                Floor lastFloor = null;
 
-            for (var i = 0; i < 10; i++)
-            {
-                lastFloor = new Floor(80, 30, i, generator);
-            }
+                for (var i = 0; i < 10; i++)
+                {
+                    lastFloor = new Floor(80, 30, i, generator);
+                }
 
-            Assert.That(lastFloor.ShipCore, Is.Not.Null);
-            var core = lastFloor.ShipCore;
-            var stairs = lastFloor.StairsUpLocation;
+                Assert.That(lastFloor.ShipCore, Is.Not.Null);
+                var core = lastFloor.ShipCore;
+                var stairs = lastFloor.StairsUpLocation;
 
-            var distance = Math.Sqrt(Math.Pow(core.X - stairs.X, 2) + Math.Pow(core.Y - stairs.Y, 2));
-            Assert.That(distance, Is.GreaterThanOrEqualTo(10));
+                var distance = Math.Sqrt(Math.Pow(core.X - stairs.X, 2) + Math.Pow(core.Y - stairs.Y, 2));
+                Assert.That(distance, Is.GreaterThanOrEqualTo(10));
+            });
         }
 
         // Regression for https://trello.com/c/L8VK30Q4/62-player-can-generate-on-top-of-weapons
         [Test]
         public void WeaponsDontGenerateOnStairsUp()
         {
-            var dungeon = new Dungeon(80, 30, 1714594838);
-            // Advance to B4
-            dungeon.GoToNextFloor();
-            dungeon.GoToNextFloor();
-            dungeon.GoToNextFloor();
-            dungeon.GoToNextFloor();
-            
-            var floor = dungeon.CurrentFloor;
-            Assert.That(new GoRogue.Coord(floor.WeaponPickUp.X, floor.WeaponPickUp.Y), Is.Not.EqualTo(floor.StairsUpLocation));
+            RestrictRuntime(() => {
+                var dungeon = new Dungeon(80, 30, 1714594838);
+                // Advance to B4
+                dungeon.GoToNextFloor();
+                dungeon.GoToNextFloor();
+                dungeon.GoToNextFloor();
+                dungeon.GoToNextFloor();
+                
+                var floor = dungeon.CurrentFloor;
+                Assert.That(new GoRogue.Coord(floor.WeaponPickUp.X, floor.WeaponPickUp.Y), Is.Not.EqualTo(floor.StairsUpLocation));
+            });
         }
     }
 }
