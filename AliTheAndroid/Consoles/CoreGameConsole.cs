@@ -56,6 +56,8 @@ namespace DeenGames.AliTheAndroid.Consoles
         private void RedrawEverything(TimeSpan delta)
         {
             var floorCharacter = Options.DisplayOldStyleAsciiCharacters ? '.' : ' ';
+            var wallCharacter = Options.DisplayOldStyleAsciiCharacters ? 
+                AbstractEntity.WallCharacter["ascii"] : AbstractEntity.WallCharacter["solid"];            
 
             this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
 
@@ -87,15 +89,16 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ? FakeWall.Colour : wall.Color;
+                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ?
+                    FakeWall.Colour : wall.Color;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    this.SetGlyph(wall.X, wall.Y, wall.Character, colour);
+                    this.SetGlyph(wall.X, wall.Y, wallCharacter, colour);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  this.SetGlyph(wall.X, wall.Y, wall.Character, colour);
+                  this.SetGlyph(wall.X, wall.Y, wallCharacter, colour);
                 }
             }
 
@@ -106,7 +109,6 @@ namespace DeenGames.AliTheAndroid.Consoles
                     this.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
                 }
             }
-
             
             foreach (var door in this.dungeon.CurrentFloor.Doors)
             {

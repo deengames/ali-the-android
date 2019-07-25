@@ -16,8 +16,10 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int X { get; set; }
         public int Y { get; set; }
 
-        // 219 = █
-        internal static readonly Dictionary<string, char> WallCharacter = new Dictionary<string, char> { { "ascii", '#' }, { "solid",(char)219 }};
+        internal static readonly Dictionary<string, char> WallCharacter = new Dictionary<string, char>
+        {
+            { "ascii", '#' }, { "solid",(char)219 } // 219 = █
+        };
         
         public AbstractEntity(int x, int y, char character, Color color)
         {
@@ -29,16 +31,14 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public static AbstractEntity Create(SimpleEntity type, int x, int y)
         {
-            var wallCharacter = Options.DisplayOldStyleAsciiCharacters ? WallCharacter["ascii"] : WallCharacter["solid"];
-
             switch (type)
             {
                 case SimpleEntity.Chasm:
                     var chasmCharacter = Options.DisplayOldStyleAsciiCharacters ? ' ' : '.';
                     return new AbstractEntity(x, y, chasmCharacter, Palette.BlackAlmost);
                 case SimpleEntity.Wall:
-                    // Values duplicated in FakeWall constructor
-                    return new AbstractEntity(x, y, wallCharacter, Palette.Grey);
+                    // Value is determined at draw-time so options auto-change everything
+                    return new AbstractEntity(x, y, 'X', Palette.Grey);
                 case SimpleEntity.QuantumPlasma:
                     return new AbstractEntity(x, y, WallCharacter["solid"], Palette.White);
                 default:
