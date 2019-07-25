@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using DeenGames.AliTheAndroid.Accessibility.Colour;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 using Ninject;
 
 namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
@@ -69,6 +72,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             {
                 if (keyboard.IsKeyPressed(Key.Escape))
                 {
+                    this.SaveToDisk();
                     if (this.onCloseCallback != null)
                     {
                         this.onCloseCallback();
@@ -79,6 +83,19 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     }
                 }
             }
+        }
+
+        private void SaveToDisk()
+        {
+            var data = new Dictionary<string, string>() {
+                // Strings are replicated in TitleConsole.cs
+                { "Display", Options.DisplayOldStyleAsciiCharacters ? "ASCII" : "Extended" },
+                { "Palette", Options.CurrentPalette == SelectablePalette.SaturatedPalette ? "Saturated" : "Standard" }
+            };
+
+            var json = JsonConvert.SerializeObject(data);
+            
+            File.WriteAllText(Options.FileName, json);
         }
     }
 }

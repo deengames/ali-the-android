@@ -4,6 +4,8 @@ namespace DeenGames.AliTheAndroid
 {
     public static class Options
     {
+        internal static string FileName = "Options.txt";
+        
         // Options
         public static bool DisplayOldStyleAsciiCharacters = false;
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;

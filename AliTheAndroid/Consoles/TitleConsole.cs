@@ -6,6 +6,10 @@ using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using Microsoft.Xna.Framework;
 using Ninject;
+using System.IO;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using DeenGames.AliTheAndroid.Accessibility.Colour;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
@@ -60,6 +64,8 @@ namespace DeenGames.AliTheAndroid.Consoles
             var hint = $"Tip: {this.tips.ElementAt(new Random().Next(this.tips.Count))}";
             var x = (this.Width - hint.Length) / 2;
             this.Print(x, this.Height - 2, hint, Palette.Blue);
+
+            this.LoadOptionsFromDisk();
         }
 
         override public void Update(System.TimeSpan delta)
@@ -115,6 +121,31 @@ namespace DeenGames.AliTheAndroid.Consoles
                 optionsMenu.ProcessInput(this.keyboard);
             }
         }
+
+        private void LoadOptionsFromDisk()
+        {
+            if (File.Exists(Options.FileName))
+            {
+                var json = File.ReadAllText(Options.FileName);
+                var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+
+                // Strings are replicated in OptionsMenuStrategy.cs
+                // Default if missing/invalid/etc.
+                Options.CurrentPalette = SelectablePalette.StandardPalette;
+                if (data.ContainsKey("Palette") && data["Palette"] == "Saturated")
+                {
+                    Options.CurrentPalette = SelectablePalette.SaturatedPalette;
+                }
+
+                // Default if missing/invalid/etc.
+                Options.DisplayOldStyleAsciiCharacters = false;
+                if (data.ContainsKey("Display") && data["Display"] == "ASCII")
+                {
+                    Options.DisplayOldStyleAsciiCharacters = true;
+                }
+            }
+        }
+
 
         private void DrawTitleText()
         {
