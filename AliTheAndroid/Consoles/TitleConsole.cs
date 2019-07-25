@@ -162,8 +162,12 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             var plainX = (this.Width - "Ali the Android".Length) / 2;
             var plainY = TitleY + this.titleText.Length + 2;
-            this.Print(plainX, plainY, "Ali the Android", dark);
-            this.Print(plainX + 4, plainY, "the", MainColour);
+            this.Print(plainX, plainY, "Ali the Android", MainColour);
+            this.Print(plainX + 4, plainY, "the", Palette.OffWhite);
+
+            var deenGamesX = (this.Width - "By Deen Games".Length) / 2;
+            var deenGamesY = plainY + 1;
+            this.Print(deenGamesX, deenGamesY, "By Deen Games", Palette.OffWhite);
         }
 
         private void DrawMenu()
