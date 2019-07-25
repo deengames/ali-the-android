@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Events;
+using System.Collections.Generic;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
@@ -11,6 +12,17 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     /// </summary>
     public class Entity : AbstractEntity
     {
+        public static Dictionary<string, Color> MonsterColours = new Dictionary<string, Color>()
+        {
+            // I hope these are by reference, and update when CurrentPalette updates.
+            { "Egg", Options.CurrentPalette.Monster3Colour },
+            { "Fuseling", Options.CurrentPalette.Monster1Colour },
+            { "Slink", Options.CurrentPalette.Monster2Colour },
+            { "TenLegs", Options.CurrentPalette.Monster3Colour },
+            { "Zug", Options.CurrentPalette.Monster4Colour },
+            { "The Ameer", Options.CurrentPalette.Monster4Colour },
+        };
+        
         public string Name { get; private set; }
         public int CurrentHealth { get; protected set; }
         public int TotalHealth { get; protected set; }
@@ -23,6 +35,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public static Entity CreateFromTemplate(string name, int x, int y)
         {
             // This code makes me cry.
+            // Also: colour is ignored and derived at runtime from the current palette.
             switch (name.ToLower()) {
                 case "egg": return new Egg(x, y, Options.CurrentPalette.Monster3Colour);
                 // Regular enemy. Takes a bit of skill to kill.
@@ -35,6 +48,20 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                 case "zug":  return new Entity("Zug", 'z', Options.CurrentPalette.Monster4Colour, x, y, 90, 18, 8);
                 default: throw new ArgumentException($"Not sure how to create a {name} template entity");
             }
+        }
+
+        public static void ResetPalette()
+        {
+            Entity.MonsterColours = new Dictionary<string, Color>()
+            {
+                // I hope these are by reference, and update when CurrentPalette updates.
+                { "Egg", Options.CurrentPalette.Monster3Colour },
+                { "Fuseling", Options.CurrentPalette.Monster1Colour },
+                { "Slink", Options.CurrentPalette.Monster2Colour },
+                { "TenLegs", Options.CurrentPalette.Monster3Colour },
+                { "Zug", Options.CurrentPalette.Monster4Colour },
+                { "The Ameer", Options.CurrentPalette.Monster4Colour },
+            };
         }
         
         public Entity(string name, char character, Color color, int x, int y, int health, int strength, int defense, int visionRange = 5)

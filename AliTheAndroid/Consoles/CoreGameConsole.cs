@@ -154,12 +154,9 @@ namespace DeenGames.AliTheAndroid.Consoles
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(monster.X, monster.Y))
                 {
                     var character = monster.Character;
+                    var colour = Entity.MonsterColours[monster.Name];
 
-                    this.SetGlyph(monster.X, monster.Y, character, monster.Color);
-                    
-                    if (monster.CurrentHealth < monster.TotalHealth) {
-                        this.SetGlyph(monster.X, monster.Y, character, Palette.Orange);
-                    }
+                    this.SetGlyph(monster.X, monster.Y, character, colour);
                 }
             }
 

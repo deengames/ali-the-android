@@ -80,6 +80,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 {
                     Options.CurrentPalette = (Options.CurrentPalette == SelectablePalette.StandardPalette ? SelectablePalette.SaturatedPalette : SelectablePalette.StandardPalette);
                     this.SaveToDisk();
+                    Entity.ResetPalette(); // rebuild map of monster name => colour
                 }
                 if (keyboard.IsKeyPressed(Key.Escape))
                 {
