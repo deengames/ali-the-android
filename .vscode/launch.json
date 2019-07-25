@@ -11,7 +11,7 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/AliTheAndroid/bin/Debug/netcoreapp2.1/AliTheAndroid.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/AliTheAndroid.Tests",
+            "cwd": "${workspaceFolder}/AliTheAndroid",
             "console": "internalConsole",
             "stopAtEntry": false
         },
