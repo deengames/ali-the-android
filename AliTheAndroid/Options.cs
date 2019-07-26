@@ -9,6 +9,7 @@ namespace DeenGames.AliTheAndroid
         // Options
         public static bool DisplayOldStyleAsciiCharacters = false;
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
+        public static bool IsFullScreen = false;
 
         // Constants
         public const bool ShowFakeWalls = true; // Should always be true

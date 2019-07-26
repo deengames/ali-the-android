@@ -156,15 +156,26 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (!data.ContainsKey("firstRun") || data["firstRun"] == "true")
                 {
-                    SadConsole.Settings.ToggleFullScreen();
                     data["firstRun"] = "false";
+                    data["fullScreen"] = "true";
+                    this.DoFirstRunStuff();
 
                     // Re-save
                     File.WriteAllText(Options.FileName, JsonConvert.SerializeObject(data));
                 }
             }
+            else
+            {
+                // Do first run stuff
+                this.DoFirstRunStuff();
+            }
         }
 
+        private void DoFirstRunStuff()
+        {
+            SadConsole.Settings.ToggleFullScreen();                    
+            Options.IsFullScreen = true;
+        }
 
         private void DrawTitleText()
         {
