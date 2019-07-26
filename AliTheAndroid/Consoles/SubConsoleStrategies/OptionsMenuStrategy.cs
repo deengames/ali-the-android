@@ -46,6 +46,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
             this.PrintOption(target, 2, 4, "[1] Display characters", Options.DisplayOldStyleAsciiCharacters, "ASCII", "Extended");
             this.PrintOption(target, 2, 5, "[2] Colour palette", Options.CurrentPalette == SelectablePalette.StandardPalette, "Standard", "Saturated");
+            this.PrintOption(target, 2, 6, "[3] Display mode", Options.IsFullScreen, "Fullscreen", "Windowed");
 
             target.Print(2, this.Height - 3, "Press number keys to toggle options", Palette.OffWhite);
         }
@@ -81,6 +82,12 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     Options.CurrentPalette = (Options.CurrentPalette == SelectablePalette.StandardPalette ? SelectablePalette.SaturatedPalette : SelectablePalette.StandardPalette);
                     this.SaveToDisk();
                     Entity.ResetPalette(); // rebuild map of monster name => colour
+                }
+                if (keyboard.IsKeyPressed(Key.NumPad3))
+                {
+                    Options.IsFullScreen = !Options.IsFullScreen;
+                    SadConsole.Settings.ToggleFullScreen();
+                    this.SaveToDisk();
                 }
                 if (keyboard.IsKeyPressed(Key.Escape))
                 {
