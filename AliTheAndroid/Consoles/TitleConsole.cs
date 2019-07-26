@@ -15,6 +15,11 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     class TitleConsole : AbstractConsole
     {
+        // Player started a new game at this time. Null if not yet.  This is to work-around
+        // a bug where anything we print right before switching scenes, doesn't draw.
+        private DateTime? launchedOn = null;
+        private readonly int gameSeed = new Random().Next();
+
         private readonly Color MainColour = Palette.Blue;
         private const int TitleY = 2;
         private ReadOnlyCollection<string> tips = new ReadOnlyCollection<string>(new string[] {
@@ -56,7 +61,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         public TitleConsole(int width, int height) : base(width, height)
         {
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
-            MenuY = this.Height / 2;
+            MenuY = (this.Height / 2) + 1;
 
             this.DrawTitleText();
             this.DrawMenu();
@@ -70,6 +75,11 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         override public void Update(System.TimeSpan delta)
         {
+            if (this.launchedOn != null && (DateTime.Now - this.launchedOn.Value).TotalMilliseconds >= 100)
+            {
+                SadConsole.Global.CurrentScreen = new CoreGameConsole(this.Width, this.Height, this.gameSeed);
+            }
+
             if (optionsMenu == null)
             {
                 if (this.keyboard.IsKeyPressed(Key.Escape))
@@ -186,7 +196,12 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void StartNewGame()
         {
-            SadConsole.Global.CurrentScreen = new CoreGameConsole(this.Width, this.Height);
+            var message = $"Generating dungeon {this.gameSeed}!";
+
+            var x = (this.Width - message.Length) / 2;
+            this.Print(x, this.MenuY - 2, message, Palette.White);
+
+            this.launchedOn = DateTime.Now;
         }
 
         private void ShowOptions()
