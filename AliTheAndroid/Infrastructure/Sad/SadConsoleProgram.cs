@@ -61,6 +61,7 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             SadConsole.Game.Instance.Window.Title = $"Ali the Android v{version.Major}.{version.Minor}.{version.Build}";
+            SadConsole.Settings.ResizeMode = Settings.WindowResizeOptions.Scale;
 
             // By default SadConsole adds a blank ready-to-go console to the rendering system. 
             // We don't want to use that for the sample project so we'll remove it.
