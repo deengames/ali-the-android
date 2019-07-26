@@ -153,6 +153,15 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     Options.DisplayOldStyleAsciiCharacters = true;
                 }
+
+                if (!data.ContainsKey("firstRun") || data["firstRun"] == "true")
+                {
+                    SadConsole.Settings.ToggleFullScreen();
+                    data["firstRun"] = "false";
+
+                    // Re-save
+                    File.WriteAllText(Options.FileName, JsonConvert.SerializeObject(data));
+                }
             }
         }
 
