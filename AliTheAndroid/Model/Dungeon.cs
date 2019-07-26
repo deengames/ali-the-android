@@ -66,6 +66,9 @@ namespace DeenGames.AliTheAndroid.Model
                 this.floors.Add(new Floor(this.Width, this.Height, i, this.globalRandom));
             }
 
+            // Intro events/message
+            this.floors[0].LatestMessage = "You beam onto the deep-space research station. No lights or life-support.    Use the arrow keys or WASD to move. Press F to fire.";
+
             stopwatch.Stop();
             LastGameLogger.Instance.Log($"Generated in {stopwatch.Elapsed.TotalSeconds}s");
         }
