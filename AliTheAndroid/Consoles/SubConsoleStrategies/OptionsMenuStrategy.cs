@@ -102,7 +102,9 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             var data = new Dictionary<string, string>() {
                 // Strings are replicated in TitleConsole.cs
                 { "Display", Options.DisplayOldStyleAsciiCharacters ? "ASCII" : "Extended" },
-                { "Palette", Options.CurrentPalette == SelectablePalette.SaturatedPalette ? "Saturated" : "Standard" }
+                { "Palette", Options.CurrentPalette == SelectablePalette.SaturatedPalette ? "Saturated" : "Standard" },
+                { "FullScreen", Options.IsFullScreen.ToString() },
+                { "FirstRun", "false"},
             };
 
             var json = JsonConvert.SerializeObject(data);

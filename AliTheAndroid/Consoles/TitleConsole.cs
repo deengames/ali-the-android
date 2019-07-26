@@ -154,10 +154,10 @@ namespace DeenGames.AliTheAndroid.Consoles
                     Options.DisplayOldStyleAsciiCharacters = true;
                 }
 
-                if (!data.ContainsKey("firstRun") || data["firstRun"] == "true")
+                if (!data.ContainsKey("FirstRun") || data["FirstRun"] == "true")
                 {
-                    data["firstRun"] = "false";
-                    data["fullScreen"] = "true";
+                    data["FirstRun"] = "false";
+                    data["FullScreen"] = "true";
                     this.DoFirstRunStuff();
 
                     // Re-save
