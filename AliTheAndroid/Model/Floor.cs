@@ -567,6 +567,15 @@ namespace DeenGames.AliTheAndroid.Model
                 this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.'";
                 this.DataCube = null;
             }
+
+            if (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)
+            {
+                this.LatestMessage = "Press > to descend to the next floor.";
+            }
+            else if (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)
+            {
+                this.LatestMessage = "Press < to ascend to the previous floor.";
+            }
         }
 
         internal void CreateExplosion(int centerX, int centerY) {
