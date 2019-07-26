@@ -196,7 +196,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void StartNewGame()
         {
-            var message = $"Generating dungeon {this.gameSeed}!";
+            var message = $"Generating game #{this.gameSeed}.";
 
             var x = (this.Width - message.Length) / 2;
             this.Print(x, this.MenuY - 2, message, Palette.White);
