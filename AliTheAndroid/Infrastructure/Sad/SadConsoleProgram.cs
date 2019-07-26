@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using Ninject;
 using SadConsole;
 using System;
+using System.Reflection;
 
 namespace DeenGames.AliTheAndroid.Infrastructure.Sad
 {
@@ -58,7 +59,8 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
             // Any setup
             SadConsole.Game.Instance.Components.Add(new SadConsole.Game.FPSCounterComponent(SadConsole.Game.Instance));
 
-            SadConsole.Game.Instance.Window.Title = "DemoProject OpenGL";
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            SadConsole.Game.Instance.Window.Title = $"Ali the Android v{version.Major}.{version.Minor}.{version.Build}";
 
             // By default SadConsole adds a blank ready-to-go console to the rendering system. 
             // We don't want to use that for the sample project so we'll remove it.
