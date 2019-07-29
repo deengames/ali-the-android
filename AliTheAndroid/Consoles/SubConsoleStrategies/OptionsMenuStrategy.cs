@@ -48,7 +48,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             this.PrintOption(target, 2, 5, "[2] Colour palette", Options.CurrentPalette == SelectablePalette.StandardPalette, "Standard", "Saturated");
             this.PrintOption(target, 2, 6, "[3] Display mode", Options.IsFullScreen, "Fullscreen", "Windowed");
 
-            target.Print(2, this.Height - 3, "Press number keys to toggle options", Palette.OffWhite);
+            target.Print(2, this.Height - 3, "Number keys to toggle options, ESC to close", Palette.OffWhite);
         }
 
         private void PrintOption(SadConsole.Console target, int x, int y, string caption, bool isEnabled, string onLabel, string offLabel)
