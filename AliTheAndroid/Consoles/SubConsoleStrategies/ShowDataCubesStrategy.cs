@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model.Entities;
@@ -40,7 +41,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             {
                 if (this.cubeShown == null)
                 {
-                    if (keyboard.IsKeyPressed(Key.Escape))
+                    if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                     {
                         EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(TopLevelMenuStrategy));
                     }
@@ -61,7 +62,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 }
                 else
                 {
-                    if (keyboard.IsKeyPressed(Key.Escape))
+                    if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                     {
                         this.cubeShown = null;
                     }

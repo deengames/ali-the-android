@@ -95,7 +95,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                     this.ShowOptions();
                 }
 
-                if (this.keyboard.IsKeyPressed(Key.Up) || this.keyboard.IsKeyPressed(Key.W))
+                if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveUp]))
                 {
                     this.currentItemIndex -= 1;
                     if (this.currentItemIndex == -1) {
@@ -104,13 +104,13 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                     this.DrawMenu();
                 }
-                else if (this.keyboard.IsKeyPressed(Key.Down) || this.keyboard.IsKeyPressed(Key.S))
+                else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveDown]))
                 {
                     this.currentItemIndex = (this.currentItemIndex + 1) % Enum.GetValues(typeof(MenuItem)).Length;
                     this.DrawMenu();
                 }
 
-                if (this.keyboard.IsKeyPressed(Key.Space) || this.keyboard.IsKeyPressed(Key.Enter))
+                if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SkipTurn]))
                 {
                     switch (this.CurrentItem) {
                         case MenuItem.NewGame:

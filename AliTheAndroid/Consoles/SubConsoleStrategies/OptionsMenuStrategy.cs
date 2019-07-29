@@ -95,7 +95,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     Options.EffectsDelayMultiplier = Math.Max(1, (Options.EffectsDelayMultiplier + 1) % (Options.MaxEffectsDelayMultiplier + 1));
                     this.SaveToDisk();
                 }
-                if (keyboard.IsKeyPressed(Key.Escape))
+                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                 {
                     this.SaveToDisk();
                     if (this.onCloseCallback != null)

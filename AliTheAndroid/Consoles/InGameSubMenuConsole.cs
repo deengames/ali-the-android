@@ -1,4 +1,5 @@
 using System;
+using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
@@ -38,7 +39,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             if (this.ShouldProcessInput())
             {
-                if (this.currentStrategy is TopLevelMenuStrategy && this.keyboard.IsKeyPressed(Key.Escape))
+                if (this.currentStrategy is TopLevelMenuStrategy && this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                 {
                     EventBus.Instance.Broadcast(GameEvent.HideSubMenu, this);
                 }

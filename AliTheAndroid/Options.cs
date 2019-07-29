@@ -1,4 +1,6 @@
-using DeenGames.AliTheAndroid.Accessibility.Colour;
+using System.Collections.Generic;
+using DeenGames.AliTheAndroid.Accessibility;
+using DeenGames.AliTheAndroid.Infrastructure.Common;
 
 namespace DeenGames.AliTheAndroid
 {
@@ -11,6 +13,28 @@ namespace DeenGames.AliTheAndroid
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
         public static bool IsFullScreen = false;
         public static int EffectsDelayMultiplier = 1;
+        public static Dictionary<ConfigurableControl, Key> KeyBindings = new Dictionary<ConfigurableControl, Key>()
+        {
+            { ConfigurableControl.MoveUp, Key.W },
+            { ConfigurableControl.MoveLeft, Key.A },
+            { ConfigurableControl.MoveDown, Key.S },
+            { ConfigurableControl.MoveRight, Key.D },
+            { ConfigurableControl.TurnCounterClockWise, Key.Q },
+            { ConfigurableControl.TurnClockWise, Key.E },
+            { ConfigurableControl.Fire, Key.F },
+
+            { ConfigurableControl.SelectBlaster, Key.NumPad1 },
+            { ConfigurableControl.SelectMiniMissile, Key.NumPad2 },
+            { ConfigurableControl.SelectZapper, Key.NumPad3 },
+            { ConfigurableControl.SelectGravityCannon, Key.NumPad4 },
+            { ConfigurableControl.SelectPlasmaCannon, Key.NumPad5 },
+            { ConfigurableControl.SelectTeleporter, Key.T },
+
+            { ConfigurableControl.DescendStairs, Key.OemPeriod },
+            { ConfigurableControl.AscendStairs, Key.OemComma },
+            { ConfigurableControl.OpenMenu, Key.Escape },
+            { ConfigurableControl.SkipTurn, Key.Space },
+        };
 
         // Constants
         public const bool ShowFakeWalls = true; // Should always be true
