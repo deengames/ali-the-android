@@ -47,6 +47,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             this.PrintOption(target, 2, 4, "[1] Display characters", Options.DisplayOldStyleAsciiCharacters, "ASCII", "Extended");
             this.PrintOption(target, 2, 5, "[2] Colour palette", Options.CurrentPalette == SelectablePalette.StandardPalette, "Standard", "Saturated");
             this.PrintOption(target, 2, 6, "[3] Display mode", Options.IsFullScreen, "Fullscreen", "Windowed");
+            target.Print(2, 7, $"[4] Effects display time: {Options.EffectsDelayMultiplier}x", Palette.Blue);
 
             target.Print(2, this.Height - 3, "Number keys to toggle options, ESC to close", Palette.OffWhite);
         }
@@ -89,6 +90,11 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     SadConsole.Settings.ToggleFullScreen();
                     this.SaveToDisk();
                 }
+                if (keyboard.IsKeyPressed(Key.NumPad4))
+                {
+                    Options.EffectsDelayMultiplier = Math.Max(1, (Options.EffectsDelayMultiplier + 1) % (Options.MaxEffectsDelayMultiplier + 1));
+                    this.SaveToDisk();
+                }
                 if (keyboard.IsKeyPressed(Key.Escape))
                 {
                     this.SaveToDisk();
@@ -111,6 +117,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 { "Display", Options.DisplayOldStyleAsciiCharacters ? "ASCII" : "Extended" },
                 { "Palette", Options.CurrentPalette == SelectablePalette.SaturatedPalette ? "Saturated" : "Standard" },
                 { "FullScreen", Options.IsFullScreen.ToString() },
+                { "EffectsDisplayMultiplier", Options.EffectsDelayMultiplier.ToString() },
                 { "FirstRun", "false"},
             };
 

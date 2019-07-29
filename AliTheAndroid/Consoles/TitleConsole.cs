@@ -154,6 +154,16 @@ namespace DeenGames.AliTheAndroid.Consoles
                     Options.DisplayOldStyleAsciiCharacters = true;
                 }
 
+                Options.EffectsDelayMultiplier = 1;
+                if (data.ContainsKey("EffectsDisplayMultiplier"))
+                {
+                    int parsedValue;
+                    if (int.TryParse(data["EffectsDisplayMultiplier"], out parsedValue) && parsedValue >= 1 && parsedValue <= 4)
+                    {
+                        Options.EffectsDelayMultiplier = parsedValue;
+                    }
+                }
+
                 if (!data.ContainsKey("FirstRun") || data["FirstRun"] == "true")
                 {
                     data["FirstRun"] = "false";

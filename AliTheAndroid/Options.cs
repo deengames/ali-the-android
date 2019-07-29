@@ -10,7 +10,7 @@ namespace DeenGames.AliTheAndroid
         public static bool DisplayOldStyleAsciiCharacters = false;
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
         public static bool IsFullScreen = false;
-        public static float EffectsDelayMultiplier = 1.0f;
+        public static int EffectsDelayMultiplier = 1;
 
         // Constants
         public const bool ShowFakeWalls = true; // Should always be true
@@ -20,5 +20,6 @@ namespace DeenGames.AliTheAndroid
         public const bool EnableOmniSight = false;
         public const bool CanUseStairsFromAnywhere = false;
         public const bool PlayerStartsWithAllDataCubes = false;
+        internal const int MaxEffectsDelayMultiplier = 4; // 4x
     }
 }
