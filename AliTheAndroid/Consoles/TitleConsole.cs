@@ -175,6 +175,8 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             SadConsole.Settings.ToggleFullScreen();                    
             Options.IsFullScreen = true;
+
+            this.ShowOptions();
         }
 
         private void DrawTitleText()
