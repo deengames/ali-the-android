@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using DeenGames.AliTheAndroid.Enums;
 using Microsoft.Xna.Framework;
 
-namespace DeenGames.AliTheAndroid.Accessibility.Colour
+namespace DeenGames.AliTheAndroid.Accessibility
 {
     public class SelectablePalette
     {
