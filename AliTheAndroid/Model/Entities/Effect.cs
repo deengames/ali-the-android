@@ -17,7 +17,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public Effect(int x, int y, char character, Color color, int tickEveryMs) : base(x, y, character, color)
         {
-            this.tickEveryMilliseconds = tickEveryMs;
+            this.tickEveryMilliseconds = (int)(tickEveryMs * Options.EffectsDelayMultiplier);
         }
 
         // Returns true if we updated
@@ -52,6 +52,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.Direction = direction;
             this.isMovableCheck = isMovable;
             this.createdOnTile = new GoRogue.Coord(x, y);
+            // Shots don't get delayed by setting effects to 2x slowness or whatever
+            this.tickEveryMilliseconds = (int)(this.tickEveryMilliseconds / Options.EffectsDelayMultiplier);
         }
 
         override internal void OnAction()

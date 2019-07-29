@@ -10,6 +10,7 @@ namespace DeenGames.AliTheAndroid
         public static bool DisplayOldStyleAsciiCharacters = false;
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
         public static bool IsFullScreen = false;
+        public static float EffectsDelayMultiplier = 1.0f;
 
         // Constants
         public const bool ShowFakeWalls = true; // Should always be true
