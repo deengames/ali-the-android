@@ -23,6 +23,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         // This class operates in two modes: when called from the main menu, and when called from the in-game menu.
         // For the main menu, this value is non-null. The choice of state also changes how we draw stuff.
         private Action onCloseCallback;
+        private KeyBindingsStrategy keyBindingsConsole = null;
 
 
         // Used by in-game menu
@@ -40,16 +41,84 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         public void Draw(SadConsole.Console console)
         {
             var target = this.onCloseCallback != null ? this : console;
-
             target.DrawBox(new Microsoft.Xna.Framework.Rectangle(0, 0, this.Width, this.Height), BorderCell, BackgroundCell);
-            target.Print(2, 2, "Options", Palette.OffWhite);
 
-            this.PrintOption(target, 2, 4, "[1] Display characters", Options.DisplayOldStyleAsciiCharacters, "ASCII", "Extended");
-            this.PrintOption(target, 2, 5, "[2] Colour palette", Options.CurrentPalette == SelectablePalette.StandardPalette, "Standard", "Saturated");
-            this.PrintOption(target, 2, 6, "[3] Display mode", Options.IsFullScreen, "Fullscreen", "Windowed");
-            target.Print(2, 7, $"[4] Effects display time: {Options.EffectsDelayMultiplier}x", Palette.Blue);
+            if (keyBindingsConsole != null)
+            {
+                keyBindingsConsole.Draw(target);
+            }
+            else
+            {
+                target.Print(2, 2, "Options", Palette.OffWhite);
 
-            target.Print(2, this.Height - 3, "Number keys to toggle options, ESC to close", Palette.OffWhite);
+                this.PrintOption(target, 2, 4, "[1] Display characters", Options.DisplayOldStyleAsciiCharacters, "ASCII", "Extended");
+                this.PrintOption(target, 2, 5, "[2] Colour palette", Options.CurrentPalette == SelectablePalette.StandardPalette, "Standard", "Saturated");
+                this.PrintOption(target, 2, 6, "[3] Display mode", Options.IsFullScreen, "Fullscreen", "Windowed");
+                target.Print(2, 7, $"[4] Effects display time: {Options.EffectsDelayMultiplier}x", Palette.Blue);
+                target.Print(2, 8, $"[5] View or change key bindings", Palette.Blue);
+
+                target.Print(2, this.Height - 3, $"Number keys to toggle options, {Options.KeyBindings[ConfigurableControl.OpenMenu]} to close", Palette.OffWhite);
+            }
+        }
+
+        public void ProcessInput(IKeyboard keyboard)
+        {
+            if (this.keyBindingsConsole != null)
+            {
+                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                {
+                    this.keyBindingsConsole = null;
+                }
+                else
+                {
+                    this.keyBindingsConsole.ProcessInput(keyboard);
+                }
+            }
+            else
+            {
+                if (this.ShouldProcessInput())
+                {
+                    // TODO: process space/enter
+                    if (keyboard.IsKeyPressed(Key.NumPad1))
+                    {
+                        Options.DisplayOldStyleAsciiCharacters = !Options.DisplayOldStyleAsciiCharacters;
+                        this.SaveOptionsToDisk();
+                    }
+                    if (keyboard.IsKeyPressed(Key.NumPad2))
+                    {
+                        Options.CurrentPalette = (Options.CurrentPalette == SelectablePalette.StandardPalette ? SelectablePalette.SaturatedPalette : SelectablePalette.StandardPalette);
+                        this.SaveOptionsToDisk();
+                        Entity.ResetPalette(); // rebuild map of monster name => colour
+                    }
+                    if (keyboard.IsKeyPressed(Key.NumPad3))
+                    {
+                        Options.IsFullScreen = !Options.IsFullScreen;
+                        SadConsole.Settings.ToggleFullScreen();
+                        this.SaveOptionsToDisk();
+                    }
+                    if (keyboard.IsKeyPressed(Key.NumPad4))
+                    {
+                        Options.EffectsDelayMultiplier = Math.Max(1, (Options.EffectsDelayMultiplier + 1) % (Options.MaxEffectsDelayMultiplier + 1));
+                        this.SaveOptionsToDisk();
+                    }
+                    if (keyboard.IsKeyPressed(Key.NumPad5))
+                    {
+                        this.keyBindingsConsole = new KeyBindingsStrategy();
+                    }
+                    if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                    {
+                        this.SaveOptionsToDisk();
+                        if (this.onCloseCallback != null)
+                        {
+                            this.onCloseCallback();
+                        }
+                        else
+                        {
+                            EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(TopLevelMenuStrategy));
+                        }
+                    }
+                }
+            }
         }
 
         private void PrintOption(SadConsole.Console target, int x, int y, string caption, bool isEnabled, string onLabel, string offLabel)
@@ -68,49 +137,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             }
         }
 
-        public void ProcessInput(IKeyboard keyboard)
-        {
-            if (this.ShouldProcessInput())
-            {
-                // TODO: process space/enter
-                if (keyboard.IsKeyPressed(Key.NumPad1))
-                {
-                    Options.DisplayOldStyleAsciiCharacters = !Options.DisplayOldStyleAsciiCharacters;
-                    this.SaveToDisk();
-                }
-                if (keyboard.IsKeyPressed(Key.NumPad2))
-                {
-                    Options.CurrentPalette = (Options.CurrentPalette == SelectablePalette.StandardPalette ? SelectablePalette.SaturatedPalette : SelectablePalette.StandardPalette);
-                    this.SaveToDisk();
-                    Entity.ResetPalette(); // rebuild map of monster name => colour
-                }
-                if (keyboard.IsKeyPressed(Key.NumPad3))
-                {
-                    Options.IsFullScreen = !Options.IsFullScreen;
-                    SadConsole.Settings.ToggleFullScreen();
-                    this.SaveToDisk();
-                }
-                if (keyboard.IsKeyPressed(Key.NumPad4))
-                {
-                    Options.EffectsDelayMultiplier = Math.Max(1, (Options.EffectsDelayMultiplier + 1) % (Options.MaxEffectsDelayMultiplier + 1));
-                    this.SaveToDisk();
-                }
-                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
-                {
-                    this.SaveToDisk();
-                    if (this.onCloseCallback != null)
-                    {
-                        this.onCloseCallback();
-                    }
-                    else
-                    {
-                        EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(TopLevelMenuStrategy));
-                    }
-                }
-            }
-        }
-
-        private void SaveToDisk()
+        private void SaveOptionsToDisk()
         {
             var data = new Dictionary<string, string>() {
                 // Strings are replicated in TitleConsole.cs
