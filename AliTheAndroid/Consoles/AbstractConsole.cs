@@ -8,7 +8,7 @@ namespace DeenGames.AliTheAndroid.Consoles
     public abstract class AbstractConsole : SadConsole.Console
     {
         internal const int DisplayWidth = 52;
-        internal const int DisplayHeight = 28;
+        internal const int DisplayHeight = 23;
 
         // Press escape. It spawns and despawns a menu really fast. keyboard.Clear() isn't enough.
         // So, wait for a limited amount of time, after spawning, before we allow despawning.
