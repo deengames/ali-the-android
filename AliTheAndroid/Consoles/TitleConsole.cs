@@ -25,7 +25,8 @@ namespace DeenGames.AliTheAndroid.Consoles
         private ReadOnlyCollection<string> tips = new ReadOnlyCollection<string>(new string[] {
             "View your most recent game run details on disk in LastGame.txt.",
             "You can switch to oldstyle ASCII graphics mode in Options.",
-            "You can change object colours to a high-saturation palette in Options."
+            "You can change object colours to a high-saturation palette in Options.",
+            "You can rebind keys for all in-game actions (minus menus) in Options.",
         });
 
         private readonly string[] titleText = new string[] {
