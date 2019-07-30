@@ -118,6 +118,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 { "Palette", Options.CurrentPalette == SelectablePalette.SaturatedPalette ? "Saturated" : "Standard" },
                 { "FullScreen", Options.IsFullScreen.ToString() },
                 { "EffectsDisplayMultiplier", Options.EffectsDelayMultiplier.ToString() },
+                { "KeyBindings", JsonConvert.SerializeObject(Options.KeyBindings) },
                 { "FirstRun", "false"},
             };
 
