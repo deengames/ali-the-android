@@ -167,7 +167,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (data.ContainsKey("KeyBindings"))
                 {
-                    Options.KeyBindings = JsonConvert.DeserializeObject<Dictionary<ConfigurableControl, Key>>(data["KeyBindings"]);
+                    Options.KeyBindings = JsonConvert.DeserializeObject<SortedDictionary<ConfigurableControl, Key>>(data["KeyBindings"]);
                 }
 
                 if (!data.ContainsKey("FirstRun") || data["FirstRun"] == "true")

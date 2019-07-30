@@ -13,7 +13,8 @@ namespace DeenGames.AliTheAndroid
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
         public static bool IsFullScreen = false;
         public static int EffectsDelayMultiplier = 1;
-        public static Dictionary<ConfigurableControl, Key> KeyBindings = new Dictionary<ConfigurableControl, Key>()
+        // Sorted because the order matters when we display it for key-rebinding
+        public static SortedDictionary<ConfigurableControl, Key> KeyBindings = new SortedDictionary<ConfigurableControl, Key>()
         {
             { ConfigurableControl.MoveUp, Key.W },
             { ConfigurableControl.MoveLeft, Key.A },
