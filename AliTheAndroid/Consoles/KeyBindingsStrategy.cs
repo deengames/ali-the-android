@@ -19,6 +19,8 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         private readonly SadConsole.Cell BackgroundCell = new SadConsole.Cell(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
         private int selectedIndex = 0;
         private List<ConfigurableControl> controls = new List<ConfigurableControl>();
+        // State within a state within a state... are we changing a key?
+        private bool isBindingKey = false;
 
         public KeyBindingsStrategy()
         {
@@ -33,8 +35,6 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
         public void Draw(SadConsole.Console console)
         {
-            console.Print(2, 2, $"{Options.KeyBindings[ConfigurableControl.MoveUp]}/{Options.KeyBindings[ConfigurableControl.MoveDown]} to move, {Options.KeyBindings[ConfigurableControl.SkipTurn]} to rebind, {Options.KeyBindings[ConfigurableControl.OpenMenu]} to go back", Palette.OffWhite);
-
             var nextY = 4;
             foreach (var value in Enum.GetValues(typeof(ConfigurableControl)))
             {
@@ -42,23 +42,59 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 this.PrintBinding(console, control, Options.KeyBindings[control], nextY);
                 nextY++;
             }
+
+            if (isBindingKey)
+            {
+                this.DrawBox(new Rectangle(1, 1, this.Width - 2, 3), BackgroundCell, BackgroundCell);
+                var currentKey = this.controls[this.selectedIndex];
+                console.Print(2, 2, $"Rebinding ", SelectedColour);
+                console.Print(2 + "Rebinding".Length + 1, 2, currentKey.ToString(), SelectedValueColour);
+                console.Print(2 + "Rebinding".Length + currentKey.ToString().Length + 1, 2, $" => {Options.KeyBindings[currentKey]}", SelectedColour);
+                console.Print(2, 3, $"Press key or {Options.KeyBindings[ConfigurableControl.OpenMenu]} to cancel", SelectedColour);
+            }
+            else
+            {
+                console.Print(2, 2, $"{Options.KeyBindings[ConfigurableControl.MoveUp]}/{Options.KeyBindings[ConfigurableControl.MoveDown]} to move, {Options.KeyBindings[ConfigurableControl.SkipTurn]} to rebind, {Options.KeyBindings[ConfigurableControl.OpenMenu]} to go back", Palette.OffWhite);
+            }
         }
 
         internal void ProcessInput(IKeyboard keyboard)
         {
-            if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveUp]))
+            if (isBindingKey)
             {
-                this.selectedIndex--;
-                if (this.selectedIndex == -1)
+                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                 {
-                    this.selectedIndex = this.controls.Count - 1;
+                    this.isBindingKey = false;
+                    // Don't allow the parent (keybindings console) to abort back to the options menu
+                    keyboard.Clear();
                 }
             }
-            if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveDown]))
+            else
             {
-                this.selectedIndex = (this.selectedIndex + 1) % this.controls.Count;
+                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveUp]))
+                {
+                    this.selectedIndex--;
+                    if (this.selectedIndex == -1)
+                    {
+                        this.selectedIndex = this.controls.Count - 1;
+                    }
+                }
+                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveDown]))
+                {
+                    this.selectedIndex = (this.selectedIndex + 1) % this.controls.Count;
+                }
+                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SkipTurn]))
+                {
+                    this.isBindingKey = true;
+                }
             }
         }
+
+        internal void StopBinding()
+        {
+            this.isBindingKey = false;
+        }
+
 
         private void PrintBinding(SadConsole.Console console, ConfigurableControl control, Key boundKey, int y)
         {

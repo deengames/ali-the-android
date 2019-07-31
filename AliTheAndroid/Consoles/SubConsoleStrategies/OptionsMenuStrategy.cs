@@ -67,7 +67,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             {
                 if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                 {
-                    this.keyBindingsConsole = null;
+                    this.keyBindingsConsole.StopBinding();
                 }
                 else
                 {
@@ -76,7 +76,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             }
             else
             {
-                if (this.ShouldProcessInput())
+                if (this.ShouldProcessInput() && this.keyBindingsConsole == null)
                 {
                     // TODO: process space/enter
                     if (keyboard.IsKeyPressed(Key.NumPad1))
