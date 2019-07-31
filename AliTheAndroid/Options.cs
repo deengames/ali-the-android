@@ -31,8 +31,8 @@ namespace DeenGames.AliTheAndroid
             { ConfigurableControl.SelectPlasmaCannon, Key.NumPad5 },
             { ConfigurableControl.SelectTeleporter, Key.T },
 
-            { ConfigurableControl.DescendStairs, Key.OemPeriod },
-            { ConfigurableControl.AscendStairs, Key.OemComma },
+            { ConfigurableControl.DescendStairs, Key.X },
+            { ConfigurableControl.AscendStairs, Key.Z },
             { ConfigurableControl.OpenMenu, Key.Escape },
             { ConfigurableControl.SkipTurn, Key.Space },
         };
