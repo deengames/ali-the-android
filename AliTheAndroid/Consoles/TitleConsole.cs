@@ -96,7 +96,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                     this.ShowOptions();
                 }
 
-                if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveUp]))
+                if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveUp]))
                 {
                     this.currentItemIndex -= 1;
                     if (this.currentItemIndex == -1) {
@@ -105,13 +105,13 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                     this.DrawMenu();
                 }
-                else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveDown]))
+                else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveDown]))
                 {
                     this.currentItemIndex = (this.currentItemIndex + 1) % Enum.GetValues(typeof(MenuItem)).Length;
                     this.DrawMenu();
                 }
 
-                if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SkipTurn]))
+                if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SkipTurn]))
                 {
                     switch (this.CurrentItem) {
                         case MenuItem.NewGame:
@@ -167,7 +167,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (data.ContainsKey("KeyBindings"))
                 {
-                    Options.KeyBindings = JsonConvert.DeserializeObject<SortedDictionary<ConfigurableControl, Key>>(data["KeyBindings"]);
+                    Options.KeyBindings = JsonConvert.DeserializeObject<SortedDictionary<GameAction, Key>>(data["KeyBindings"]);
                 }
 
                 if (!data.ContainsKey("FirstRun") || data["FirstRun"] == "true")

@@ -39,7 +39,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             if (this.ShouldProcessInput())
             {
-                if (this.currentStrategy is TopLevelMenuStrategy && this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                if (this.currentStrategy is TopLevelMenuStrategy && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
                     EventBus.Instance.Broadcast(GameEvent.HideSubMenu, this);
                 }

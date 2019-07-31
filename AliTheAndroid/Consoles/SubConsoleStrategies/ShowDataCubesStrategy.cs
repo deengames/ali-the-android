@@ -32,7 +32,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 this.ShowSelectedCube(console);
             }
 
-            console.Print(2, console.Height - 4, "[ESC] Go back", Palette.White);
+            console.Print(2, console.Height - 4, $"[{Options.KeyBindings[GameAction.OpenMenu]}] Go back", Palette.White);
         }
 
         public void ProcessInput(IKeyboard keyboard)
@@ -41,7 +41,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             {
                 if (this.cubeShown == null)
                 {
-                    if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                    if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                     {
                         EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(TopLevelMenuStrategy));
                     }
@@ -62,7 +62,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 }
                 else
                 {
-                    if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                    if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                     {
                         this.cubeShown = null;
                     }

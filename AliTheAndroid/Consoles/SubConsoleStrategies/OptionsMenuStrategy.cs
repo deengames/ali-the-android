@@ -57,7 +57,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 target.Print(2, 7, $"[4] Effects display time: {Options.EffectsDelayMultiplier}x", Palette.Blue);
                 target.Print(2, 8, $"[5] View or change key bindings", Palette.Blue);
 
-                target.Print(2, this.Height - 3, $"Number keys to toggle options, {Options.KeyBindings[ConfigurableControl.OpenMenu]} to close", Palette.OffWhite);
+                target.Print(2, this.Height - 3, $"Number keys to toggle options, {Options.KeyBindings[GameAction.OpenMenu]} to close", Palette.OffWhite);
             }
         }
 
@@ -65,7 +65,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         {
             if (this.keyBindingsConsole != null)
             {
-                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
                     if (this.keyBindingsConsole.IsBindingKey)
                     {
@@ -113,7 +113,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     {
                         this.keyBindingsConsole = new KeyBindingsStrategy();
                     }
-                    if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                    if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                     {
                         this.SaveOptionsToDisk();
                         if (this.onCloseCallback != null)

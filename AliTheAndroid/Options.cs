@@ -14,27 +14,27 @@ namespace DeenGames.AliTheAndroid
         public static bool IsFullScreen = false;
         public static int EffectsDelayMultiplier = 1;
         // Sorted because the order matters when we display it for key-rebinding
-        public static SortedDictionary<ConfigurableControl, Key> KeyBindings = new SortedDictionary<ConfigurableControl, Key>()
+        public static SortedDictionary<GameAction, Key> KeyBindings = new SortedDictionary<GameAction, Key>()
         {
-            { ConfigurableControl.MoveUp, Key.W },
-            { ConfigurableControl.MoveLeft, Key.A },
-            { ConfigurableControl.MoveDown, Key.S },
-            { ConfigurableControl.MoveRight, Key.D },
-            { ConfigurableControl.TurnCounterClockWise, Key.Q },
-            { ConfigurableControl.TurnClockWise, Key.E },
-            { ConfigurableControl.Fire, Key.F },
+            { GameAction.MoveUp, Key.W },
+            { GameAction.MoveLeft, Key.A },
+            { GameAction.MoveDown, Key.S },
+            { GameAction.MoveRight, Key.D },
+            { GameAction.TurnCounterClockWise, Key.Q },
+            { GameAction.TurnClockWise, Key.E },
+            { GameAction.Fire, Key.F },
 
-            { ConfigurableControl.SelectBlaster, Key.NumPad1 },
-            { ConfigurableControl.SelectMiniMissile, Key.NumPad2 },
-            { ConfigurableControl.SelectZapper, Key.NumPad3 },
-            { ConfigurableControl.SelectGravityCannon, Key.NumPad4 },
-            { ConfigurableControl.SelectPlasmaCannon, Key.NumPad5 },
-            { ConfigurableControl.SelectTeleporter, Key.T },
+            { GameAction.SelectBlaster, Key.NumPad1 },
+            { GameAction.SelectMiniMissile, Key.NumPad2 },
+            { GameAction.SelectZapper, Key.NumPad3 },
+            { GameAction.SelectGravityCannon, Key.NumPad4 },
+            { GameAction.SelectPlasmaCannon, Key.NumPad5 },
+            { GameAction.SelectTeleporter, Key.T },
 
-            { ConfigurableControl.DescendStairs, Key.X },
-            { ConfigurableControl.AscendStairs, Key.Z },
-            { ConfigurableControl.OpenMenu, Key.Escape },
-            { ConfigurableControl.SkipTurn, Key.Space },
+            { GameAction.DescendStairs, Key.X },
+            { GameAction.AscendStairs, Key.Z },
+            { GameAction.OpenMenu, Key.Escape },
+            { GameAction.SkipTurn, Key.Space },
         };
 
         // Constants

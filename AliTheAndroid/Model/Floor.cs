@@ -1610,7 +1610,7 @@ namespace DeenGames.AliTheAndroid.Model
         private bool ProcessPlayerInput()
         {            
             if (Player.IsDead) {
-                if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
                     LastGameLogger.Instance.Log("Player quit!");
                     System.Environment.Exit(0);    
@@ -1630,7 +1630,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             var processedInput = false;
 
-            if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+            if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
             {
                 EventBus.Instance.Broadcast(GameEvent.ShowSubMenu);
             }
@@ -1638,62 +1638,62 @@ namespace DeenGames.AliTheAndroid.Model
             var destinationX = this.Player.X;
             var destinationY = this.Player.Y;
             
-            if ((this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveUp])))
+            if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveUp])))
             {
                 destinationY -= 1;
             }
-            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveDown])))
+            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveDown])))
             {
                 destinationY += 1;
             }
 
-            if ((this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveLeft])))
+            if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveLeft])))
             {
                 destinationX -= 1;
             }
-            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveRight])))
+            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveRight])))
             {
                 destinationX += 1;
             }
-            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.TurnCounterClockWise])))
+            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.TurnCounterClockWise])))
             {
                 Player.TurnCounterClockwise();
             }
-            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.TurnClockWise])))
+            else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.TurnClockWise])))
             {
                 Player.TurnClockwise();
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SelectBlaster]) && Player.Has(Weapon.Blaster))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectBlaster]) && Player.Has(Weapon.Blaster))
             {
                 Player.CurrentWeapon = Weapon.Blaster;
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SelectMiniMissile]) && Player.Has(Weapon.MiniMissile))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectMiniMissile]) && Player.Has(Weapon.MiniMissile))
             {
                 Player.CurrentWeapon = Weapon.MiniMissile;
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SelectZapper]) && Player.Has(Weapon.Zapper))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectZapper]) && Player.Has(Weapon.Zapper))
             {
                 Player.CurrentWeapon = Weapon.Zapper;
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SelectGravityCannon]) && Player.Has(Weapon.GravityCannon))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectGravityCannon]) && Player.Has(Weapon.GravityCannon))
             {
                 Player.CurrentWeapon = Weapon.GravityCannon;
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SelectPlasmaCannon]) && Player.Has(Weapon.PlasmaCannon))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectPlasmaCannon]) && Player.Has(Weapon.PlasmaCannon))
             {
                 Player.CurrentWeapon = Weapon.PlasmaCannon;
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SelectTeleporter]))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectTeleporter]))
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (this.floorNum < 9 && this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.DescendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
+            else if (this.floorNum < 9 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.DescendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
             {
                 Dungeon.Instance.GoToNextFloor();
                 destinationX = Player.X;
                 destinationY = Player.Y;
             }
-            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.AscendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
+            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.AscendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
             {
                 Dungeon.Instance.GoToPreviousFloor();
                 destinationX = Player.X;
@@ -1705,7 +1705,7 @@ namespace DeenGames.AliTheAndroid.Model
                 processedInput = true;
                 this.OnPlayerMoved();
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.Fire]) && (Player.CurrentWeapon != Weapon.GravityCannon || Player.CanFireGravityCannon))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.Fire]) && (Player.CurrentWeapon != Weapon.GravityCannon || Player.CanFireGravityCannon))
             {
                 // If gravity cannon wasn't fireable, but it's not equipped, make it fireable. This allows us to fire gravity/rocket/gravity/blaster/etc.
                 if (Player.CurrentWeapon != Weapon.GravityCannon && !Player.CanFireGravityCannon) {
@@ -1733,7 +1733,7 @@ namespace DeenGames.AliTheAndroid.Model
                 monster.Damage(damage, Weapon.Undefined);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SkipTurn]))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SkipTurn]))
             {
                 // Skip turn
                 processedInput = true;

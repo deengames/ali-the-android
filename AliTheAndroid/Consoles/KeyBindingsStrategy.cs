@@ -22,7 +22,7 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         internal bool IsBindingKey = false;
 
         private int selectedIndex = 0;
-        private List<ConfigurableControl> controls = new List<ConfigurableControl>();
+        private List<GameAction> controls = new List<GameAction>();
         // State within a state within a state... are we changing a key?
 
         public KeyBindingsStrategy()
@@ -39,9 +39,9 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         public void Draw(SadConsole.Console console)
         {
             var nextY = 4;
-            foreach (var value in Enum.GetValues(typeof(ConfigurableControl)))
+            foreach (var value in Enum.GetValues(typeof(GameAction)))
             {
-                var control = (ConfigurableControl)value;
+                var control = (GameAction)value;
                 this.PrintBinding(console, control, Options.KeyBindings[control], nextY);
                 nextY++;
             }
@@ -53,11 +53,11 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 console.Print(2, 2, $"Rebinding ", SelectedColour);
                 console.Print(2 + "Rebinding".Length + 1, 2, currentKey.ToString(), SelectedValueColour);
                 console.Print(2 + "Rebinding".Length + currentKey.ToString().Length + 1, 2, $" => {Options.KeyBindings[currentKey]}", SelectedColour);
-                console.Print(2, 3, $"Press key or {Options.KeyBindings[ConfigurableControl.OpenMenu]} to cancel", SelectedColour);
+                console.Print(2, 3, $"Press key or {Options.KeyBindings[GameAction.OpenMenu]} to cancel", SelectedColour);
             }
             else
             {
-                console.Print(2, 2, $"{Options.KeyBindings[ConfigurableControl.MoveUp]}/{Options.KeyBindings[ConfigurableControl.MoveDown]} to move, {Options.KeyBindings[ConfigurableControl.SkipTurn]} to rebind, {Options.KeyBindings[ConfigurableControl.OpenMenu]} to go back", Palette.OffWhite);
+                console.Print(2, 2, $"{Options.KeyBindings[GameAction.MoveUp]}/{Options.KeyBindings[GameAction.MoveDown]} to move, {Options.KeyBindings[GameAction.SkipTurn]} to rebind, {Options.KeyBindings[GameAction.OpenMenu]} to go back", Palette.OffWhite);
             }
         }
 
@@ -65,7 +65,7 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         {
             if (IsBindingKey)
             {
-                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
+                if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
                     this.IsBindingKey = false;
                     // Don't allow the parent (keybindings console) to abort back to the options menu
@@ -85,7 +85,7 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             }
             else
             {
-                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveUp]))
+                if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveUp]))
                 {
                     this.selectedIndex--;
                     if (this.selectedIndex == -1)
@@ -93,18 +93,18 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                         this.selectedIndex = this.controls.Count - 1;
                     }
                 }
-                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.MoveDown]))
+                if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveDown]))
                 {
                     this.selectedIndex = (this.selectedIndex + 1) % this.controls.Count;
                 }
-                if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SkipTurn]))
+                if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SkipTurn]))
                 {
                     this.IsBindingKey = true;
                 }
             }
         }
 
-        private void PrintBinding(SadConsole.Console console, ConfigurableControl control, Key boundKey, int y)
+        private void PrintBinding(SadConsole.Console console, GameAction control, Key boundKey, int y)
         {
             var selectedItem = this.controls[this.selectedIndex];
             var nameColour = control == selectedItem ? SelectedColour : UnselectedColour;

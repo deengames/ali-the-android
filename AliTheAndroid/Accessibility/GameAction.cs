@@ -1,7 +1,7 @@
 namespace DeenGames.AliTheAndroid.Accessibility
 {
     // A list of all configurable controls
-    public enum ConfigurableControl
+    public enum GameAction
     {
         MoveUp,
         MoveDown,
