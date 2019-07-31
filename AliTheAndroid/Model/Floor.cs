@@ -138,7 +138,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (Dungeon.Instance.CurrentFloorNum == this.floorNum && e == Player)
                 {
                     LastGameLogger.Instance.Log($"Player died!!!");
-                    this.LatestMessage = "YOU DIE!!! Press ESC to quit.";
+                    this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to quit.";
                     this.Player.Character = '%';
                     this.Player.Color = Palette.DarkBurgandyPurple;
                 }
@@ -571,11 +571,11 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)
             {
-                this.LatestMessage = "Press > to descend to the next floor.";
+                this.LatestMessage = $"Press {Options.KeyBindings[GameAction.DescendStairs]} to descend to the next floor.";
             }
             else if (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)
             {
-                this.LatestMessage = "Press < to ascend to the previous floor.";
+                this.LatestMessage = $"Press {Options.KeyBindings[GameAction.DescendStairs]} to ascend to the previous floor.";
             }
         }
 
@@ -1612,7 +1612,7 @@ namespace DeenGames.AliTheAndroid.Model
             if (Player.IsDead) {
                 if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
-                    LastGameLogger.Instance.Log("Player quit!");
+                    LastGameLogger.Instance.Log("Player died and quit!");
                     System.Environment.Exit(0);    
                 }
 
@@ -1742,22 +1742,31 @@ namespace DeenGames.AliTheAndroid.Model
             return processedInput;
         }
 
-        private Keys GetKeyFor(Weapon weapon)
+        private Key GetKeyFor(Weapon weapon)
         {
+            GameAction action;
+
             switch (weapon) {
                 case Weapon.MiniMissile:
-                    return Keys.NumPad2;
+                    action = GameAction.SelectMiniMissile;
+                    break;
                 case Weapon.Zapper:
-                    return Keys.NumPad3;
+                    action = GameAction.SelectZapper;
+                    break;
                 case Weapon.GravityCannon:
-                    return Keys.NumPad4;
+                    action = GameAction.SelectGravityCannon;
+                    break;
                 case Weapon.PlasmaCannon:
-                    return Keys.NumPad5;
+                    action = GameAction.SelectPlasmaCannon;
+                    break;
                 case Weapon.InstaTeleporter:
-                    return Keys.T;
+                    action = GameAction.SelectTeleporter;
+                    break;
                 default:
                     throw new ArgumentException($"Not sure what the key binding is for {weapon}");
             }
+
+            return Options.KeyBindings[action];
         }
 
         private void FireShot()

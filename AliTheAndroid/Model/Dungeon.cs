@@ -6,6 +6,7 @@ using Troschuetz.Random;
 using Troschuetz.Random.Generators;
 using DeenGames.AliTheAndroid.Loggers;
 using System.Diagnostics;
+using DeenGames.AliTheAndroid.Accessibility;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -67,7 +68,9 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             // Intro events/message
-            this.floors[0].LatestMessage = "You beam onto the deep-space research station. No lights or life-support.    Use the arrow keys or WASD to move. Press F to fire, Q and E to turn.";
+            var arrowKeys = $"{Options.KeyBindings[GameAction.MoveUp]}{Options.KeyBindings[GameAction.MoveLeft]}{Options.KeyBindings[GameAction.MoveDown]}{Options.KeyBindings[GameAction.MoveRight]}";
+            var rotateKeys = $"{Options.KeyBindings[GameAction.TurnCounterClockWise]} and {Options.KeyBindings[GameAction.TurnClockWise]}";
+            this.floors[0].LatestMessage = $"You beam onto the deep-space research station. No lights or life-support.    Use {arrowKeys} to move. Press {Options.KeyBindings[GameAction.Fire]} to fire, {rotateKeys} to turn.";
 
             stopwatch.Stop();
             LastGameLogger.Instance.Log($"Generated in {stopwatch.Elapsed.TotalSeconds}s");
