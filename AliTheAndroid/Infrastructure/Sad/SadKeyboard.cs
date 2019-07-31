@@ -29,5 +29,32 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
         {
             SadConsole.Global.KeyboardState.Clear();
         }
+
+        public IEnumerable<Key> GetKeysPressed()
+        {
+            // Convert AsciiKey to Key. Gets nulls for unmapped values, so filter those out.
+            // Requires converting from Key? to Key.
+            return SadConsole.Global.KeyboardState.KeysPressed.Select(s => AsciiKeyToCommonKey(s))
+                .Where(t => t.HasValue).Select(u => u.Value);
+        }
+
+        private static Key? AsciiKeyToCommonKey(AsciiKey key)
+        {
+            object toReturn = null;
+            // Simple characters like A/S/D/F
+            if (Enum.TryParse(typeof(Key), key.Character.ToString(), true, out toReturn))
+            {
+                return (Key)toReturn;
+            }
+            // Complex keys like . (OemPeriod)
+            else if (Enum.TryParse(typeof(Key), key.Key.ToString(), true, out toReturn))
+            {
+                return (Key)toReturn;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

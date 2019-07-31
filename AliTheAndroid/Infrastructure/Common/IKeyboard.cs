@@ -6,5 +6,6 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Common
     {
         bool IsKeyPressed(Key key);
         void Clear();
+        IEnumerable<Key> GetKeysPressed();
     }
 }

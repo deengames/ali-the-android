@@ -67,7 +67,15 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             {
                 if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                 {
-                    this.keyBindingsConsole.StopBinding();
+                    if (this.keyBindingsConsole.IsBindingKey)
+                    {
+                        this.keyBindingsConsole.IsBindingKey = false;
+                    }
+                    else
+                    {
+                        this.keyBindingsConsole = null;
+                        this.SaveOptionsToDisk();
+                    }
                 }
                 else
                 {

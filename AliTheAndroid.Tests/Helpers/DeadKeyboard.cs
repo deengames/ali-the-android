@@ -11,5 +11,10 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
         }
 
         public void Clear() { }
+
+        public IEnumerable<Key> GetKeysPressed()
+        {
+            return new Key[0];
+        }
     }
 }

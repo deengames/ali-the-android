@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Enums;
@@ -17,10 +18,12 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
         private readonly SadConsole.Cell BorderCell = new SadConsole.Cell(Palette.White, Palette.White, ' ');        
         private readonly SadConsole.Cell BackgroundCell = new SadConsole.Cell(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
+        
+        internal bool IsBindingKey = false;
+
         private int selectedIndex = 0;
         private List<ConfigurableControl> controls = new List<ConfigurableControl>();
         // State within a state within a state... are we changing a key?
-        private bool isBindingKey = false;
 
         public KeyBindingsStrategy()
         {
@@ -43,7 +46,7 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 nextY++;
             }
 
-            if (isBindingKey)
+            if (IsBindingKey)
             {
                 this.DrawBox(new Rectangle(1, 1, this.Width - 2, 3), BackgroundCell, BackgroundCell);
                 var currentKey = this.controls[this.selectedIndex];
@@ -60,13 +63,24 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
         internal void ProcessInput(IKeyboard keyboard)
         {
-            if (isBindingKey)
+            if (IsBindingKey)
             {
                 if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.OpenMenu]))
                 {
-                    this.isBindingKey = false;
+                    this.IsBindingKey = false;
                     // Don't allow the parent (keybindings console) to abort back to the options menu
                     keyboard.Clear();
+                }
+                else
+                {
+                    var keys = keyboard.GetKeysPressed();
+                    if (keys.Any())
+                    {
+                        // Rebind
+                        var selectedItem = this.controls[selectedIndex];
+                        Options.KeyBindings[selectedItem] = keys.First();
+                        this.IsBindingKey = false;
+                    }
                 }
             }
             else
@@ -85,16 +99,10 @@ namespace DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 }
                 if (keyboard.IsKeyPressed(Options.KeyBindings[ConfigurableControl.SkipTurn]))
                 {
-                    this.isBindingKey = true;
+                    this.IsBindingKey = true;
                 }
             }
         }
-
-        internal void StopBinding()
-        {
-            this.isBindingKey = false;
-        }
-
 
         private void PrintBinding(SadConsole.Console console, ConfigurableControl control, Key boundKey, int y)
         {
