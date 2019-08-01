@@ -7,7 +7,6 @@ using DeenGames.AliTheAndroid.Consoles;
 using GoRogue.MapViews;
 using GoRogue.Pathing;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Ninject;
 using System;
 using System.Collections.Generic;
@@ -15,6 +14,7 @@ using System.Linq;
 using Troschuetz.Random;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Accessibility;
+using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -109,21 +109,18 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        // TODO: variant on this with [JsonConstructor]
-        public Floor(int width, int height, int floorNum, IGenerator globalRandom)
+        // Used when deserializing a saved dungeon; stuff is already generated
+        [JsonConstructor]
+        public Floor(int width, int height, int floorNum)
         {
             this.width = width;
             this.height = height;
 
             this.floorNum = floorNum;
-            this.globalRandom = globalRandom;
+
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
-
-            Console.WriteLine($"Generating floor; w={this.width} and h={this.height}");
-            this.GenerateMap();
-            this.playerFieldOfView = new GoRogue.FOV(map);
 
             var eventBus = EventBus.Instance;
 
@@ -166,6 +163,17 @@ namespace DeenGames.AliTheAndroid.Model
                     this.Monsters.Add(Entity.CreateFromTemplate("Fuseling", position.X, position.Y));
                 }
             });
+        }
+
+        public Floor(int width, int height, int floorNum, IGenerator globalRandom)
+        : this(width, height, floorNum)
+        {
+            this.globalRandom = globalRandom;
+            
+            Console.WriteLine($"Generating floor; w={this.width} and h={this.height}");
+            this.GenerateMap();
+            
+            this.playerFieldOfView = new GoRogue.FOV(map);
         }
 
         public void Update(System.TimeSpan delta)
@@ -401,60 +409,52 @@ namespace DeenGames.AliTheAndroid.Model
             playerFieldOfView.Calculate(Player.X, Player.Y, Player.VisionRange);
         }
 
-        // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
-        // the player's choice. So we pass the list to each floor, and let each floor consume/update it appropriately.
-        // TODO: put this back in GenerateMap
         public void GeneratePowerUps()
         {
-            if (!this.GeneratedPowerUps)
+            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            if (floorsNearStairs.Count < 2)
             {
-                var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-                if (floorsNearStairs.Count < 2)
-                {
-                    // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
-                    var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
-                    var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
-                    var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
-                    var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
+                // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
+                var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
+                var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
+                var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
+                var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
 
-                    var moreTiles = this.GetAdjacentFloors(aboveStairs);
-                    moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
-                    moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
-                    moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
+                var moreTiles = this.GetAdjacentFloors(aboveStairs);
+                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
 
-                    floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-                }
+                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            }
 
-                // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
-                // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
-                var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
-                var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
+            // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
+            // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
+            var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
+            var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
 
-                // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
+            // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
 
-                for (var i = 0; i < locations.Count(); i++)
-                {
-                    var powerUp = powerUps[i];
-                    var location = locations[i];
+            for (var i = 0; i < locations.Count(); i++)
+            {
+                var powerUp = powerUps[i];
+                var location = locations[i];
 
-                    powerUp.X = location.X;
-                    powerUp.Y = location.Y;
+                powerUp.X = location.X;
+                powerUp.Y = location.Y;
 
-                    this.PowerUps.Add(powerUp);
-                }
+                this.PowerUps.Add(powerUp);
+            }
 
-                PowerUp.Pair(powerUps[0], powerUps[1]);
+            PowerUp.Pair(powerUps[0], powerUps[1]);
 
-                foreach (var powerUp in powerUps)
-                {
-                    powerUp.OnPickUp(() => {
-                        this.PowerUps.Remove(powerUp);
-                        this.PowerUps.Remove(powerUp);
-                        this.PowerUps.Remove(powerUp.PairedTo);
-                    });
-                }
-                
-                this.GeneratedPowerUps = true;
+            foreach (var powerUp in powerUps)
+            {
+                powerUp.OnPickUp(() => {
+                    this.PowerUps.Remove(powerUp);
+                    this.PowerUps.Remove(powerUp);
+                    this.PowerUps.Remove(powerUp.PairedTo);
+                });
             }
         }
 
