@@ -76,7 +76,6 @@ namespace DeenGames.AliTheAndroid.Model
 
         private string lastMessage = "";
         private IKeyboard keyboard;
-        private bool generatedPowerUps = false;
         private GoRogue.FOV playerFieldOfView;
 
         // 2 = B2
@@ -110,16 +109,19 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
+        // TODO: variant on this with [JsonConstructor]
         public Floor(int width, int height, int floorNum, IGenerator globalRandom)
         {
             this.width = width;
             this.height = height;
+
             this.floorNum = floorNum;
             this.globalRandom = globalRandom;
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
 
+            Console.WriteLine($"Generating floor; w={this.width} and h={this.height}");
             this.GenerateMap();
             this.playerFieldOfView = new GoRogue.FOV(map);
 
@@ -404,7 +406,7 @@ namespace DeenGames.AliTheAndroid.Model
         // TODO: put this back in GenerateMap
         public void GeneratePowerUps()
         {
-            if (!this.generatedPowerUps)
+            if (!this.GeneratedPowerUps)
             {
                 var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
                 if (floorsNearStairs.Count < 2)
@@ -452,7 +454,7 @@ namespace DeenGames.AliTheAndroid.Model
                     });
                 }
                 
-                this.generatedPowerUps = true;
+                this.GeneratedPowerUps = true;
             }
         }
 
