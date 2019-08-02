@@ -34,23 +34,28 @@ namespace DeenGames.AliTheAndroid.Model
             return JsonConvert.DeserializeObject<Dungeon>(serialized);
         }
 
-        public Dungeon(int widthInTiles, int heightInTiles, int? gameSeed = null)
+        [JsonConstructor]
+        public Dungeon(int width, int height)
         {
             Dungeon.Instance = this;
 
-            if (widthInTiles <= 0)
+            if (width <= 0)
             {
                 throw new ArgumentException("Dungeon width must be positive.");
             }
 
-            if (heightInTiles <= 0)
+            if (height <= 0)
             {
                 throw new ArgumentException("Dungeon height must be positive.");
             }
 
-            this.Width = widthInTiles;
-            this.Height = heightInTiles;
+            this.Width = width;
+            this.Height = height;
+        }
 
+        public Dungeon(int widthInTiles, int heightInTiles, int? gameSeed = null)
+        : this(widthInTiles, heightInTiles)
+        {
             if (!gameSeed.HasValue)
             {
                 gameSeed = new Random().Next();
