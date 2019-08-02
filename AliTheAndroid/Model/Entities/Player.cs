@@ -20,7 +20,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             { Weapon.PlasmaCannon,      "Super-heats the floor to damage anything in its wake." },
         };
 
-        private List<Weapon> weapons { get; } = new List<Weapon>() { Weapon.Blaster };
+        // Internal so we can deserialize it
+        internal List<Weapon> Weapons { get; } = new List<Weapon>() { Weapon.Blaster };
 
 
         public Player() : base("You", '@', Palette.White, 0, 0, 50, 7, 5, 4)
@@ -40,7 +41,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             {
                 foreach (var weapon in (Weapon[])Enum.GetValues(typeof(Weapon)))
                 {
-                    if (weapon != Weapon.Undefined && weapon != Weapon.QuantumPlasma && !weapons.Contains(weapon))
+                    if (weapon != Weapon.Undefined && weapon != Weapon.QuantumPlasma && !Weapons.Contains(weapon))
                     {
                         this.Acquire(weapon);
                     }
@@ -80,15 +81,15 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public bool Has(Weapon weapon)
         {
-            return this.weapons.Contains(weapon);
+            return this.Weapons.Contains(weapon);
         }
 
         public void Acquire(Weapon weapon)
         {
             LastGameLogger.Instance.Log($"Acquired weapon: {weapon}");
-            if (!this.weapons.Contains(weapon))
+            if (!this.Weapons.Contains(weapon))
             {
-                this.weapons.Add(weapon);
+                this.Weapons.Add(weapon);
             }
         }
 

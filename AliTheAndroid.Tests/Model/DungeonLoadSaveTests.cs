@@ -59,7 +59,35 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             this.AssertCollectionsEqual(expectedFloor.Monsters, actualFloor.Monsters);
             this.AssertCollectionsEqual(expectedFloor.PowerUps, actualFloor.PowerUps);
             this.AssertCollectionsEqual(expectedFloor.QuantumPlasma, actualFloor.QuantumPlasma);
+
+            // Singular entities, including the all-important player!
+            this.AssertPlayersEqual(expectedFloor.Player, actualFloor.Player);
             // stairs down/up, PLAYER, weapon pick-up, data cube, ship core
+        }
+
+        private void AssertPlayersEqual(Player p1, Player p2)
+        {
+            Assert.That((p1 == null && p2 == null) || (p1 != null && p2 != null));
+            if (p1 != null && p2 != null)
+            {
+                this.AssertBasicPropertiesEqual(p1, p2);
+                Assert.That(p1.CurrentHealth, Is.EqualTo(p2.CurrentHealth));
+                AssertCollectionsEqual(p1.DataCubes, p2.DataCubes);
+                Assert.That(p1.Defense, Is.EqualTo(p2.Defense));
+                Assert.That(p1.DirectionFacing, Is.EqualTo(p2.DirectionFacing));
+                Assert.That(p1.Strength, Is.EqualTo(p2.Strength));
+                Assert.That(p1.TotalHealth, Is.EqualTo(p2.TotalHealth));
+                Assert.That(p1.VisionRange, Is.EqualTo(p2.VisionRange));
+                Assert.That(p1.Weapons, Is.EqualTo(p2.Weapons));
+            }
+        }
+
+        private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)
+        {
+            Assert.That(e1.X, Is.EqualTo(e2.X));
+            Assert.That(e1.Y, Is.EqualTo(e2.Y));
+            Assert.That(e1.Character, Is.EqualTo(e2.Character));
+            Assert.That(e1.Color, Is.EqualTo(e2.Color));
         }
 
         private void AssertMapsAreEqual(ArrayMap<bool> expectedMap, ArrayMap<bool> actualMap)
