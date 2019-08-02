@@ -98,14 +98,17 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  this.SetGlyph(wall.X, wall.Y, wallCharacter, colour);
+                  this.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
                 }
             }
 
-            foreach (var chasm in this.dungeon.CurrentFloor.Chasms) {
-                if (this.dungeon.CurrentFloor.IsInPlayerFov(chasm.X, chasm.Y)) {
+            foreach (var chasm in this.dungeon.CurrentFloor.Chasms)
+            {
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(chasm.X, chasm.Y))
+                {
                     this.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color, Palette.DarkMutedBrown);
-                } else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y)) {
+                } else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y))
+                {
                     this.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
                 }
             }

@@ -62,6 +62,7 @@ namespace DeenGames.AliTheAndroid.Model
         internal IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
         private int floorNum = 0;
+        // width/height are only used during generation
         private int width = 0;
         private int height = 0;
         // Used for deterministic things like dungeon generation
@@ -170,7 +171,6 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.globalRandom = globalRandom;
             
-            Console.WriteLine($"Generating floor; w={this.width} and h={this.height}");
             this.GenerateMap();
             
             this.playerFieldOfView = new GoRogue.FOV(map);
@@ -373,7 +373,7 @@ namespace DeenGames.AliTheAndroid.Model
         
         public bool IsInPlayerFov(int x, int y)
         {
-            if (x < 0 || y < 0 || x >= this.width || y >= this.height)
+            if (x < 0 || y < 0 || x >= this.map.Width || y >= this.map.Height)
             {
                 return false; // Out of bounds = not visible
             }
