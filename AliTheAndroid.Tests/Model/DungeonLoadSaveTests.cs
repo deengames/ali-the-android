@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Entities;
@@ -21,6 +22,11 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             DependencyInjection.kernel.Bind<IKeyboard>().To<DeadKeyboard>();
             var expected = new Dungeon(80, 30, 2340234);
+            
+            var player = new Player();
+            expected.Floors[0].Player = player;
+            player.Acquire(Weapon.GravityCannon);
+            player.Acquire(Weapon.InstaTeleporter);
 
             var serialized = expected.Serialize();
             var actual = Dungeon.Deserialize(serialized);
