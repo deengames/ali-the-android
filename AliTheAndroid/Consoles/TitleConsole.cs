@@ -271,13 +271,16 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void LoadGame()
         {
-            var message = "Loadng game ...";
+            if (File.Exists(Serializer.SaveGameFileName))
+            {
+                var message = "Loading game ...";
 
-            var x = (this.Width - message.Length) / 2;
-            this.Print(x, this.MenuY - 2, message, Palette.White);
+                var x = (this.Width - message.Length) / 2;
+                this.Print(x, this.MenuY - 2, message, Palette.White);
 
-            this.loadGame = true;
-            this.launchedOn = DateTime.Now;
+                this.loadGame = true;
+                this.launchedOn = DateTime.Now;
+            }
         }
 
         private void ShowOptions()
