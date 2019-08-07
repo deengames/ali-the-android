@@ -78,8 +78,15 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         }
         
         [TestCase(0)]
-        [TestCase(5)] // Has power-ups, ya3ne, circular references in serialization
-        [TestCase(9)] // Has Al-Ameer, gotta make sure he serializes/deserializes properly
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        [TestCase(9)]
         public void SerializeAndDeserializeFloor(int floorNum)
         {
             var expected = new Floor(80, 30, floorNum);
@@ -98,7 +105,13 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             this.AssertCollectionsEqual(expected.Monsters, actual.Monsters);
             this.AssertCollectionsEqual(expected.PowerUps, actual.PowerUps);
             this.AssertCollectionsEqual(expected.QuantumPlasma, actual.QuantumPlasma);
-            // stairs down/up, PLAYER, weapon pick-up, data cube, ship core
+
+            // stairs down/up, weapon pick-up, data cube, ship core
+            Assert.That(expected.StairsDownLocation, Is.EqualTo(actual.StairsDownLocation));
+            Assert.That(expected.StairsUpLocation, Is.EqualTo(actual.StairsUpLocation));
+            Assert.That(expected.WeaponPickUp, Is.EqualTo(actual.WeaponPickUp));
+            Assert.That(expected.DataCube, Is.EqualTo(actual.DataCube));
+            Assert.That(expected.ShipCore, Is.EqualTo(actual.ShipCore));
         }
 
         private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)
