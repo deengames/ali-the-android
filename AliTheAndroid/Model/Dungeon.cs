@@ -8,6 +8,7 @@ using DeenGames.AliTheAndroid.Loggers;
 using System.Diagnostics;
 using DeenGames.AliTheAndroid.Accessibility;
 using Newtonsoft.Json;
+using DeenGames.AliTheAndroid.Infrastructure;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -28,11 +29,6 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<Floor> Floors = new List<Floor>(NumFloors);
 
         private readonly IGenerator globalRandom;
-
-        public static Dungeon Deserialize(string serialized)
-        {
-            return JsonConvert.DeserializeObject<Dungeon>(serialized);
-        }
 
         [JsonConstructor]
         public Dungeon(int width, int height)
@@ -118,16 +114,6 @@ namespace DeenGames.AliTheAndroid.Model
         internal void Update(TimeSpan delta)
         {
             this.CurrentFloor.Update(delta);
-        }
-
-        public string Serialize()
-        {
-            var settings = new JsonSerializerSettings() {
-                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize,
-                PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects
-            };
-
-            return JsonConvert.SerializeObject(this, settings);
         }
     }
 }
