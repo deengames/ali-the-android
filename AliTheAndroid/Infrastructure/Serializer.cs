@@ -10,7 +10,7 @@ namespace DeenGames.AliTheAndroid.Infrastructure
         public static string Serialize(object target)
         {
             var settings = GetSerializerSettings();
-            return JsonConvert.SerializeObject(target, Formatting.Indented, settings);
+            return JsonConvert.SerializeObject(target, Formatting.None, settings);
         }
 
         private static JsonSerializerSettings GetSerializerSettings()

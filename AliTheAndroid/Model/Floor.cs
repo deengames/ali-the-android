@@ -128,10 +128,22 @@ namespace DeenGames.AliTheAndroid.Model
             // Therefore, reconstruct it.
             // Used for deserialization; overwritten by the regular constructor
             this.map = new ArrayMap<bool>(this.width, this.height);
-            this.playerFieldOfView = new GoRogue.FOV(map);
+            // Make everything see-through
+            for (var y = 0; y < this.height; y++) 
+            {
+                for (var x = 0; x < this.width; x++)
+                {
+                    this.map[x, y] = true;
+                }
+            }
+
+            // Make walls non-see-through
             this.Walls.ForEach(w => this.map[w.X, w.Y] = false);
             this.FakeWalls.ForEach(w => this.map[w.X, w.Y] = false);
 
+            // TODO: recalculate FOV later, once the player is set
+            this.playerFieldOfView = new GoRogue.FOV(map);
+            
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
