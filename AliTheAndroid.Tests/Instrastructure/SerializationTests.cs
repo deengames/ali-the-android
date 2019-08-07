@@ -43,6 +43,8 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(actual.CurrentFloorNum, Is.EqualTo(expected.CurrentFloorNum));
             Assert.That(actual.CurrentFloor, Is.Not.Null);
             Assert.That(actual.GameSeed, Is.Null); // Readonly, only used in generation
+            
+            Assert.That(actual.Player, Is.Not.Null);
         }
 
         [Test]
