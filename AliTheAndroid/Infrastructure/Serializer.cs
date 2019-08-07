@@ -1,25 +1,30 @@
+using System;
 using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Infrastructure
 {
     public static class Serializer
     {
-        
+        internal const string SaveGameFileName = "save.dat";
 
         public static string Serialize(object target)
         {
-            var settings = new JsonSerializerSettings() {
+            var settings = GetSerializerSettings();
+            return JsonConvert.SerializeObject(target, Formatting.Indented, settings);
+        }
+
+        private static JsonSerializerSettings GetSerializerSettings()
+        {
+            return new JsonSerializerSettings() {
                 ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize,
                 PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects
             };
-
-            return JsonConvert.SerializeObject(target, settings);
         }
 
         public static T Deserialize<T>(string serialized)
         {
-            return JsonConvert.DeserializeObject<T>(serialized);
+            var settings = GetSerializerSettings();
+            return JsonConvert.DeserializeObject<T>(serialized, settings);
         }
-
     }
 }

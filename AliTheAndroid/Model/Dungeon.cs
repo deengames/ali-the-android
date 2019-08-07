@@ -31,6 +31,12 @@ namespace DeenGames.AliTheAndroid.Model
         private readonly IGenerator globalRandom;
 
         [JsonConstructor]
+        public Dungeon(int width, int height, int currentFloorNum, Floor currentFloor) : this(width, height)
+        {
+            this.CurrentFloorNum = currentFloorNum;
+            this.CurrentFloor = currentFloor;
+        }
+
         public Dungeon(int width, int height)
         {
             Dungeon.Instance = this;

@@ -62,9 +62,13 @@ namespace DeenGames.AliTheAndroid.Model
         internal IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
 
         private int floorNum = 0;
-        // width/height are only used during generation
-        private int width = 0;
-        private int height = 0;
+
+        // width/height are only used during generation, but need to be deserialized. Internal for testability
+        [JsonProperty]
+        internal int width = 0;
+        [JsonProperty]
+        internal int height = 0;
+
         // Used for deterministic things like dungeon generation
         private IGenerator globalRandom;
         // Used for non-deterministic things, like monster movement
@@ -373,7 +377,7 @@ namespace DeenGames.AliTheAndroid.Model
         
         public bool IsInPlayerFov(int x, int y)
         {
-            if (x < 0 || y < 0 || x >= this.map.Width || y >= this.map.Height)
+            if (x < 0 || y < 0 || x >= this.width || y >= this.height)
             {
                 return false; // Out of bounds = not visible
             }

@@ -10,6 +10,8 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Accessibility;
+using DeenGames.AliTheAndroid.Infrastructure;
+using DeenGames.AliTheAndroid.Model;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
@@ -18,6 +20,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         // Player started a new game at this time. Null if not yet.  This is to work-around
         // a bug where anything we print right before switching scenes, doesn't draw.
         private DateTime? launchedOn = null;
+        private bool loadGame = false;
         private readonly int gameSeed = new Random().Next();
 
         private readonly Color MainColour = Palette.Blue;
@@ -78,7 +81,20 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             if (this.launchedOn != null && (DateTime.Now - this.launchedOn.Value).TotalMilliseconds >= 100)
             {
-                SadConsole.Global.CurrentScreen = new CoreGameConsole(this.Width, this.Height, this.gameSeed);
+                Dungeon dungeon;
+
+                if (this.loadGame)
+                {
+                    var serialized = File.ReadAllText(Serializer.SaveGameFileName);
+                    dungeon = Serializer.Deserialize<Dungeon>(serialized);
+                }
+                else
+                {
+                    dungeon = new Dungeon(this.Width, this.Height, gameSeed);
+                    dungeon.GoToNextFloor();
+                }
+
+                SadConsole.Global.CurrentScreen = new CoreGameConsole(this.Width, this.Height, dungeon);
             }
 
             if (optionsMenu == null)
@@ -90,6 +106,10 @@ namespace DeenGames.AliTheAndroid.Consoles
                 else if (this.keyboard.IsKeyPressed(Key.N))
                 {
                     this.StartNewGame();   
+                }
+                else if (this.keyboard.IsKeyPressed(Key.L))
+                {
+                    this.LoadGame();
                 }
                 else if (this.keyboard.IsKeyPressed(Key.O))
                 {
@@ -116,6 +136,9 @@ namespace DeenGames.AliTheAndroid.Consoles
                     switch (this.CurrentItem) {
                         case MenuItem.NewGame:
                             this.StartNewGame();
+                            break;
+                        case MenuItem.LoadGame:
+                            this.LoadGame();
                             break;
                         case MenuItem.Options:
                             this.ShowOptions();
@@ -221,10 +244,14 @@ namespace DeenGames.AliTheAndroid.Consoles
         private void DrawMenu()
         {
             this.PrintText("[N] New Game", 0, CurrentItem == MenuItem.NewGame ? MainColour : Palette.Grey);
-            this.PrintText("[O] Options", 1, CurrentItem == MenuItem.Options ? MainColour : Palette.Grey);
-            this.PrintText("[ESC] Quit", 2, CurrentItem == MenuItem.Quit ? MainColour : Palette.Grey);
+            if (File.Exists(Serializer.SaveGameFileName))
+            {
+                this.PrintText("[L] Load Game", 1, CurrentItem == MenuItem.LoadGame ? MainColour : Palette.Grey);   
+            }
+            this.PrintText("[O] Options", 3, CurrentItem == MenuItem.Options ? MainColour : Palette.Grey);
+            this.PrintText("[ESC] Quit", 4, CurrentItem == MenuItem.Quit ? MainColour : Palette.Grey);
 
-            this.PrintText("Arrow keys or WASD to move, enter/space to select an item", 5, Palette.OffWhite);
+            this.PrintText("Arrow keys or WASD to move, enter/space to select an item", 6, Palette.OffWhite);
         }
 
         private void PrintText(string text, int yOffset, Color colour)
@@ -239,6 +266,17 @@ namespace DeenGames.AliTheAndroid.Consoles
             var x = (this.Width - message.Length) / 2;
             this.Print(x, this.MenuY - 2, message, Palette.White);
 
+            this.launchedOn = DateTime.Now;
+        }
+
+        private void LoadGame()
+        {
+            var message = "Loadng game ...";
+
+            var x = (this.Width - message.Length) / 2;
+            this.Print(x, this.MenuY - 2, message, Palette.White);
+
+            this.loadGame = true;
             this.launchedOn = DateTime.Now;
         }
 
@@ -264,6 +302,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         enum MenuItem {
             NewGame,
+            LoadGame,
             Options,
             Quit,
         }

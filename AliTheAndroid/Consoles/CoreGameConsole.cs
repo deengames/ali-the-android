@@ -20,11 +20,10 @@ namespace DeenGames.AliTheAndroid.Consoles
         private Random random = new Random();
 
 
-        public CoreGameConsole(int width, int height, int gameSeed) : base(width, height)
+        public CoreGameConsole(int width, int height, Dungeon dungeon) : base(width, height)
         {
-            this.dungeon = new Dungeon(width, height, gameSeed);
-            this.dungeon.GoToNextFloor();
-
+            this.dungeon = dungeon;
+            
             EventBus.Instance.AddListener(GameEvent.ShowSubMenu, (obj) =>
             {
                 if (this.subMenuConsole == null)

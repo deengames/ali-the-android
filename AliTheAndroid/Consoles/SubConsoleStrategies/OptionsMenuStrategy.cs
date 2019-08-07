@@ -63,6 +63,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
         public void ProcessInput(IKeyboard keyboard)
         {
+            // We're rebinding keys for input
             if (this.keyBindingsConsole != null)
             {
                 if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
@@ -86,7 +87,6 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
             {
                 if (this.ShouldProcessInput() && this.keyBindingsConsole == null)
                 {
-                    // TODO: process space/enter
                     if (keyboard.IsKeyPressed(Key.NumPad1))
                     {
                         Options.DisplayOldStyleAsciiCharacters = !Options.DisplayOldStyleAsciiCharacters;
