@@ -69,6 +69,8 @@ namespace DeenGames.AliTheAndroid.Model
         [JsonProperty]
         internal int height = 0;
 
+        internal GoRogue.FOV playerFieldOfView;
+        
         // Used for deterministic things like dungeon generation
         private IGenerator globalRandom;
         // Used for non-deterministic things, like monster movement
@@ -81,7 +83,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private string lastMessage = "";
         private IKeyboard keyboard;
-        private GoRogue.FOV playerFieldOfView;
+
 
         // 2 = B2
         private static readonly IDictionary<string, int> monsterFloors = new Dictionary<string, int>() {
@@ -120,8 +122,15 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.width = width;
             this.height = height;
-
             this.floorNum = floorNum;
+
+            // ArrayMap is not deserializable and neither is GoRogue.FOV
+            // Therefore, reconstruct it.
+            // Used for deserialization; overwritten by the regular constructor
+            this.map = new ArrayMap<bool>(this.width, this.height);
+            this.playerFieldOfView = new GoRogue.FOV(map);
+            this.Walls.ForEach(w => this.map[w.X, w.Y] = false);
+            this.FakeWalls.ForEach(w => this.map[w.X, w.Y] = false);
 
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 

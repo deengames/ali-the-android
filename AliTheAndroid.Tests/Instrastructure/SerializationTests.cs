@@ -12,6 +12,7 @@ using DeenGames.AliTheAndroid.Tests.Helpers;
 using GoRogue.MapViews;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using Troschuetz.Random.Generators;
 
 namespace DeenGames.AliTheAndroid.Tests.Infrastructure
 {
@@ -82,23 +83,21 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         }
         
         [TestCase(0)]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(6)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(9)]
+        // [TestCase(1)]
+        // [TestCase(2)]
+        // [TestCase(3)]
+        // [TestCase(4)]
+        // [TestCase(5)]
+        // [TestCase(6)]
+        // [TestCase(7)]
+        // [TestCase(8)]
+        // [TestCase(9)]
         public void SerializeAndDeserializeFloor(int floorNum)
         {
-            var expected = new Floor(80, 30, floorNum);
+            var random = new StandardGenerator(23592034);
+            var expected = new Floor(80, 30, floorNum, random);
             var serialized = Serializer.Serialize(expected);
             var actual = Serializer.Deserialize<Floor>(serialized);
-
-            // Maps are only used for generation and are null when deserialized (non-public).
-            //this.AssertMapsAreEqual(expected.map, actual.map);
 
             // Collections of entities
             this.AssertCollectionsEqual(expected.Walls, actual.Walls);
@@ -113,11 +112,38 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             // stairs down/up, weapon pick-up, data cube, ship core
             Assert.That(expected.StairsDownLocation, Is.EqualTo(actual.StairsDownLocation));
             Assert.That(expected.StairsUpLocation, Is.EqualTo(actual.StairsUpLocation));
-            Assert.That(expected.WeaponPickUp, Is.EqualTo(actual.WeaponPickUp));
-            Assert.That(expected.DataCube, Is.EqualTo(actual.DataCube));
-            Assert.That(expected.ShipCore, Is.EqualTo(actual.ShipCore));
+
+            if (expected.WeaponPickUp != null)
+            {
+                AssertBasicPropertiesEqual(expected.WeaponPickUp, actual.WeaponPickUp);
+            }
+
+            if (expected.DataCube != null)
+            {
+                AssertBasicPropertiesEqual(expected.DataCube, actual.DataCube);
+                Assert.That(expected.DataCube.FloorNumber, Is.EqualTo(actual.DataCube.FloorNumber));
+                Assert.That(expected.DataCube.IsRead, Is.EqualTo(actual.DataCube.IsRead));
+                Assert.That(expected.DataCube.Text, Is.EqualTo(actual.DataCube.Text));
+                Assert.That(expected.DataCube.Title, Is.EqualTo(actual.DataCube.Title));
+            }
+
+            if (expected.ShipCore != null)
+            {
+                AssertBasicPropertiesEqual(expected.ShipCore,actual.ShipCore);
+            }
+
+            // Other stuff we need for functionality to work
             Assert.That(actual.width, Is.EqualTo(expected.width));
             Assert.That(actual.height, Is.EqualTo(expected.height));
+            
+            Assert.That(actual.map, Is.Not.Null);
+            for (var y = 0 ; y < expected.width; y++)
+            {
+                for (var x = 0; x < expected.height; x++)
+                {
+                    Assert.That(actual.map[x, y] == expected.map[x, y], $"Map at {x}, {y} should be {expected.map[x, y]} but it's {actual.map[x, y]}");
+                }
+            }
         }
 
         private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)
