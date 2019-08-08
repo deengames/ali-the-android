@@ -16,16 +16,21 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private Func<int, int, bool> isWalkableCheck;
         private int floorNum;
 
-        public GravityWave(int x, int y, bool isBacktrackingWave, int floorNum, Func<int, int, bool> isWalkableCheck) : base(x, y, GravityCharacter, Palette.LightLilacPink)
+        public GravityWave(int x, int y, bool isBacktrackingWave, int floorNum) : base(x, y, GravityCharacter, Palette.LightLilacPink)
         {
             this.floorNum = floorNum;
-            this.isWalkableCheck = isWalkableCheck;
             this.IsBacktrackingWave = isBacktrackingWave;
             EventBus.Instance.AddListener(GameEvent.PlayerTookTurn, this.PerturbOccupantOnMove);
         }
 
         private void PerturbOccupantOnMove(object obj)
         {
+            // Can't do this in the constructor because, serialization. Dungeon instance is still null (not fully created yet).
+            if (this.isWalkableCheck == null)
+            {
+                this.isWalkableCheck = Dungeon.Instance.Floors[floorNum].IsWalkable;
+            }
+
             var data = obj as PlayerTookTurnData;
             var monsters = data.Monsters;
             var player = data.Player;
@@ -64,6 +69,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         
         private List<GoRogue.Coord> WhereCanIMove(Entity e)
         {
+            
             var toReturn = new List<GoRogue.Coord>();
 
             if (isWalkableCheck(e.X - 1, e.Y)) { toReturn.Add(new GoRogue.Coord(e.X - 1, e.Y)); }

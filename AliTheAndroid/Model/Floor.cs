@@ -694,7 +694,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 for (var x = room.MinExtentX; x <= room.MaxExtentX; x++)
                 {
-                    this.GravityWaves.Add(new GravityWave(x, y, isBacktrackingWave, this.floorNum, this.IsWalkable));
+                    this.GravityWaves.Add(new GravityWave(x, y, isBacktrackingWave, this.floorNum));
                 }
             }
         }
