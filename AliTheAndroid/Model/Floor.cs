@@ -78,6 +78,7 @@ namespace DeenGames.AliTheAndroid.Model
 
 
         // Super hack. Key is "x, y", value is IsDiscovered.
+        [JsonProperty]
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
 
 
@@ -118,6 +119,12 @@ namespace DeenGames.AliTheAndroid.Model
 
         // Used when deserializing a saved dungeon; stuff is already generated
         [JsonConstructor]
+        public Floor(int width, int height, int floorNum, Dictionary<string, bool> isTileDiscovered)
+        : this(width, height, floorNum)
+        {
+            this.isTileDiscovered = isTileDiscovered;
+        }
+
         public Floor(int width, int height, int floorNum)
         {
             this.width = width;
