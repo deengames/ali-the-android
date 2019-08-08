@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure;
@@ -10,7 +9,6 @@ using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Tests.Helpers;
 using GoRogue.MapViews;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using Troschuetz.Random.Generators;
 
@@ -21,6 +19,15 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
     [TestFixture]
     public class SerializationTests
     {
+        [OneTimeSetUp]
+        public void LOL_WUT()
+        {
+            // TODO: DELETE! Refactor into "if not bound ..."
+            DependencyInjection.kernel.Bind<IKeyboard>().To<DeadKeyboard>();
+            
+            
+        }
+
         [Test]
         public void SerializeAndDeserializeDungeon()
         {
@@ -90,8 +97,11 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         {
             var random = new StandardGenerator(1144804299);
             var expected = new Floor(80, 30, floorNum, random);
+            expected.Player = new Player();
+
             var serialized = Serializer.Serialize(expected);
             var actual = Serializer.Deserialize<Floor>(serialized);
+            actual.InitializeMapAndFov();
 
             // Collections of entities
             this.AssertCollectionsEqual(expected.Walls, actual.Walls);
@@ -126,19 +136,20 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
                 AssertBasicPropertiesEqual(expected.ShipCore,actual.ShipCore);
             }
 
+            Assert.That(actual.Player, Is.Not.Null);
+
             // Other stuff we need for functionality to work
             Assert.That(actual.width, Is.EqualTo(expected.width));
             Assert.That(actual.height, Is.EqualTo(expected.height));
             
             Assert.That(actual.map, Is.Not.Null);
-            Assert.That(actual.map[5, 2], Is.True);
-            // for (var y = 0 ; y < expected.width; y++)
-            // {
-            //     for (var x = 0; x < expected.height; x++)
-            //     {
-            //         Assert.That(actual.map[x, y] == expected.map[x, y], $"Map at {x}, {y} should be {expected.map[x, y]} but it's {actual.map[x, y]}");
-            //     }
-            // }
+            for (var y = 0 ; y < expected.height; y++)
+            {
+                for (var x = 0; x < expected.width; x++)
+                {
+                    Assert.That(actual.map[x, y] == expected.map[x, y], $"Floor #{floorNum} map at {x}, {y} should be {expected.map[x, y]} but it's {actual.map[x, y]}");
+                }
+            }
         }
 
         private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)

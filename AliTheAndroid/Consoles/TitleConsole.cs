@@ -87,7 +87,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     var serialized = File.ReadAllText(Serializer.SaveGameFileName);
                     dungeon = Serializer.Deserialize<Dungeon>(serialized);
-                    dungeon.CurrentFloor.RecalculatePlayerFov();
+                    dungeon.CurrentFloor.InitializeMapAndFov();
                 }
                 else
                 {

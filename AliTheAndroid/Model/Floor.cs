@@ -122,28 +122,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.width = width;
             this.height = height;
-            this.floorNum = floorNum;
-
-            // ArrayMap is not deserializable and neither is GoRogue.FOV
-            // Therefore, reconstruct it.
-            // Used for deserialization; overwritten by the regular constructor
-            this.map = new ArrayMap<bool>(this.width, this.height);
-            // Make everything see-through
-            for (var y = 0; y < this.height; y++) 
-            {
-                for (var x = 0; x < this.width; x++)
-                {
-                    this.map[x, y] = true;
-                }
-            }
-
-            // Make walls non-see-through
-            this.Walls.ForEach(w => this.map[w.X, w.Y] = false);
-            this.FakeWalls.ForEach(w => this.map[w.X, w.Y] = false);
-
-            // TODO: recalculate FOV later, once the player is set
-            this.playerFieldOfView = new GoRogue.FOV(map);
-            
+            this.floorNum = floorNum;            
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
@@ -483,6 +462,28 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
+        public void InitializeMapAndFov()
+        {
+                        // ArrayMap is not deserializable and neither is GoRogue.FOV
+            // Therefore, reconstruct it.
+            // Used for deserialization; overwritten by the regular constructor
+            this.map = new ArrayMap<bool>(this.width, this.height);
+            // Make everything visible
+            for (var y = 0; y < this.height; y++) 
+            {
+                for (var x = 0; x < this.width; x++)
+                {
+                    this.map[x, y] = true;
+                }
+            }
+
+            // Make walls occlude visibility
+            this.Walls.ForEach(w => this.map[w.X, w.Y] = false);
+            this.FakeWalls.ForEach(w => this.map[w.X, w.Y] = false);
+
+            this.playerFieldOfView = new GoRogue.FOV(map);
+            this.RecalculatePlayerFov();
+        }
         
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
         internal int CountAdjacentFloors(GoRogue.Coord coordinates) {
