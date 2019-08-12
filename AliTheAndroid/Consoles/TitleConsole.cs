@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Infrastructure;
 using DeenGames.AliTheAndroid.Model;
+using DeenGames.AliTheAndroid.Model.Entities;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
@@ -87,6 +88,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     var serialized = File.ReadAllText(Serializer.SaveGameFileName);
                     dungeon = Serializer.Deserialize<Dungeon>(serialized);
+                    // Go in and re-pair power-ups which are not paired any more
+                    foreach (var floor in dungeon.Floors)
+                    {
+                        floor.PairPowerUps();
+                    }
                     Dungeon.Instance = dungeon;
                     dungeon.CurrentFloor.InitializeMapAndFov();
                 }

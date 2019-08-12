@@ -23,13 +23,13 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             { "The Ameer", Options.CurrentPalette.Monster4Colour },
         };
         
-        public string Name { get; private set; }
-        public int CurrentHealth { get; protected set; }
-        public int TotalHealth { get; protected set; }
-        public int Strength { get; protected set; }
-        public int Defense { get; protected set; }
+        public string Name { get; set; }
+        public int CurrentHealth { get; set; }
+        public int TotalHealth { get; set; }
+        public int Strength { get; set; }
+        public int Defense { get; set; }
 
-        public int VisionRange { get; protected set; }
+        public int VisionRange { get; set; }
         public virtual bool CanMove { get; set; } = true; // False for fake walls
 
         public static Entity CreateFromTemplate(string name, int x, int y)

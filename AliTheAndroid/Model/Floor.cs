@@ -50,6 +50,10 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
+        // Work-around for poor serialization support of self-referencing entities
+        // See comments on SerializationTests.SerializeAndDeserializePowerUps.
+        // We pair everything here on deserialize.
+        public PowerUp[] PairedPowerUps;
         public readonly List<AbstractEntity> QuantumPlasma = new List<AbstractEntity>();
 
         public Player Player;
@@ -117,7 +121,9 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        // Used when deserializing a saved dungeon; stuff is already generated
+        /// <summary>
+        /// Used when deserializing a saved dungeon; stuff is already generated
+        /// </summary>
         [JsonConstructor]
         public Floor(int width, int height, int floorNum, Dictionary<string, bool> isTileDiscovered)
         : this(width, height, floorNum)
@@ -125,6 +131,9 @@ namespace DeenGames.AliTheAndroid.Model
             this.isTileDiscovered = isTileDiscovered;
         }
 
+        /// <summary>
+        /// Common constructor code shared between serializtion and production workflow
+        /// </summary>
         public Floor(int width, int height, int floorNum)
         {
             this.width = width;
@@ -177,6 +186,9 @@ namespace DeenGames.AliTheAndroid.Model
             });
         }
 
+        /// <summary>
+        /// "Production" workflow: generate a floor and all content
+        /// </summary>
         public Floor(int width, int height, int floorNum, IGenerator globalRandom)
         : this(width, height, floorNum)
         {
@@ -444,8 +456,6 @@ namespace DeenGames.AliTheAndroid.Model
             var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
             var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
 
-            // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
-
             for (var i = 0; i < locations.Count(); i++)
             {
                 var powerUp = powerUps[i];
@@ -457,9 +467,18 @@ namespace DeenGames.AliTheAndroid.Model
                 this.PowerUps.Add(powerUp);
             }
 
-            PowerUp.Pair(powerUps[0], powerUps[1]);
+            this.PairedPowerUps = powerUps.ToArray();
+            this.PairPowerUps();            
+        }
 
-            foreach (var powerUp in powerUps)
+        public void PairPowerUps()
+        {
+            if (this.PairedPowerUps.Any())
+            {
+                PowerUp.Pair(this.PairedPowerUps[0], this.PairedPowerUps[1]);
+            }
+            
+            foreach (var powerUp in this.PairedPowerUps)
             {
                 powerUp.OnPickUp(() => {
                     this.PowerUps.Remove(powerUp);
@@ -1555,7 +1574,7 @@ namespace DeenGames.AliTheAndroid.Model
         private void ProcessMonsterTurns()
         {
             var plasmaBurnedMonsters = new List<Entity>();
-
+            
             // Eggs' turns create more monsters (modify enumeration during iteration).
             // Just use ToArray here to create a copy.
             foreach (var monster in this.Monsters.Where(m => m.CanMove).ToArray())

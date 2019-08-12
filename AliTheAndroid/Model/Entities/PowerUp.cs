@@ -1,8 +1,6 @@
 using System;
 using System.Text;
-using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
-using Microsoft.Xna.Framework;
 using DeenGames.AliTheAndroid.Loggers;
 using Troschuetz.Random;
 using System.Collections.Generic;
@@ -71,7 +69,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             p2.PairedTo = p1;
         }
 
-        public PowerUp(int x, int y, bool isBacktrackingPowerUp = false, int healthBoost = 0, int strengthBoost = 0, int defenseBoost = 0, int visionBoost = 0)
+        public PowerUp(int x, int y, bool isBacktrackingPowerUp = false, int healthBoost = 0, int strengthBoost = 0, int defenseBoost = 0, int visionBoost = 0, PowerUp pairedTo = null)
         : base(x, y, DisplayCharacter, Palette.White)
         {
             this.HealthBoost = healthBoost;
@@ -79,6 +77,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.DefenseBoost = defenseBoost;
             this.VisionBoost = visionBoost;
             this.IsBacktrackingPowerUp = isBacktrackingPowerUp;
+
+            // Serializer passes in this value, production code doesn't. Sometimes. (Not for both paired entities.)
+            this.PairedTo = pairedTo;
         }
 
         public string Message { get {
