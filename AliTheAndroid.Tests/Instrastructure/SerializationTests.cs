@@ -104,6 +104,8 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             var actual = Serializer.Deserialize<Floor>(serialized);
             actual.InitializeMapAndFov();
 
+            Assert.That(actual.FloorNum, Is.EqualTo(expected.FloorNum));
+
             // Collections of entities
             this.AssertCollectionsEqual(expected.Walls, actual.Walls);
             this.AssertCollectionsEqual(expected.FakeWalls, actual.FakeWalls);
@@ -140,10 +142,10 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(actual.Player, Is.Not.Null);
 
             // Other stuff we need for functionality to work
-            Assert.That(actual.width, Is.EqualTo(expected.width));
-            Assert.That(actual.height, Is.EqualTo(expected.height));
+            Assert.That(actual.Width, Is.EqualTo(expected.Width));
+            Assert.That(actual.Height, Is.EqualTo(expected.Height));
             
-            Assert.That(actual.map, Is.Not.Null);
+            Assert.That(actual.Map, Is.Not.Null);
 
             // Doesn't always pass yet for reasons unknown, need to investigate later.
             // for (var y = 0 ; y < expected.height; y++)
