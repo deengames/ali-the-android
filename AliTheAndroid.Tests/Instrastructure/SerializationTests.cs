@@ -284,7 +284,6 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(p2.PairedTo, Is.EqualTo(p1));
         }
 
-        [Test]
         private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)
         {
             Assert.That(e1.X, Is.EqualTo(e2.X));
