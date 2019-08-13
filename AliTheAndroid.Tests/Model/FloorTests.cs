@@ -87,10 +87,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             RestrictRuntime(() => {
                 var floor1 = new Floor(40, 30, 7, new StandardGenerator(1234));
-                floor1.GeneratePowerUps();
 
                 var floor2 = new Floor(40, 30, 7, new StandardGenerator(4321));
-                floor2.GeneratePowerUps();
 
                 Assert.That(floor1.PowerUps.Any());
                 Assert.That(floor2.PowerUps.Any());
@@ -108,8 +106,6 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var globalRandom = new StandardGenerator(0);
                 var floor = new Floor(100, 100, 3, globalRandom);
                 var nextFloor = new Floor(25, 50, 4, globalRandom);
-
-                floor.GeneratePowerUps();
 
                 var twins = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp);
                 Assert.That(twins.Count, Is.EqualTo(2));
@@ -130,34 +126,6 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 // Probably two
                 backTrackingPowerUps.First().PickUp();
                 Assert.That(!floor.PowerUps.Where(p => p.IsBacktrackingPowerUp).Any());
-            });
-        }
-
-        [Test]
-        public void GenerateFloorDoesntRegeneratePowerUps()
-        {
-            RestrictRuntime(() => {
-                var floor = new Floor(30, 30, 0, new StandardGenerator(1));
-                floor.GeneratePowerUps();
-
-                // Create a copy so we don't modify the collection during enumeration
-                var powerups = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).ToArray();
-
-                Assert.That(powerups.Count, Is.EqualTo(2));
-
-                foreach (var powerUp in powerups)
-                {
-                    powerUp.PickUp();
-                }
-
-                powerups = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).ToArray();
-                Assert.That(powerups.Count, Is.EqualTo(0));
-
-                // Act
-                floor.GeneratePowerUps();
-
-                // Assert
-                Assert.That(powerups.Count, Is.EqualTo(0));
             });
         }
 

@@ -433,45 +433,6 @@ namespace DeenGames.AliTheAndroid.Model
             PlayerFieldOfView.Calculate(Player.X, Player.Y, Player.VisionRange);
         }
 
-        public void GeneratePowerUps()
-        {
-            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-            if (floorsNearStairs.Count < 2)
-            {
-                // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
-                var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
-                var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
-                var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
-                var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
-
-                var moreTiles = this.GetAdjacentFloors(aboveStairs);
-                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
-                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
-                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
-
-                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-            }
-
-            // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
-            // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
-            var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
-            var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
-
-            for (var i = 0; i < locations.Count(); i++)
-            {
-                var powerUp = powerUps[i];
-                var location = locations[i];
-
-                powerUp.X = location.X;
-                powerUp.Y = location.Y;
-
-                this.PowerUps.Add(powerUp);
-            }
-
-            this.PairedPowerUps = powerUps.ToArray();
-            this.PairPowerUps();            
-        }
-
         public void PairPowerUps()
         {
             if (this.PairedPowerUps.Any())
@@ -643,6 +604,47 @@ namespace DeenGames.AliTheAndroid.Model
                     }
                 }
             }
+        }
+
+        
+
+        private void GeneratePowerUps()
+        {
+            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            if (floorsNearStairs.Count < 2)
+            {
+                // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
+                var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
+                var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
+                var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
+                var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
+
+                var moreTiles = this.GetAdjacentFloors(aboveStairs);
+                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
+
+                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            }
+
+            // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
+            // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
+            var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
+            var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
+
+            for (var i = 0; i < locations.Count(); i++)
+            {
+                var powerUp = powerUps[i];
+                var location = locations[i];
+
+                powerUp.X = location.X;
+                powerUp.Y = location.Y;
+
+                this.PowerUps.Add(powerUp);
+            }
+
+            this.PairedPowerUps = powerUps.ToArray();
+            this.PairPowerUps();            
         }
 
         private void SpawnQuantumPlasma(int x, int y)
