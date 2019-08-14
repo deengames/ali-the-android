@@ -55,9 +55,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 }
                 else if (keyboard.IsKeyPressed(Key.S))
                 {
-                    var dungeon = Dungeon.Instance;
-                    var serialized = Serializer.Serialize(dungeon);
-                    File.WriteAllText(Serializer.SaveGameFileName, serialized);
+                    SaveManager.SaveGame();
                     this.justSaved = true;
                 }
             }

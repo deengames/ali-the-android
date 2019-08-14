@@ -95,15 +95,18 @@ namespace DeenGames.AliTheAndroid.Model
             this.CurrentFloorNum++;
             this.CurrentFloor = this.Floors[this.CurrentFloorNum];
             LastGameLogger.Instance.Log($"Descended to B{this.CurrentFloorNum + 1}");
+            this.CurrentFloor.LatestMessage = "Game saved.";
+
             if (this.CurrentFloorNum == 9)
             {
-                this.CurrentFloor.LatestMessage = "You detect an abnormal life-form. Mad laughter echoes from afar.";
+                this.CurrentFloor.LatestMessage += "You detect an abnormal life-form. Mad laughter echoes from afar.";
             }
             
             this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.StairsUpLocation.X;
             this.Player.Y = this.CurrentFloor.StairsUpLocation.Y;
             this.CurrentFloor.RecalculatePlayerFov();
+            SaveManager.SaveGame();
         }
 
         public void GoToPreviousFloor()
@@ -111,11 +114,13 @@ namespace DeenGames.AliTheAndroid.Model
             this.CurrentFloorNum--;
             this.CurrentFloor = this.Floors[this.CurrentFloorNum];
             LastGameLogger.Instance.Log($"Ascended to B{this.CurrentFloorNum + 1}");
+            this.CurrentFloor.LatestMessage = "Game saved.";
 
             this.CurrentFloor.Player = this.Player;
             this.Player.X = this.CurrentFloor.StairsDownLocation.X;
             this.Player.Y = this.CurrentFloor.StairsDownLocation.Y;
             this.CurrentFloor.RecalculatePlayerFov();
+            SaveManager.SaveGame();
         }
 
         internal void Update(TimeSpan delta)

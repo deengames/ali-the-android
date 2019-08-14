@@ -477,7 +477,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.FakeWalls.ForEach(w => this.Map[w.X, w.Y] = false);
 
             this.PlayerFieldOfView = new GoRogue.FOV(Map);
-            this.RecalculatePlayerFov();
         }
         
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
@@ -565,7 +564,8 @@ namespace DeenGames.AliTheAndroid.Model
                 this.PowerUps.Remove(powerUpUnderPlayer);
                 Player.Absorb(powerUpUnderPlayer);
                 powerUpUnderPlayer.PickUp();
-                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
+                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}. (Game saved)";
+                SaveManager.SaveGame();
             }
 
             if (this.WeaponPickUp != null && WeaponPickUp.X == Player.X && WeaponPickUp.Y == Player.Y)
@@ -575,8 +575,9 @@ namespace DeenGames.AliTheAndroid.Model
                 var key = this.GetKeyFor(weaponType);
                 var keyText = key.ToString().Replace("NumPad", "");
                 var weaponInfo = DeenGames.AliTheAndroid.Model.Entities.Player.WeaponPickupMessages[weaponType];
-                this.LatestMessage = $"You assimilate the {weaponType}. Press {keyText} to equip it. {weaponInfo}";
+                this.LatestMessage = $"You assimilate the {weaponType}. Press {keyText} to equip it. {weaponInfo} (Game saved)";
                 this.WeaponPickUp = null;
+                SaveManager.SaveGame();
             }
 
             if (this.DataCube != null && DataCube.X == Player.X && DataCube.Y == Player.Y)
@@ -588,8 +589,9 @@ namespace DeenGames.AliTheAndroid.Model
                 EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
                 EventBus.Instance.Broadcast(GameEvent.ShowDataCube, this.DataCube);
 
-                this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.'";
+                this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.' (Game saved)";
                 this.DataCube = null;
+                SaveManager.SaveGame();
             }
 
             if (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)
