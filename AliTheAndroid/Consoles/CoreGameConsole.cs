@@ -183,7 +183,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             var dataCube = this.dungeon.CurrentFloor.DataCube;
-            if (dataCube != null && this.dungeon.CurrentFloor.IsInPlayerFov(dataCube.X, dataCube.Y))
+            if (dataCube != null)
             {
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colours = Options.CurrentPalette.DataCubeColours;
