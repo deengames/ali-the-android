@@ -92,9 +92,10 @@ namespace DeenGames.AliTheAndroid.Consoles
                     foreach (var floor in dungeon.Floors)
                     {
                         floor.PairPowerUps();
+                        floor.InitializeMapAndFov();
                     }
+                    dungeon.CurrentFloor.RecalculatePlayerFov();
                     Dungeon.Instance = dungeon;
-                    dungeon.CurrentFloor.InitializeMapAndFov();
                 }
                 else
                 {
