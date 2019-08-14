@@ -15,6 +15,8 @@ using Troschuetz.Random;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Accessibility;
 using Newtonsoft.Json;
+using System.IO;
+using DeenGames.AliTheAndroid.Infrastructure;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -162,6 +164,11 @@ namespace DeenGames.AliTheAndroid.Model
                     this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to quit.";
                     this.Player.Character = '%';
                     this.Player.Color = Palette.DarkBurgandyPurple;
+
+                    if (File.Exists(Serializer.SaveGameFileName))
+                    {
+                        File.Delete(Serializer.SaveGameFileName);
+                    }
                 }
                 else
                 {
