@@ -54,8 +54,9 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 this.PrintOption(target, 2, 4, "[1] Display characters", Options.DisplayOldStyleAsciiCharacters, "ASCII", "Extended");
                 this.PrintOption(target, 2, 5, "[2] Colour palette", Options.CurrentPalette == SelectablePalette.StandardPalette, "Standard", "Saturated");
                 this.PrintOption(target, 2, 6, "[3] Display mode", Options.IsFullScreen, "Fullscreen", "Windowed");
-                target.Print(2, 7, $"[4] Effects display time: {Options.EffectsDelayMultiplier}x", Palette.Blue);
-                target.Print(2, 8, $"[5] View or change key bindings", Palette.Blue);
+                this.PrintOption(target, 2, 7, "[4] Delete save game on death", Options.DeleteSaveGameOnDeath, "Yes", "No");
+                target.Print(2, 8, $"[5] Effects display time: {Options.EffectsDelayMultiplier}x", Palette.Blue);
+                target.Print(2, 9, $"[6] View or change key bindings", Palette.Blue);
 
                 target.Print(2, this.Height - 3, $"Number keys to toggle options, {Options.KeyBindings[GameAction.OpenMenu]} to close", Palette.OffWhite);
             }
@@ -106,10 +107,15 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     }
                     if (keyboard.IsKeyPressed(Key.NumPad4))
                     {
-                        Options.EffectsDelayMultiplier = Math.Max(1, (Options.EffectsDelayMultiplier + 1) % (Options.MaxEffectsDelayMultiplier + 1));
+                        Options.DeleteSaveGameOnDeath = !Options.DeleteSaveGameOnDeath;
                         this.SaveOptionsToDisk();
                     }
                     if (keyboard.IsKeyPressed(Key.NumPad5))
+                    {
+                        Options.EffectsDelayMultiplier = Math.Max(1, (Options.EffectsDelayMultiplier + 1) % (Options.MaxEffectsDelayMultiplier + 1));
+                        this.SaveOptionsToDisk();
+                    }
+                    if (keyboard.IsKeyPressed(Key.NumPad6))
                     {
                         this.keyBindingsConsole = new KeyBindingsStrategy();
                     }
@@ -152,6 +158,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 { "Display", Options.DisplayOldStyleAsciiCharacters ? "ASCII" : "Extended" },
                 { "Palette", Options.CurrentPalette == SelectablePalette.SaturatedPalette ? "Saturated" : "Standard" },
                 { "FullScreen", Options.IsFullScreen.ToString() },
+                { "DeleteSaveGameOnDeath", Options.DeleteSaveGameOnDeath.ToString() },
                 { "EffectsDisplayMultiplier", Options.EffectsDelayMultiplier.ToString() },
                 { "KeyBindings", JsonConvert.SerializeObject(Options.KeyBindings) },
                 { "FirstRun", "false"},

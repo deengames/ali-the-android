@@ -201,6 +201,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                     Options.KeyBindings = JsonConvert.DeserializeObject<SortedDictionary<GameAction, Key>>(data["KeyBindings"]);
                 }
 
+                if (data.ContainsKey("DeleteSaveGameOnDeath"))
+                {
+                    Options.DeleteSaveGameOnDeath = Boolean.Parse(data["DeleteSaveGameOnDeath"]);
+                }
+
                 if (!data.ContainsKey("FirstRun") || data["FirstRun"] == "true")
                 {
                     data["FirstRun"] = "false";

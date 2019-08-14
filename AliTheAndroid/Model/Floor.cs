@@ -165,7 +165,7 @@ namespace DeenGames.AliTheAndroid.Model
                     this.Player.Character = '%';
                     this.Player.Color = Palette.DarkBurgandyPurple;
 
-                    if (File.Exists(Serializer.SaveGameFileName))
+                    if (Options.DeleteSaveGameOnDeath && File.Exists(Serializer.SaveGameFileName))
                     {
                         File.Delete(Serializer.SaveGameFileName);
                     }

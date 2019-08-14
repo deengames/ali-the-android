@@ -13,6 +13,9 @@ namespace DeenGames.AliTheAndroid
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
         public static bool IsFullScreen = false;
         public static int EffectsDelayMultiplier = 1;
+
+        public static bool DeleteSaveGameOnDeath = true;
+
         // Sorted because the order matters when we display it for key-rebinding
         public static SortedDictionary<GameAction, Key> KeyBindings = new SortedDictionary<GameAction, Key>()
         {
