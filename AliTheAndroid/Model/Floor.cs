@@ -214,7 +214,6 @@ namespace DeenGames.AliTheAndroid.Model
             if (playerTookTurn)
             {
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
-                this.RecalculatePlayerFov();
             
                 if (ShipCore != null)
                 {
@@ -508,6 +507,9 @@ namespace DeenGames.AliTheAndroid.Model
         internal void OnPlayerMoved()
         {
             Player.CanFireGravityCannon = true;
+
+            this.RecalculatePlayerFov();
+
             foreach (var newlySeen in this.PlayerFieldOfView.NewlySeen)
             {
                 this.MarkAsSeen(newlySeen.X, newlySeen.Y);
