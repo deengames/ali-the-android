@@ -508,18 +508,9 @@ namespace DeenGames.AliTheAndroid.Model
         internal void OnPlayerMoved()
         {
             Player.CanFireGravityCannon = true;
-            // This is too late - player already moved. For the prototype, we can live with this.
-            int viewRadius = (int)Math.Ceiling(Player.VisionRange / 2.0);
-            for (var y = Player.Y - viewRadius; y <= Player.Y + viewRadius; y++)
+            foreach (var newlySeen in this.PlayerFieldOfView.NewlySeen)
             {
-                for (var x = Player.X - viewRadius; x <= Player.X + viewRadius; x++)
-                {
-                    // Just to be sure
-                    if (IsInPlayerFov(x, y))
-                    {
-                        this.MarkAsSeen(x, y);
-                    }
-                }
+                this.MarkAsSeen(newlySeen.X, newlySeen.Y);
             }
 
             this.LatestMessage = "";
