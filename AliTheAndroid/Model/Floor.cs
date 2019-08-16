@@ -162,7 +162,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (Dungeon.Instance.CurrentFloorNum == this.FloorNum && e == Player)
                 {
                     LastGameLogger.Instance.Log($"Player died!!!");
-                    this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to quit.";
+                    this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to return to the title.";
                     this.Player.Character = '%';
                     this.Player.Color = Palette.DarkBurgandyPurple;
 
@@ -226,6 +226,8 @@ namespace DeenGames.AliTheAndroid.Model
                         this.LatestMessage = "The ship core thrums and glows with energy.";
                     }
                 }
+
+                this.MentionInterestingAdjacentObjects();
             }
 
             if (this.EffectEntities.Any()) {
@@ -401,7 +403,8 @@ namespace DeenGames.AliTheAndroid.Model
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
             }
         }
-        
+
+
         public bool IsInPlayerFov(int x, int y)
         {
             if (x < 0 || y < 0 || x >= this.Width || y >= this.Height)
@@ -816,6 +819,23 @@ namespace DeenGames.AliTheAndroid.Model
                         }
                     }
                 }
+            }
+        }
+
+        
+        private void MentionInterestingAdjacentObjects()
+        {
+            if (this.Doors.Any(d => d.IsLocked && GoRogue.Distance.EUCLIDEAN.Calculate(d.X, d.Y, Player.X, Player.Y) <= 1))
+            {
+                this.LatestMessage += " This door looks jammed.";
+            }
+            if (this.FakeWalls.Any(f => GoRogue.Distance.EUCLIDEAN.Calculate(f.X, f.Y, Player.X, Player.Y) <= 1))
+            {
+                this.LatestMessage += " This wall looks cracked.";
+            }
+            if (this.Chasms.Any(c => GoRogue.Distance.EUCLIDEAN.Calculate(c.X, c.Y, Player.X, Player.Y) <= 1))
+            {
+                this.LatestMessage += " A chasm stretches down into darkness.";
             }
         }
 
@@ -1672,8 +1692,8 @@ namespace DeenGames.AliTheAndroid.Model
             if (Player.IsDead) {
                 if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
-                    LastGameLogger.Instance.Log("Player died and quit!");
-                    System.Environment.Exit(0);    
+                    LastGameLogger.Instance.Log("Player died.");
+                    SadConsole.Global.CurrentScreen = new TitleConsole(Program.GameWidthInTiles, Program.GameHeightInTiles);
                 }
 
                 return false; // don't pass time
