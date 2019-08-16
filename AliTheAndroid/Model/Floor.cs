@@ -73,6 +73,7 @@ namespace DeenGames.AliTheAndroid.Model
         // width/height are only used during generation, but need to be deserialized. Internal for testability
         [JsonProperty]
         internal int Width = 0;
+
         [JsonProperty]
         internal int Height = 0;
 
@@ -90,6 +91,7 @@ namespace DeenGames.AliTheAndroid.Model
 
 
         private string lastMessage = "";
+        private bool justScrolledMessage = false;
         private IKeyboard keyboard;
 
 
@@ -111,7 +113,6 @@ namespace DeenGames.AliTheAndroid.Model
             { Weapon.PlasmaCannon, 9 }, // In the final, darkest floor
         };
 
-        // TODO: should not be publically settable
         public string LatestMessage { 
             get {
                 return this.lastMessage;
@@ -1676,6 +1677,19 @@ namespace DeenGames.AliTheAndroid.Model
                 }
 
                 return false; // don't pass time
+            }
+
+            if (justScrolledMessage)
+            {
+                // When pressing space => showing the last message, don't process THAT as a turn.
+                justScrolledMessage = false;
+                return false;
+            }
+            if (this.LatestMessage.Length > this.Width && this.keyboard.GetKeysPressed().Any())
+            {
+                this.LatestMessage = this.LatestMessage.Substring(this.Width - 7); // 7 = " [more]"
+                justScrolledMessage = true;
+                return false;
             }
 
             if (!Player.CanMove) {

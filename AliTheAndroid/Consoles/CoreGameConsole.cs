@@ -224,13 +224,10 @@ namespace DeenGames.AliTheAndroid.Consoles
             
             if (message.Length > this.dungeon.Width)
             {
-                var firstLineBreak = message.Substring(0, this.dungeon.Width).LastIndexOfAny(new char[] { ' ', '.'} ) + 1;
+                var firstLineBreak = message.Substring(0, this.dungeon.Width - 7).LastIndexOfAny(new char[] { ' ', '.'} ) + 1;
                 var firstLine = message.Substring(0, firstLineBreak);
-                var secondLine = message.Substring(firstLineBreak);
 
-                // Overrides health momentarily.
-                this.Print(1, this.dungeon.Height - 2, firstLine, Palette.White);
-                this.Print(1, this.dungeon.Height - 1, secondLine, Palette.White);
+                this.Print(1, this.dungeon.Height - 1, $"{firstLine} [more]", Palette.White);
             }
             else
             {
