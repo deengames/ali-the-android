@@ -4,6 +4,9 @@ $windowsZipFile = 'windows-release.zip'
 # Publish to an exe + dependencies. 40MB baseline.
 dotnet publish -c Release -r win10-x64 -o out_windows
 
+# Copy all sound-effects over since we're not using the MonoGame content pipeline
+Copy-Item -Recurse "AliTheAndroid\Content" "AliTheAndroid\out_windows"
+
 # Zip it up. ~17MB baseline.
 if (Test-Path($windowsZipFile)) {
     Remove-Item $windowsZipFile

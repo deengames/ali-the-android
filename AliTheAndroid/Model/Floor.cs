@@ -7,7 +7,6 @@ using DeenGames.AliTheAndroid.Consoles;
 using GoRogue.MapViews;
 using GoRogue.Pathing;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Ninject;
 using System;
 using System.Collections.Generic;
@@ -15,6 +14,7 @@ using System.Linq;
 using Troschuetz.Random;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Accessibility;
+using Microsoft.Xna.Framework.Audio;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -172,6 +172,12 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (playerTookTurn)
             {
+                using (var stream = System.IO.File.OpenRead("Content/Blaster.wav"))
+                {
+                    var sound = SoundEffect.FromStream(stream);
+                    sound.Play();
+                }
+                
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
                 this.RecalculatePlayerFov();
             
