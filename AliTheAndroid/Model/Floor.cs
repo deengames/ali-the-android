@@ -14,7 +14,7 @@ using System.Linq;
 using Troschuetz.Random;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Accessibility;
-using Microsoft.Xna.Framework.Audio;
+using DeenGames.AliTheAndroid.IO;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -172,12 +172,6 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (playerTookTurn)
             {
-                using (var stream = System.IO.File.OpenRead("Content/Blaster.wav"))
-                {
-                    var sound = SoundEffect.FromStream(stream);
-                    sound.Play();
-                }
-                
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
                 this.RecalculatePlayerFov();
             
