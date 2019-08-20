@@ -4,6 +4,7 @@ using System.IO;
 using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
+using DeenGames.AliTheAndroid.IO;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 using Microsoft.Xna.Framework;
@@ -14,6 +15,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 {
     public class OptionsMenuStrategy : AbstractConsole, ISubConsoleStrategy
     {
+        private const int SfxIncrement = 10;
         private readonly Color EnabledColour = Palette.Cyan;
         private readonly Color DisabledColour = Palette.Grey;
 
@@ -55,7 +57,9 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 this.PrintOption(target, 2, 5, "[2] Colour palette", Options.CurrentPalette == SelectablePalette.StandardPalette, "Standard", "Saturated");
                 this.PrintOption(target, 2, 6, "[3] Display mode", Options.IsFullScreen, "Fullscreen", "Windowed");
                 target.Print(2, 7, $"[4] Effects display time: {Options.EffectsDelayMultiplier}x", Palette.Blue);
-                target.Print(2, 8, $"[5] View or change key bindings", Palette.Blue);
+                target.Print(2, 8, $"[5] Change sound-effects volume: ", Palette.Blue);
+                target.Print(35, 8, $"{Options.SoundEffectsVolume}%", EnabledColour);
+                target.Print(2, 9, $"[6] View or change key bindings", Palette.Blue);
 
                 target.Print(2, this.Height - 3, $"Number keys to toggle options, {Options.KeyBindings[GameAction.OpenMenu]} to close", Palette.OffWhite);
             }
@@ -111,6 +115,13 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     }
                     if (keyboard.IsKeyPressed(Key.NumPad5))
                     {
+                        Options.SoundEffectsVolume = (Options.SoundEffectsVolume + SfxIncrement) % 110;
+                        Microsoft.Xna.Framework.Audio.SoundEffect.MasterVolume = (Options.SoundEffectsVolume / 100f);
+                        AudioManager.Instance.Play("Blaster");
+                        this.SaveOptionsToDisk();
+                    }
+                    if (keyboard.IsKeyPressed(Key.NumPad6))
+                    {
                         this.keyBindingsConsole = new KeyBindingsStrategy();
                     }
                     if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
@@ -155,6 +166,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 { "EffectsDisplayMultiplier", Options.EffectsDelayMultiplier.ToString() },
                 { "KeyBindings", JsonConvert.SerializeObject(Options.KeyBindings) },
                 { "FirstRun", "false"},
+                { "SoundEffectsVolume", Options.SoundEffectsVolume.ToString() },
             };
 
             var json = JsonConvert.SerializeObject(data);

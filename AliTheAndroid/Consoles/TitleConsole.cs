@@ -179,6 +179,24 @@ namespace DeenGames.AliTheAndroid.Consoles
                     // Re-save
                     File.WriteAllText(Options.FileName, JsonConvert.SerializeObject(data));
                 }
+
+                if (!data.ContainsKey("SoundEffectsVolume"))
+                {
+                    data["SoundEffectsVolume"] = "100";
+                }
+                else
+                {
+                    var volume = int.Parse(data["SoundEffectsVolume"]);
+                    if (volume < 0)
+                    {
+                        data["SoundEffectsVolume"] = "0";
+                    }
+                    else if (volume > 100)
+                    {
+                        data["SoundEffectsVolume"] = "100";
+                    }
+                }
+                Options.SoundEffectsVolume = int.Parse(data["SoundEffectsVolume"]);
             }
             else
             {
