@@ -1799,10 +1799,6 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.Fire]) && (Player.CurrentWeapon != Weapon.GravityCannon || Player.CanFireGravityCannon))
             {
-                // If gravity cannon wasn't fireable, but it's not equipped, make it fireable. This allows us to fire gravity/rocket/gravity/blaster/etc.
-                if (Player.CurrentWeapon != Weapon.GravityCannon && !Player.CanFireGravityCannon) {
-                    Player.CanFireGravityCannon = true;
-                }
                 this.FireShot();
                 // No need to set processedInput=true, that's handled when the weapon effect despawns
             }
@@ -1832,6 +1828,11 @@ namespace DeenGames.AliTheAndroid.Model
                 processedInput = true;
             }
 
+            if (processedInput && !Player.CanFireGravityCannon)
+            {
+                Player.CanFireGravityCannon = true;
+            }
+            
             return processedInput;
         }
 
