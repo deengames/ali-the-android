@@ -1804,6 +1804,7 @@ namespace DeenGames.AliTheAndroid.Model
                     Player.CanFireGravityCannon = true;
                 }
                 this.FireShot();
+                processedInput = true;
             }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
