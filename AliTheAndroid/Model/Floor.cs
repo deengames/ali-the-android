@@ -365,6 +365,7 @@ namespace DeenGames.AliTheAndroid.Model
                     if (playerDistance <= GravityRadius) {
                         int moveBy = GravityRadius - playerDistance;
                         this.ApplyKnockbacks(Player, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
+                        this.OnPlayerMoved();
                     }                    
                 }
                 
