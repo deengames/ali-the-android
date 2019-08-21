@@ -303,11 +303,6 @@ namespace DeenGames.AliTheAndroid.Model
                             this.AddNonDupeEntity(new Plasma(previousX, previousY), this.PlasmaResidue);
                         }
                     }
-
-                    if (ShipCore != null && ShipCore.X == plasmaShot.X && ShipCore.Y == plasmaShot.Y)
-                    {
-                        this.lastMessage = "Plasma penetrates the ship core! It explodes into a burst of quantum plasma!";
-                    }
                 }
 
                 // Destroy any effect that hit something (wall/monster/etc.)
@@ -324,12 +319,14 @@ namespace DeenGames.AliTheAndroid.Model
                         if (hitCore == plasmaShot)
                         {
                             this.LatestMessage = "The core absorbs the plasma, shatters, and erupts in quantum plasma!";
+                            AudioManager.Instance.Play("CoreBreaks");
                             this.SpawnQuantumPlasma(this.ShipCore.X, this.ShipCore.Y);
                             this.ShipCore = null;
                         }
                         else
                         {
                             this.LatestMessage = "Energy splays harmlessly across the crystal core.";
+                            AudioManager.Instance.Play("CoreAbsorbs");
                         }
                     }
                 }
