@@ -20,11 +20,10 @@ namespace DeenGames.AliTheAndroid.Consoles
         private Random random = new Random();
 
 
-        public CoreGameConsole(int width, int height, int gameSeed) : base(width, height)
+        public CoreGameConsole(int width, int height, Dungeon dungeon) : base(width, height)
         {
-            this.dungeon = new Dungeon(width, height, gameSeed);
-            this.dungeon.GoToNextFloor();
-
+            this.dungeon = dungeon;
+            
             EventBus.Instance.AddListener(GameEvent.ShowSubMenu, (obj) =>
             {
                 if (this.subMenuConsole == null)
@@ -98,14 +97,17 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  this.SetGlyph(wall.X, wall.Y, wallCharacter, colour);
+                  this.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
                 }
             }
 
-            foreach (var chasm in this.dungeon.CurrentFloor.Chasms) {
-                if (this.dungeon.CurrentFloor.IsInPlayerFov(chasm.X, chasm.Y)) {
+            foreach (var chasm in this.dungeon.CurrentFloor.Chasms)
+            {
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(chasm.X, chasm.Y))
+                {
                     this.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color, Palette.DarkMutedBrown);
-                } else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y)) {
+                } else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y))
+                {
                     this.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
                 }
             }
@@ -181,7 +183,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             }
 
             var dataCube = this.dungeon.CurrentFloor.DataCube;
-            if (dataCube != null && this.dungeon.CurrentFloor.IsInPlayerFov(dataCube.X, dataCube.Y))
+            if (dataCube != null)
             {
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colours = Options.CurrentPalette.DataCubeColours;
@@ -222,13 +224,10 @@ namespace DeenGames.AliTheAndroid.Consoles
             
             if (message.Length > this.dungeon.Width)
             {
-                var firstLineBreak = message.Substring(0, this.dungeon.Width).LastIndexOfAny(new char[] { ' ', '.'} ) + 1;
+                var firstLineBreak = message.Substring(0, this.dungeon.Width - 7).LastIndexOfAny(new char[] { ' ', '.'} ) + 1;
                 var firstLine = message.Substring(0, firstLineBreak);
-                var secondLine = message.Substring(firstLineBreak);
 
-                // Overrides health momentarily.
-                this.Print(1, this.dungeon.Height - 2, firstLine, Palette.White);
-                this.Print(1, this.dungeon.Height - 1, secondLine, Palette.White);
+                this.Print(1, this.dungeon.Height - 1, $"{firstLine} [more]", Palette.White);
             }
             else
             {

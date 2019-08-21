@@ -15,6 +15,9 @@ using Troschuetz.Random;
 using DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies;
 using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.IO;
+using Newtonsoft.Json;
+using System.IO;
+using DeenGames.AliTheAndroid.Infrastructure;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -50,6 +53,10 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
+        // Work-around for poor serialization support of self-referencing entities
+        // See comments on SerializationTests.SerializeAndDeserializePowerUps.
+        // We pair everything here on deserialize.
+        public PowerUp[] PairedPowerUps;
         public readonly List<AbstractEntity> QuantumPlasma = new List<AbstractEntity>();
 
         public Player Player;
@@ -58,12 +65,21 @@ namespace DeenGames.AliTheAndroid.Model
         public ShipCore ShipCore = null;
         
         // Internal for unit testing
-        internal ArrayMap<bool> map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
-        internal IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
+        internal ArrayMap<bool> Map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
+        internal IList<GoRogue.Rectangle> Rooms = new List<GoRogue.Rectangle>();
 
-        private int floorNum = 0;
-        private int width = 0;
-        private int height = 0;
+        [JsonProperty]
+        internal int FloorNum = 0;
+
+        // width/height are only used during generation, but need to be deserialized. Internal for testability
+        [JsonProperty]
+        internal int Width = 0;
+
+        [JsonProperty]
+        internal int Height = 0;
+
+        internal GoRogue.FOV PlayerFieldOfView;
+        
         // Used for deterministic things like dungeon generation
         private IGenerator globalRandom;
         // Used for non-deterministic things, like monster movement
@@ -71,13 +87,14 @@ namespace DeenGames.AliTheAndroid.Model
 
 
         // Super hack. Key is "x, y", value is IsDiscovered.
+        [JsonProperty]
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
 
 
         private string lastMessage = "";
+        private bool justScrolledMessage = false;
         private IKeyboard keyboard;
-        private bool generatedPowerUps = false;
-        private GoRogue.FOV playerFieldOfView;
+
 
         // 2 = B2
         private static readonly IDictionary<string, int> monsterFloors = new Dictionary<string, int>() {
@@ -97,7 +114,6 @@ namespace DeenGames.AliTheAndroid.Model
             { Weapon.PlasmaCannon, 9 }, // In the final, darkest floor
         };
 
-        // TODO: should not be publically settable
         public string LatestMessage { 
             get {
                 return this.lastMessage;
@@ -110,24 +126,33 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        public Floor(int width, int height, int floorNum, IGenerator globalRandom)
+        /// <summary>
+        /// Used when deserializing a saved dungeon; stuff is already generated
+        /// </summary>
+        [JsonConstructor]
+        public Floor(int width, int height, int floorNum, Dictionary<string, bool> isTileDiscovered)
+        : this(width, height, floorNum)
         {
-            this.width = width;
-            this.height = height;
-            this.floorNum = floorNum;
-            this.globalRandom = globalRandom;
+            this.isTileDiscovered = isTileDiscovered;
+        }
+
+        /// <summary>
+        /// Common constructor code shared between serializtion and production workflow
+        /// </summary>
+        public Floor(int width, int height, int floorNum)
+        {
+            this.Width = width;
+            this.Height = height;
+            this.FloorNum = floorNum;            
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
 
             this.PlasmaResidue = new List<Plasma>();
-
-            this.GenerateMap();
-            this.playerFieldOfView = new GoRogue.FOV(map);
 
             var eventBus = EventBus.Instance;
 
             eventBus.AddListener(GameEvent.PlayerTookTurn, (obj) =>
             {
-                if (Dungeon.Instance.CurrentFloorNum == this.floorNum)
+                if (Dungeon.Instance.CurrentFloorNum == this.FloorNum)
                 {
                     this.PlayerTookTurn();
                 }
@@ -135,12 +160,17 @@ namespace DeenGames.AliTheAndroid.Model
 
             eventBus.AddListener(GameEvent.EntityDeath, (e) =>
             {
-                if (Dungeon.Instance.CurrentFloorNum == this.floorNum && e == Player)
+                if (Dungeon.Instance.CurrentFloorNum == this.FloorNum && e == Player)
                 {
                     LastGameLogger.Instance.Log($"Player died!!!");
-                    this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to quit.";
+                    this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to return to the title.";
                     this.Player.Character = '%';
                     this.Player.Color = Palette.DarkBurgandyPurple;
+
+                    if (Options.DeleteSaveGameOnDeath && File.Exists(Serializer.SaveGameFileName))
+                    {
+                        File.Delete(Serializer.SaveGameFileName);
+                    }
                 }
                 else
                 {
@@ -149,7 +179,7 @@ namespace DeenGames.AliTheAndroid.Model
             });
 
             eventBus.AddListener(GameEvent.EggHatched, (e) => {
-                if (Dungeon.Instance.CurrentFloorNum == this.floorNum)
+                if (Dungeon.Instance.CurrentFloorNum == this.FloorNum)
                 {
                     var position = (GoRogue.Coord)e;
                     // Remove egg
@@ -166,6 +196,19 @@ namespace DeenGames.AliTheAndroid.Model
             });
         }
 
+        /// <summary>
+        /// "Production" workflow: generate a floor and all content
+        /// </summary>
+        public Floor(int width, int height, int floorNum, IGenerator globalRandom)
+        : this(width, height, floorNum)
+        {
+            this.globalRandom = globalRandom;
+            
+            this.GenerateMap();
+            
+            this.PlayerFieldOfView = new GoRogue.FOV(Map);
+        }
+
         public void Update(System.TimeSpan delta)
         {
             bool playerTookTurn = this.ProcessPlayerInput();
@@ -173,7 +216,6 @@ namespace DeenGames.AliTheAndroid.Model
             if (playerTookTurn)
             {
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
-                this.RecalculatePlayerFov();
             
                 if (ShipCore != null)
                 {
@@ -185,6 +227,8 @@ namespace DeenGames.AliTheAndroid.Model
                         this.LatestMessage = "The ship core thrums and glows with energy.";
                     }
                 }
+
+                this.MentionInterestingAdjacentObjects();
             }
 
             if (this.EffectEntities.Any()) {
@@ -330,7 +374,7 @@ namespace DeenGames.AliTheAndroid.Model
                 // Find active gravity shots and destroy rooms full of gravity waves appropriately
                 gravityShot = EffectEntities.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
                 if (gravityShot != null) {
-                    var room = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
+                    var room = this.Rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
                     if (room != GoRogue.Rectangle.EMPTY) {
                         var waves = this.GravityWaves.Where(g => room.Contains(new GoRogue.Coord(g.X, g.Y)));
                         waves.ToList().ForEach(w => w.StopReactingToPlayer());
@@ -361,10 +405,11 @@ namespace DeenGames.AliTheAndroid.Model
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
             }
         }
-        
+
+
         public bool IsInPlayerFov(int x, int y)
         {
-            if (x < 0 || y < 0 || x >= this.width || y >= this.height)
+            if (x < 0 || y < 0 || x >= this.Width || y >= this.Height)
             {
                 return false; // Out of bounds = not visible
             }
@@ -374,7 +419,7 @@ namespace DeenGames.AliTheAndroid.Model
             if (Options.EnableOmniSight) {
                 return true;
             }
-            return playerFieldOfView.BooleanFOV[x, y] == true;
+            return PlayerFieldOfView.BooleanFOV[x, y] == true;
 #pragma warning restore
         }
 
@@ -397,66 +442,47 @@ namespace DeenGames.AliTheAndroid.Model
         public void RecalculatePlayerFov()
         {
             // Recalculate FOV
-            playerFieldOfView.Calculate(Player.X, Player.Y, Player.VisionRange);
+            PlayerFieldOfView.Calculate(Player.X, Player.Y, Player.VisionRange);
         }
 
-        // Called outside of the generation process because power-ups can't be determined ahead of time; they depend on
-        // the player's choice. So we pass the list to each floor, and let each floor consume/update it appropriately.
-        // TODO: put this back in GenerateMap
-        public void GeneratePowerUps()
+        public void PairPowerUps()
         {
-            if (!this.generatedPowerUps)
+            if (this.PairedPowerUps.Any())
             {
-                var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-                if (floorsNearStairs.Count < 2)
-                {
-                    // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
-                    var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
-                    var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
-                    var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
-                    var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
-
-                    var moreTiles = this.GetAdjacentFloors(aboveStairs);
-                    moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
-                    moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
-                    moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
-
-                    floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
-                }
-
-                // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
-                // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
-                var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
-                var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
-
-                // TODO: link the power-ups so that: a) picking up one destroys the other, and b) remove the picked one from this.guaranteedPowerUps
-
-                for (var i = 0; i < locations.Count(); i++)
-                {
-                    var powerUp = powerUps[i];
-                    var location = locations[i];
-
-                    powerUp.X = location.X;
-                    powerUp.Y = location.Y;
-
-                    this.PowerUps.Add(powerUp);
-                }
-
-                PowerUp.Pair(powerUps[0], powerUps[1]);
-
-                foreach (var powerUp in powerUps)
-                {
-                    powerUp.OnPickUp(() => {
-                        this.PowerUps.Remove(powerUp);
-                        this.PowerUps.Remove(powerUp);
-                        this.PowerUps.Remove(powerUp.PairedTo);
-                    });
-                }
-                
-                this.generatedPowerUps = true;
+                PowerUp.Pair(this.PairedPowerUps[0], this.PairedPowerUps[1]);
+            }
+            
+            foreach (var powerUp in this.PairedPowerUps)
+            {
+                powerUp.OnPickUp(() => {
+                    this.PowerUps.Remove(powerUp);
+                    this.PowerUps.Remove(powerUp);
+                    this.PowerUps.Remove(powerUp.PairedTo);
+                });
             }
         }
 
+        public void InitializeMapAndFov()
+        {
+                        // ArrayMap is not deserializable and neither is GoRogue.FOV
+            // Therefore, reconstruct it.
+            // Used for deserialization; overwritten by the regular constructor
+            this.Map = new ArrayMap<bool>(this.Width, this.Height);
+            // Make everything visible
+            for (var y = 0; y < this.Height; y++) 
+            {
+                for (var x = 0; x < this.Width; x++)
+                {
+                    this.Map[x, y] = true;
+                }
+            }
+
+            // Make walls occlude visibility
+            this.Walls.ForEach(w => this.Map[w.X, w.Y] = false);
+            this.FakeWalls.ForEach(w => this.Map[w.X, w.Y] = false);
+
+            this.PlayerFieldOfView = new GoRogue.FOV(Map);
+        }
         
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
         internal int CountAdjacentFloors(GoRogue.Coord coordinates) {
@@ -487,18 +513,12 @@ namespace DeenGames.AliTheAndroid.Model
         internal void OnPlayerMoved()
         {
             Player.CanFireGravityCannon = true;
-            // This is too late - player already moved. For the prototype, we can live with this.
-            int viewRadius = (int)Math.Ceiling(Player.VisionRange / 2.0);
-            for (var y = Player.Y - viewRadius; y <= Player.Y + viewRadius; y++)
+
+            this.RecalculatePlayerFov();
+
+            foreach (var newlySeen in this.PlayerFieldOfView.NewlySeen)
             {
-                for (var x = Player.X - viewRadius; x <= Player.X + viewRadius; x++)
-                {
-                    // Just to be sure
-                    if (IsInPlayerFov(x, y))
-                    {
-                        this.MarkAsSeen(x, y);
-                    }
-                }
+                this.MarkAsSeen(newlySeen.X, newlySeen.Y);
             }
 
             this.LatestMessage = "";
@@ -543,7 +563,8 @@ namespace DeenGames.AliTheAndroid.Model
                 this.PowerUps.Remove(powerUpUnderPlayer);
                 Player.Absorb(powerUpUnderPlayer);
                 powerUpUnderPlayer.PickUp();
-                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}";
+                this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}. (Game saved)";
+                SaveManager.SaveGame();
             }
 
             if (this.WeaponPickUp != null && WeaponPickUp.X == Player.X && WeaponPickUp.Y == Player.Y)
@@ -553,8 +574,9 @@ namespace DeenGames.AliTheAndroid.Model
                 var key = this.GetKeyFor(weaponType);
                 var keyText = key.ToString().Replace("NumPad", "");
                 var weaponInfo = DeenGames.AliTheAndroid.Model.Entities.Player.WeaponPickupMessages[weaponType];
-                this.LatestMessage = $"You assimilate the {weaponType}. Press {keyText} to equip it. {weaponInfo}";
+                this.LatestMessage = $"You assimilate the {weaponType}. Press {keyText} to equip it. {weaponInfo} (Game saved)";
                 this.WeaponPickUp = null;
+                SaveManager.SaveGame();
             }
 
             if (this.DataCube != null && DataCube.X == Player.X && DataCube.Y == Player.Y)
@@ -566,8 +588,9 @@ namespace DeenGames.AliTheAndroid.Model
                 EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
                 EventBus.Instance.Broadcast(GameEvent.ShowDataCube, this.DataCube);
 
-                this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.'";
+                this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.' (Game saved)";
                 this.DataCube = null;
+                SaveManager.SaveGame();
             }
 
             if (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)
@@ -591,9 +614,50 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
+        
+
+        private void GeneratePowerUps()
+        {
+            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            if (floorsNearStairs.Count < 2)
+            {
+                // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
+                var aboveStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y - 1);
+                var belowStairs = new GoRogue.Coord(StairsDownLocation.X, StairsDownLocation.Y + 1);
+                var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
+                var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
+
+                var moreTiles = this.GetAdjacentFloors(aboveStairs);
+                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
+                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
+
+                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            }
+
+            // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
+            // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
+            var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
+            var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
+
+            for (var i = 0; i < locations.Count(); i++)
+            {
+                var powerUp = powerUps[i];
+                var location = locations[i];
+
+                powerUp.X = location.X;
+                powerUp.Y = location.Y;
+
+                this.PowerUps.Add(powerUp);
+            }
+
+            this.PairedPowerUps = powerUps.ToArray();
+            this.PairPowerUps();            
+        }
+
         private void SpawnQuantumPlasma(int x, int y)
         {
-            if (x >= 0 && x < this.width && y >= 0 && y < height && !this.Walls.Any(w => w.X == x && w.Y == y))
+            if (x >= 0 && x < this.Width && y >= 0 && y < Height && !this.Walls.Any(w => w.X == x && w.Y == y))
             {
                 var plasma = AbstractEntity.Create(SimpleEntity.QuantumPlasma, x, y);
                 this.AddNonDupeEntity(plasma, this.QuantumPlasma);
@@ -604,14 +668,14 @@ namespace DeenGames.AliTheAndroid.Model
         private List<GoRogue.Rectangle> RoomsInPathFromStairsToStairs()
         {
             // Plot a path from the player to the stairs. Pick one of those rooms in that path, and fill it with gravity.            
-            var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
+            var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
 
             var roomsInPath = new List<GoRogue.Rectangle>();
 
             foreach (var step in path.StepsWithStart)
             {
-                var stepRoom = this.rooms.SingleOrDefault(r => r.Contains(step));
+                var stepRoom = this.Rooms.SingleOrDefault(r => r.Contains(step));
                 if (stepRoom != GoRogue.Rectangle.EMPTY && !roomsInPath.Contains(stepRoom))
                 {
                     roomsInPath.Add(stepRoom);
@@ -625,7 +689,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.GravityWaves.Clear();
 
-            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
+            var playerRoom = this.Rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
             var roomsInPath = this.RoomsInPathFromStairsToStairs();
             roomsInPath.Remove(playerRoom);
 
@@ -643,7 +707,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             var extraRooms = ExtraGravityWaveRooms;
             var stairsUpCoordinates = new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y);
-            var candidateRooms = rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates)).ToList();
+            var candidateRooms = Rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates)).ToList();
 
             while (extraRooms > 0 && candidateRooms.Any())
             {
@@ -660,7 +724,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 for (var x = room.MinExtentX; x <= room.MaxExtentX; x++)
                 {
-                    this.GravityWaves.Add(new GravityWave(x, y, isBacktrackingWave, this.floorNum, this.IsWalkable));
+                    this.GravityWaves.Add(new GravityWave(x, y, isBacktrackingWave, this.FloorNum));
                 }
             }
         }
@@ -678,11 +742,11 @@ namespace DeenGames.AliTheAndroid.Model
             // Stairs before monsters because monsters don't generate close to stairs!
             this.GenerateStairs();
 
-            var actualFloorNum = this.floorNum + 1;
+            var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
                 // Add one more fake wall cluster between the player and the stairs down.
-                var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
+                var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
                 var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
                 var middle = globalRandom.Next((int)(path.Length * 0.25), (int)(path.Length * 0.75));
                 var midPath = path.GetStep(middle);
@@ -723,12 +787,12 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateShipCore()
         {
-            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
             if (actualFloorNumber == 10)
             {
                 // Find the room whose center is closest to the map center. NOT the stairs-up room!
-                var mapCenter = new GoRogue.Coord(this.width / 2, this.height / 2);
-                var roomsWithoutStairs = this.rooms.Where(r => !r.Contains(StairsUpLocation)).ToArray();
+                var mapCenter = new GoRogue.Coord(this.Width / 2, this.Height / 2);
+                var roomsWithoutStairs = this.Rooms.Where(r => !r.Contains(StairsUpLocation)).ToArray();
 
                 var closestRoom = roomsWithoutStairs[0];
                 var closestDistance = DistanceFrom(mapCenter, closestRoom.Center);
@@ -760,6 +824,23 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
+        
+        private void MentionInterestingAdjacentObjects()
+        {
+            if (this.Doors.Any(d => d.IsLocked && GoRogue.Distance.EUCLIDEAN.Calculate(d.X, d.Y, Player.X, Player.Y) <= 1))
+            {
+                this.LatestMessage += " This door looks jammed.";
+            }
+            if (this.FakeWalls.Any(f => GoRogue.Distance.EUCLIDEAN.Calculate(f.X, f.Y, Player.X, Player.Y) <= 1))
+            {
+                this.LatestMessage += " This wall looks cracked.";
+            }
+            if (this.Chasms.Any(c => GoRogue.Distance.EUCLIDEAN.Calculate(c.X, c.Y, Player.X, Player.Y) <= 1))
+            {
+                this.LatestMessage += " A chasm stretches down into darkness.";
+            }
+        }
+
         private double DistanceFrom(GoRogue.Coord c1, GoRogue.Coord c2)
         {
             return Math.Sqrt(Math.Pow(c1.X - c2.X, 2) + Math.Pow(c1.Y - c2.Y, 2));
@@ -767,7 +848,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateDataCube()
         {
-            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
             if (actualFloorNumber >= 2 && actualFloorNumber <= 9)
             {
                 var spot = this.FindEmptySpot();
@@ -782,12 +863,12 @@ namespace DeenGames.AliTheAndroid.Model
         // more like a secret/intentional room that way. Instead, now, it can be a room with multiple paths/exits.
         private void GenerateBacktrackingObstacles()
         {            
-            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
             GoRogue.Rectangle room;
 
             if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
             {
-                var secretRooms = this.GenerateSecretRooms(rooms, 1, true);
+                var secretRooms = this.GenerateSecretRooms(Rooms, 1, true);
                 if (secretRooms.Any())
                 {
                     room = secretRooms.First();
@@ -897,10 +978,10 @@ namespace DeenGames.AliTheAndroid.Model
         // BUG: generates a 1-tile larger room. If you say 7x7, it generates an 8x8. Dunno why.
         private GoRogue.Rectangle CreateIsolatedRoom(int width = 5, int height = 5)
         {
-            var startSpot = new GoRogue.Coord(globalRandom.Next(this.width), globalRandom.Next(this.height));
+            var startSpot = new GoRogue.Coord(globalRandom.Next(this.Width), globalRandom.Next(this.Height));
             while (!this.IsWallRegion(startSpot, width, height))
             {
-                startSpot = new GoRogue.Coord(globalRandom.Next(this.width), globalRandom.Next(this.height));
+                startSpot = new GoRogue.Coord(globalRandom.Next(this.Width), globalRandom.Next(this.Height));
             }
 
             var toReturn = new GoRogue.Rectangle(startSpot.X, startSpot.Y, width, height);
@@ -911,7 +992,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.Walls.RemoveAll(w => innerWalls.Contains(w));
 
             // Find the nearest room and naively connect to it
-            var nearestRoom = this.rooms.OrderBy(r => Math.Sqrt(Math.Pow(r.Center.X - toReturn.Center.X, 2) + Math.Pow(r.Center.Y - toReturn.Center.Y, 2))).First();
+            var nearestRoom = this.Rooms.OrderBy(r => Math.Sqrt(Math.Pow(r.Center.X - toReturn.Center.X, 2) + Math.Pow(r.Center.Y - toReturn.Center.Y, 2))).First();
 
             if (globalRandom.NextBoolean())
             {
@@ -958,7 +1039,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateWeaponPickUp()
         {
-            var actualFloorNumber = this.floorNum + 1; // 0 => B1, 8 => B9
+            var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
             var weaponFloorNumbers = weaponPickUpFloors.Values;
 
             if (weaponFloorNumbers.Contains(actualFloorNumber))
@@ -996,7 +1077,7 @@ namespace DeenGames.AliTheAndroid.Model
 
                 // Explores, stopping when it sees walls, locked doors, chasms, and gravity
                 if (
-                    check.X >= 0 && check.X < this.width && check.Y >= 0 && check.Y < this.height &&
+                    check.X >= 0 && check.X < this.Width && check.Y >= 0 && check.Y < this.Height &&
                     !Walls.Any(w => w.X == check.X && w.Y == check.Y) &&
                     !FakeWalls.Any(w => w.X == check.X && w.Y == check.Y) &&
                     !Doors.Any(d => d.IsLocked && d.X == check.X && d.Y == check.Y) &&
@@ -1023,7 +1104,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GenerateBoss()
         {
-            var actualFloorNum = this.floorNum + 1;
+            var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum == 10) // 10 = B10
             {
                 var bossLocation = this.StairsDownLocation;
@@ -1040,13 +1121,13 @@ namespace DeenGames.AliTheAndroid.Model
             
             // Pick hallways and fill them with chasms. Make sure they're far from each other.
             var hallwayTiles = new List<GoRogue.Coord>();
-            for (var y = 0; y < this.height; y++)
+            for (var y = 0; y < this.Height; y++)
             {
-                for (var x = 0; x < this.width; x++)
+                for (var x = 0; x < this.Width; x++)
                 {
                     // Not 100% accurate since we have monsters, ec.
                     var coordinates = new GoRogue.Coord(x, y);
-                    if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
+                    if (IsWalkable(x, y) && !this.Rooms.Any(r => r.Contains(coordinates)))
                     {
                         hallwayTiles.Add(coordinates);
                     }
@@ -1170,28 +1251,28 @@ namespace DeenGames.AliTheAndroid.Model
 
 
         private void GenerateMapRooms() {
-            var actualFloorNum = this.floorNum + 1;
+            var actualFloorNum = this.FloorNum + 1;
 
-            this.rooms = this.GenerateWalls();
+            this.Rooms = this.GenerateWalls();
             this.HighlightWalls();
             this.GenerateFakeWallClusters();
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
-                this.GenerateSecretRooms(rooms);
+                this.GenerateSecretRooms(Rooms);
             }
         }
 
         private IList<GoRogue.Rectangle> GenerateWalls()
         {
             this.Walls.Clear();
-            this.map = new ArrayMap<bool>(this.width, this.height);
+            this.Map = new ArrayMap<bool>(this.Width, this.Height);
             // true = passable, check GoRogue docs.
-            var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(map, this.globalRandom, MaxRooms, MinRoomSize, MaxRoomSize);
+            var rooms = GoRogue.MapGeneration.QuickGenerators.GenerateRandomRoomsMap(Map, this.globalRandom, MaxRooms, MinRoomSize, MaxRoomSize);
             
-            for (var y = 0; y < this.height; y++) {
-                for (var x = 0; x < this.width; x++) {
-                    if (!map[x, y]) {      
+            for (var y = 0; y < this.Height; y++) {
+                for (var x = 0; x < this.Width; x++) {
+                    if (!Map[x, y]) {      
                         var wall = AbstractEntity.Create(SimpleEntity.Wall, x, y);
 
                         // B9/B10 use alternate colour scheme for walls
@@ -1210,14 +1291,14 @@ namespace DeenGames.AliTheAndroid.Model
 
         private bool AreLastTwoFloors()
         {
-            return this.floorNum >= 8;
+            return this.FloorNum >= 8;
         }
 
         private void GenerateFakeWallClusters()
         {
             this.FakeWalls.Clear();
 
-            var actualFloorNum = this.floorNum + 1;
+            var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
                 // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
@@ -1245,7 +1326,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private IEnumerable<GoRogue.Rectangle> GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms, int numRooms = 2, bool flagWallsAsBacktracking = false)
         {
-            var actualFloorNum = this.floorNum + 1;
+            var actualFloorNum = this.FloorNum + 1;
 
             var secretRooms = this.FindPotentialSecretRooms(rooms).Take(numRooms);
             foreach (var room in secretRooms) {
@@ -1282,12 +1363,12 @@ namespace DeenGames.AliTheAndroid.Model
         {
             // Generate regular doors: any time we have a room, look at the perimeter tiles around that room.
             // If any of them have two ground tiles (including tiles with doors on them already), add a door.
-            foreach (var room in rooms) {
+            foreach (var room in Rooms) {
                 this.AddDoorsToRoom(room);
             }
 
             // Generate locked doors: random spots with only two surrounding ground tiles.
-            var actualFloorNum = this.floorNum + 1;
+            var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.Zapper])
             {
                 var leftToGenerate = NumberOfLockedDoors;
@@ -1521,7 +1602,7 @@ namespace DeenGames.AliTheAndroid.Model
         private void ProcessMonsterTurns()
         {
             var plasmaBurnedMonsters = new List<Entity>();
-
+            
             // Eggs' turns create more monsters (modify enumeration during iteration).
             // Just use ToArray here to create a copy.
             foreach (var monster in this.Monsters.Where(m => m.CanMove).ToArray())
@@ -1613,11 +1694,24 @@ namespace DeenGames.AliTheAndroid.Model
             if (Player.IsDead) {
                 if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
-                    LastGameLogger.Instance.Log("Player died and quit!");
-                    System.Environment.Exit(0);    
+                    LastGameLogger.Instance.Log("Player died.");
+                    SadConsole.Global.CurrentScreen = new TitleConsole(Program.GameWidthInTiles, Program.GameHeightInTiles);
                 }
 
                 return false; // don't pass time
+            }
+
+            if (justScrolledMessage)
+            {
+                // When pressing space => showing the last message, don't process THAT as a turn.
+                justScrolledMessage = false;
+                return false;
+            }
+            if (this.LatestMessage.Length > this.Width && this.keyboard.GetKeysPressed().Any())
+            {
+                this.LatestMessage = this.LatestMessage.Substring(this.Width - 7); // 7 = " [more]"
+                justScrolledMessage = true;
+                return false;
             }
 
             if (!Player.CanMove) {
@@ -1688,13 +1782,13 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
             }
-            else if (this.floorNum < 9 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.DescendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
+            else if (this.FloorNum < 9 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.DescendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
             {
                 Dungeon.Instance.GoToNextFloor();
                 destinationX = Player.X;
                 destinationY = Player.Y;
             }
-            else if (this.floorNum > 0 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.AscendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
+            else if (this.FloorNum > 0 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.AscendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsUpLocation.X && Player.Y == StairsUpLocation.Y)))
             {
                 Dungeon.Instance.GoToPreviousFloor();
                 destinationX = Player.X;
@@ -1875,13 +1969,13 @@ namespace DeenGames.AliTheAndroid.Model
         {
             // floorNum + 1 because B1 is floorNum 0, the dictionary is in B2, B4 ... not 1, 3, ...
             var numFuselings = this.globalRandom.Next(8, 9); // 8-9 fuselings
-            var numSlinks = this.floorNum + 1 >= monsterFloors["slink"] ? this.globalRandom.Next(3, 5) : 0; // 3-4            
-            var numTenLegs = this.floorNum + 1 >= monsterFloors["tenlegs"] ? this.globalRandom.Next(2, 4) : 0; // 2-3
-            var numZugs = this.floorNum + 1 >= monsterFloors["zug"] ? this.globalRandom.Next(1, 3) : 0; // 1-2
+            var numSlinks = this.FloorNum + 1 >= monsterFloors["slink"] ? this.globalRandom.Next(3, 5) : 0; // 3-4            
+            var numTenLegs = this.FloorNum + 1 >= monsterFloors["tenlegs"] ? this.globalRandom.Next(2, 4) : 0; // 2-3
+            var numZugs = this.FloorNum + 1 >= monsterFloors["zug"] ? this.globalRandom.Next(1, 3) : 0; // 1-2
 
-            numFuselings += this.floorNum; // +1 fuseling per floor
-            numSlinks += (int)Math.Floor((this.floorNum - monsterFloors["slink"]) / 2f); // +1 slink every other floor (B4, B6, B8, B10)
-            numTenLegs += (int)Math.Floor((this.floorNum - monsterFloors["tenlegs"]) / 3f); // +1 tenlegs every third floor (B4, B7, B10)
+            numFuselings += this.FloorNum; // +1 fuseling per floor
+            numSlinks += (int)Math.Floor((this.FloorNum - monsterFloors["slink"]) / 2f); // +1 slink every other floor (B4, B6, B8, B10)
+            numTenLegs += (int)Math.Floor((this.FloorNum - monsterFloors["tenlegs"]) / 3f); // +1 tenlegs every third floor (B4, B7, B10)
             numZugs += this.AreLastTwoFloors() ? 1 : 0; // +1 zug on floors B9+
 
             while (numFuselings > 0)
@@ -1950,8 +2044,8 @@ namespace DeenGames.AliTheAndroid.Model
             
             do 
             {
-                targetX = this.globalRandom.Next(0, this.width);
-                targetY = this.globalRandom.Next(0, this.height);
+                targetX = this.globalRandom.Next(0, this.Width);
+                targetY = this.globalRandom.Next(0, this.Height);
             } while (!this.IsWalkable(targetX, targetY));
 
             return new GoRogue.Coord(targetX, targetY);
@@ -1966,7 +2060,7 @@ namespace DeenGames.AliTheAndroid.Model
         // Can a projectile "fly" over a spot? True if empty or a chasm; false if occupied by anything
         // (walls, fake walls, doors, monsters, player, etc.)
         private bool IsFlyable(int x, int y) {
-            if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+            if (x < 0 || y < 0 || x >= this.Width || y >= this.Height) {
                 return false;
             }
 

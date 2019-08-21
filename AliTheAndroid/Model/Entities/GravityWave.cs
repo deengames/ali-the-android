@@ -4,6 +4,7 @@ using System.Linq;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Events;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
@@ -14,23 +15,31 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private static Random random = new Random();
         private const char GravityCharacter = (char)247; // ≈
         private Func<int, int, bool> isWalkableCheck;
-        private int floorNum;
+        
+        [JsonProperty]
+        // Internal for testing
+        internal int FloorNum;
 
-        public GravityWave(int x, int y, bool isBacktrackingWave, int floorNum, Func<int, int, bool> isWalkableCheck) : base(x, y, GravityCharacter, Palette.LightLilacPink)
+        public GravityWave(int x, int y, bool isBacktrackingWave, int floorNum) : base(x, y, GravityCharacter, Palette.LightLilacPink)
         {
-            this.floorNum = floorNum;
-            this.isWalkableCheck = isWalkableCheck;
+            this.FloorNum = floorNum;
             this.IsBacktrackingWave = isBacktrackingWave;
             EventBus.Instance.AddListener(GameEvent.PlayerTookTurn, this.PerturbOccupantOnMove);
         }
 
         private void PerturbOccupantOnMove(object obj)
         {
+            // Can't do this in the constructor because, serialization. Dungeon instance is still null (not fully created yet).
+            if (this.isWalkableCheck == null)
+            {
+                this.isWalkableCheck = Dungeon.Instance.Floors[FloorNum].IsWalkable;
+            }
+
             var data = obj as PlayerTookTurnData;
             var monsters = data.Monsters;
             var player = data.Player;
 
-            if (this.floorNum == Dungeon.Instance.CurrentFloorNum)
+            if (this.FloorNum == Dungeon.Instance.CurrentFloorNum)
             {
                 // Not clear why multiple monsters can occupy one spot. Never figured out the root cause.
                 var myMonsters = monsters.Where(m => m.X == this.X && m.Y == this.Y);
@@ -64,6 +73,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         
         private List<GoRogue.Coord> WhereCanIMove(Entity e)
         {
+            
             var toReturn = new List<GoRogue.Coord>();
 
             if (isWalkableCheck(e.X - 1, e.Y)) { toReturn.Add(new GoRogue.Coord(e.X - 1, e.Y)); }

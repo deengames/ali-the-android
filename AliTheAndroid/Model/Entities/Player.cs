@@ -2,16 +2,12 @@ using System;
 using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Loggers;
+using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class Player : Entity
     {
-        public Direction DirectionFacing { get; private set; }
-        public Weapon CurrentWeapon = Weapon.Blaster;
-        public bool HasEnvironmentSuit = false;
-        public bool CanFireGravityCannon { get; set; } = true;
-        internal List<DataCube> DataCubes { get; } = new List<DataCube>();
         internal static readonly Dictionary<Weapon, string> WeaponPickupMessages = new Dictionary<Weapon, string>() {
             { Weapon.MiniMissile,       "Fire missiles to destroy weak walls and debris." },
             { Weapon.Zapper,            "Unjam sealed doors with a jolt of energy." },
@@ -20,11 +16,26 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             { Weapon.PlasmaCannon,      "Super-heats the floor to damage anything in its wake." },
         };
 
-        private List<Weapon> weapons { get; } = new List<Weapon>() { Weapon.Blaster };
+        public Direction DirectionFacing { get; private set; }
+        public Weapon CurrentWeapon = Weapon.Blaster;
+        public bool HasEnvironmentSuit = false;
+        public bool CanFireGravityCannon { get; set; } = true;
+
+        [JsonProperty]
+        internal List<DataCube> DataCubes { get; set; } = new List<DataCube>();
+
+        [JsonProperty]        
+        internal List<Weapon> Weapons { get; private set; } = new List<Weapon>() { Weapon.Blaster };
 
 
-        public Player() : base("You", '@', Palette.White, 0, 0, 50, 7, 5, 4)
+        public Player(List<Weapon> weapons = null) : base("You", '@', Palette.White, 0, 0, 50, 7, 5, 4)
         {
+            if (weapons != null)
+            {
+                // Deserializing. Work around a bug where we end up with two copies of the Blaster.
+                this.Weapons = weapons;
+            }
+            
             this.DirectionFacing = Direction.Up;
 
             if (Options.PlayerStartsWithAllDataCubes)
@@ -40,7 +51,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             {
                 foreach (var weapon in (Weapon[])Enum.GetValues(typeof(Weapon)))
                 {
-                    if (weapon != Weapon.Undefined && weapon != Weapon.QuantumPlasma && !weapons.Contains(weapon))
+                    if (weapon != Weapon.Undefined && weapon != Weapon.QuantumPlasma && !Weapons.Contains(weapon))
                     {
                         this.Acquire(weapon);
                     }
@@ -80,15 +91,15 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public bool Has(Weapon weapon)
         {
-            return this.weapons.Contains(weapon);
+            return this.Weapons.Contains(weapon);
         }
 
         public void Acquire(Weapon weapon)
         {
             LastGameLogger.Instance.Log($"Acquired weapon: {weapon}");
-            if (!this.weapons.Contains(weapon))
+            if (!this.Weapons.Contains(weapon))
             {
-                this.weapons.Add(weapon);
+                this.Weapons.Add(weapon);
             }
         }
 

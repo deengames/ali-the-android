@@ -1,14 +1,17 @@
 using DeenGames.AliTheAndroid.Enums;
-using DeenGames.AliTheAndroid.Model.Entities;
-using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class Door : AbstractEntity
     {
         public bool IsBacktrackingDoor {get; private set;}
-        private bool isLocked = false;
-        private bool isOpened = false;
+
+        [JsonProperty]
+        internal bool isLocked = false;
+
+        [JsonProperty]
+        internal bool isOpened = false;
 
         public bool IsOpened { get { return this.isOpened; }
         set {

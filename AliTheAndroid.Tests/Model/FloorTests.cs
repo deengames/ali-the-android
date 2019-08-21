@@ -87,10 +87,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             RestrictRuntime(() => {
                 var floor1 = new Floor(40, 30, 7, new StandardGenerator(1234));
-                floor1.GeneratePowerUps();
 
                 var floor2 = new Floor(40, 30, 7, new StandardGenerator(4321));
-                floor2.GeneratePowerUps();
 
                 Assert.That(floor1.PowerUps.Any());
                 Assert.That(floor2.PowerUps.Any());
@@ -108,8 +106,6 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var globalRandom = new StandardGenerator(0);
                 var floor = new Floor(100, 100, 3, globalRandom);
                 var nextFloor = new Floor(25, 50, 4, globalRandom);
-
-                floor.GeneratePowerUps();
 
                 var twins = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp);
                 Assert.That(twins.Count, Is.EqualTo(2));
@@ -130,34 +126,6 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 // Probably two
                 backTrackingPowerUps.First().PickUp();
                 Assert.That(!floor.PowerUps.Where(p => p.IsBacktrackingPowerUp).Any());
-            });
-        }
-
-        [Test]
-        public void GenerateFloorDoesntRegeneratePowerUps()
-        {
-            RestrictRuntime(() => {
-                var floor = new Floor(30, 30, 0, new StandardGenerator(1));
-                floor.GeneratePowerUps();
-
-                // Create a copy so we don't modify the collection during enumeration
-                var powerups = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).ToArray();
-
-                Assert.That(powerups.Count, Is.EqualTo(2));
-
-                foreach (var powerUp in powerups)
-                {
-                    powerUp.PickUp();
-                }
-
-                powerups = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp).ToArray();
-                Assert.That(powerups.Count, Is.EqualTo(0));
-
-                // Act
-                floor.GeneratePowerUps();
-
-                // Assert
-                Assert.That(powerups.Count, Is.EqualTo(0));
             });
         }
 
@@ -321,7 +289,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 // Generated in a new room, make sure it's accessible
                 var firstLock = floor.Doors.First(d => d.IsLocked && d.IsBacktrackingDoor);
                 var firstLockCoordinates = new GoRogue.Coord(firstLock.X, firstLock.Y);
-                var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+                var pathFinder = new AStar(floor.Map, GoRogue.Distance.EUCLIDEAN);
                 var path = pathFinder.ShortestPath(floor.StairsUpLocation, firstLockCoordinates, true);
             });
         }
@@ -365,7 +333,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 // Generated in a new room, make sure it's accessible
                 var firstGravity = floor.GravityWaves.First();
                 var firstGravityCoordinates = new GoRogue.Coord(firstGravity.X, firstGravity.Y);
-                var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+                var pathFinder = new AStar(floor.Map, GoRogue.Distance.EUCLIDEAN);
                 var path = pathFinder.ShortestPath(floor.StairsUpLocation, firstGravityCoordinates, true);
             });
         }
@@ -415,7 +383,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 // Generated in a new room, make sure it's accessible
                 var firstChasm = floor.Chasms.First();
                 var firstChasmCoordinates = new GoRogue.Coord(firstChasm.X, firstChasm.Y);
-                var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+                var pathFinder = new AStar(floor.Map, GoRogue.Distance.EUCLIDEAN);
                 var path = pathFinder.ShortestPath(floor.StairsUpLocation, firstChasmCoordinates, true);
             });
             
@@ -443,7 +411,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             RestrictRuntime(() => {
                 var floor = new Floor(90, 45, 7, new StandardGenerator(777));
 
-                var pathFinder = new AStar(floor.map, GoRogue.Distance.EUCLIDEAN);
+                var pathFinder = new AStar(floor.Map, GoRogue.Distance.EUCLIDEAN);
                 var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
                 
                 // Any steps have any fake walls on them. Alternatively, this can be negated as:
