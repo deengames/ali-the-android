@@ -507,6 +507,7 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
         
+        /// For when the player ACTUALLY MOVED, like changed squares. For non-post-move-turn things (like after firing), see PlayerTookTurn.
         internal void OnPlayerMoved()
         {
             Player.CanFireGravityCannon = true;
@@ -529,30 +530,6 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             this.PlasmaResidue.ForEach(p => p.Degenerate());
-
-            // Copy to array to prevent concurrent modification exception
-            foreach (var plasma in this.QuantumPlasma.ToArray())
-            {
-                this.SpawnQuantumPlasma(plasma.X - 1, plasma.Y);
-                this.SpawnQuantumPlasma(plasma.X + 1, plasma.Y);
-                this.SpawnQuantumPlasma(plasma.X, plasma.Y - 1);
-                this.SpawnQuantumPlasma(plasma.X, plasma.Y + 1);
-            }
-
-            if (this.QuantumPlasma.Any(q => q.X == Player.X && q.Y == Player.Y))
-            {
-                Player.Damage(Player.TotalHealth, Weapon.QuantumPlasma);
-                this.LatestMessage = "As quantum plasma rips through you, the Ameer's laughter echoes in your ears ...";
-            }
-
-            // if (this.floorNum == 9) && no ameer => win
-
-            // Copy array to prevent concurrent modification exception
-            var vapourizedMonsters = this.Monsters.ToArray().Where(m => this.QuantumPlasma.Any(p => m.X == p.X && m.Y == p.Y));
-            foreach (var monster in vapourizedMonsters)
-            {
-                monster.Damage(monster.TotalHealth, Weapon.QuantumPlasma);
-            }
 
             var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (powerUpUnderPlayer != null)
@@ -1582,6 +1559,7 @@ namespace DeenGames.AliTheAndroid.Model
             throw new InvalidOperationException($"{display} ???");
         }
 
+        // For when the player took a turn (rest? fire?), but DID NOT MOVE. For post-move things, see OnPlayerMoved.
         private void PlayerTookTurn()
         {
             this.ProcessMonsterTurns();
@@ -1589,11 +1567,33 @@ namespace DeenGames.AliTheAndroid.Model
             var deadPlasma = this.PlasmaResidue.Where(p => !p.IsAlive);
             this.PlasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
 
+            // Copy to array to prevent concurrent modification exception
+            foreach (var plasma in this.QuantumPlasma.ToArray())
+            {
+                this.SpawnQuantumPlasma(plasma.X - 1, plasma.Y);
+                this.SpawnQuantumPlasma(plasma.X + 1, plasma.Y);
+                this.SpawnQuantumPlasma(plasma.X, plasma.Y - 1);
+                this.SpawnQuantumPlasma(plasma.X, plasma.Y + 1);
+            }
+
+            if (this.QuantumPlasma.Any(q => q.X == Player.X && q.Y == Player.Y))
+            {
+                Player.Damage(Player.TotalHealth, Weapon.QuantumPlasma);
+                this.LatestMessage = "As quantum plasma rips through you, the Ameer's laughter echoes in your ears ...";
+            }
+
+            // Copy array to prevent concurrent modification exception
+            var vapourizedMonsters = this.Monsters.ToArray().Where(m => this.QuantumPlasma.Any(p => m.X == p.X && m.Y == p.Y));
+            foreach (var monster in vapourizedMonsters)
+            {
+                monster.Damage(monster.TotalHealth, Weapon.QuantumPlasma);
+            }
+
             var ameer = this.Monsters.SingleOrDefault(m => m is Ameer);
             if (ameer != null)
             {
                 ((Ameer)ameer).OnPlayerMoved();
-            }
+            }            
         }
 
         private void ProcessMonsterTurns()
@@ -1804,7 +1804,7 @@ namespace DeenGames.AliTheAndroid.Model
                     Player.CanFireGravityCannon = true;
                 }
                 this.FireShot();
-                processedInput = true;
+                // No need to set processedInput=true, that's handled when the weapon effect despawns
             }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
