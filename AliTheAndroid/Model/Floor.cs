@@ -342,6 +342,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (teleporterShot != null) {
                     Player.X = teleporterShot.TeleportTo.X;
                     Player.Y = teleporterShot.TeleportTo.Y;
+                    AudioManager.Instance.Play("Teleport");
                     this.OnPlayerMoved();
                 }
 
@@ -1772,6 +1773,7 @@ namespace DeenGames.AliTheAndroid.Model
         private void FireShot()
         {
             var character = '+';
+            string soundEffect = "";
 
             if (Player.CurrentWeapon != Weapon.Zapper) {
                 // Blaster: +
@@ -1781,18 +1783,23 @@ namespace DeenGames.AliTheAndroid.Model
                 switch (Player.CurrentWeapon) {
                     case Weapon.Blaster:
                         character = '+';
+                        soundEffect = "Blaster";
                         break;
                     case Weapon.MiniMissile:
                         character = '!';
+                        soundEffect = "Missile";
                         break;
                     case Weapon.PlasmaCannon:
                         character = 'o';
+                        soundEffect = "ShootPlasma";
                         break;
                     case Weapon.GravityCannon:
                         character = GravityCannonShot;
+                        soundEffect = "GravityCannon";
                         break;
                     case Weapon.InstaTeleporter:
                         character = InstaTeleporterShot;
+                        soundEffect = "TeleporterShot";
                         break;
                 }
 
@@ -1816,7 +1823,12 @@ namespace DeenGames.AliTheAndroid.Model
                 if (character == GravityCannonShot) {
                     Player.CanFireGravityCannon = false;
                 }
+                
                 EffectEntities.Add(shot);
+                if (!string.IsNullOrEmpty(soundEffect))
+                {
+                    AudioManager.Instance.Play(soundEffect);
+                }
             }
             else
             {
@@ -1852,6 +1864,8 @@ namespace DeenGames.AliTheAndroid.Model
                 EffectEntities.Add(new Bolt(Player.X + dx - ox, Player.Y + dy - oy));
                 EffectEntities.Add(new Bolt(Player.X + 2*dx - 2*ox, Player.Y + 2*dy - 2*oy));
                 EffectEntities.Add(new Bolt(Player.X + 3*dx - 3*ox, Player.Y + 3*dy - 3*oy));
+
+                AudioManager.Instance.Play("Zapper");
             }
             
             this.Player.Freeze();
