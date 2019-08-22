@@ -258,6 +258,7 @@ namespace DeenGames.AliTheAndroid.Model
                 foreach (var bolt in backlashes.Where(b => b.Character == '$')) {
                     foreach (var door in Doors.Where(d => d.IsLocked && d.X == bolt.X && d.Y == bolt.Y)) {
                         door.IsLocked = false;
+                        AudioManager.Instance.Play("UnlockDoor");
                         this.LatestMessage = "You unlock the door!";
                     }
                 }
@@ -1809,6 +1810,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (!door.IsOpened) {
                     door.IsOpened = true;
                     this.LatestMessage = "You open the door.";
+                    AudioManager.Instance.Play("OpenDoor");
                 } else {
                     Player.X = door.X;
                     Player.Y = door.Y;

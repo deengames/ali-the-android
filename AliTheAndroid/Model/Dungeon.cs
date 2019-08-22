@@ -9,6 +9,7 @@ using System.Diagnostics;
 using DeenGames.AliTheAndroid.Accessibility;
 using Newtonsoft.Json;
 using DeenGames.AliTheAndroid.Infrastructure;
+using DeenGames.AliTheAndroid.IO;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -92,6 +93,11 @@ namespace DeenGames.AliTheAndroid.Model
 
         public void GoToNextFloor()
         {
+            if (this.CurrentFloorNum > -1)
+            {
+                AudioManager.Instance.Play("Descend");
+            }
+
             this.CurrentFloorNum++;
             this.CurrentFloor = this.Floors[this.CurrentFloorNum];
             LastGameLogger.Instance.Log($"Descended to B{this.CurrentFloorNum + 1}");
@@ -111,6 +117,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         public void GoToPreviousFloor()
         {
+            AudioManager.Instance.Play("Ascend");
             this.CurrentFloorNum--;
             this.CurrentFloor = this.Floors[this.CurrentFloorNum];
             LastGameLogger.Instance.Log($"Ascended to B{this.CurrentFloorNum + 1}");
