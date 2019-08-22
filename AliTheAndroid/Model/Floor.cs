@@ -579,15 +579,20 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        internal void CreateExplosion(int centerX, int centerY) {
-            for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++) {
-                for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++) {
+        internal void CreateExplosion(int centerX, int centerY)
+        {
+            for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++)
+            {
+                for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++)
+                {
                     var distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
-                    if (distance <= ExplosionRadius) {
+                    if (distance <= ExplosionRadius)
+                    {
                         this.EffectEntities.Add(new Explosion(x, y));
                     }
                 }
             }
+            AudioManager.Instance.Play("Explosion");
         }
 
         
