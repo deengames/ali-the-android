@@ -202,8 +202,9 @@ namespace DeenGames.AliTheAndroid.Consoles
             foreach (var plasma in this.dungeon.CurrentFloor.QuantumPlasma)
             {
                 // Doesn't care about LOS. You're dead if you get cornered.
-                var plasmaColor = random.Next(100) <= 7 ? Palette.LilacPinkPurple : plasma.Color;
-                this.SetGlyph(plasma.X, plasma.Y, plasma.Character, plasmaColor);
+                // Disable flickering because of potential for seizures.
+                //var plasmaColor = random.Next(100) <= 7 ? Palette.LilacPinkPurple : plasma.Color;
+                this.SetGlyph(plasma.X, plasma.Y, plasma.Character, plasma.Color);
             }
 
             this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);

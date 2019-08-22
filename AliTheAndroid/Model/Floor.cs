@@ -303,11 +303,6 @@ namespace DeenGames.AliTheAndroid.Model
                             this.AddNonDupeEntity(new Plasma(previousX, previousY), this.PlasmaResidue);
                         }
                     }
-
-                    if (ShipCore != null && ShipCore.X == plasmaShot.X && ShipCore.Y == plasmaShot.Y)
-                    {
-                        this.lastMessage = "Plasma penetrates the ship core! It explodes into a burst of quantum plasma!";
-                    }
                 }
 
                 // Destroy any effect that hit something (wall/monster/etc.)
@@ -324,12 +319,14 @@ namespace DeenGames.AliTheAndroid.Model
                         if (hitCore == plasmaShot)
                         {
                             this.LatestMessage = "The core absorbs the plasma, shatters, and erupts in quantum plasma!";
+                            AudioManager.Instance.Play("CoreBreaks");
                             this.SpawnQuantumPlasma(this.ShipCore.X, this.ShipCore.Y);
                             this.ShipCore = null;
                         }
                         else
                         {
                             this.LatestMessage = "Energy splays harmlessly across the crystal core.";
+                            AudioManager.Instance.Play("CoreAbsorbs");
                         }
                     }
                 }
@@ -368,6 +365,7 @@ namespace DeenGames.AliTheAndroid.Model
                     if (playerDistance <= GravityRadius) {
                         int moveBy = GravityRadius - playerDistance;
                         this.ApplyKnockbacks(Player, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
+                        this.OnPlayerMoved();
                     }                    
                 }
                 
@@ -510,6 +508,7 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
         
+        /// For when the player ACTUALLY MOVED, like changed squares. For non-post-move-turn things (like after firing), see PlayerTookTurn.
         internal void OnPlayerMoved()
         {
             Player.CanFireGravityCannon = true;
@@ -532,30 +531,6 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             this.PlasmaResidue.ForEach(p => p.Degenerate());
-
-            // Copy to array to prevent concurrent modification exception
-            foreach (var plasma in this.QuantumPlasma.ToArray())
-            {
-                this.SpawnQuantumPlasma(plasma.X - 1, plasma.Y);
-                this.SpawnQuantumPlasma(plasma.X + 1, plasma.Y);
-                this.SpawnQuantumPlasma(plasma.X, plasma.Y - 1);
-                this.SpawnQuantumPlasma(plasma.X, plasma.Y + 1);
-            }
-
-            if (this.QuantumPlasma.Any(q => q.X == Player.X && q.Y == Player.Y))
-            {
-                Player.Damage(Player.TotalHealth, Weapon.QuantumPlasma);
-                this.LatestMessage = "As quantum plasma rips through you, the Ameer's laughter echoes in your ears ...";
-            }
-
-            // if (this.floorNum == 9) && no ameer => win
-
-            // Copy array to prevent concurrent modification exception
-            var vapourizedMonsters = this.Monsters.ToArray().Where(m => this.QuantumPlasma.Any(p => m.X == p.X && m.Y == p.Y));
-            foreach (var monster in vapourizedMonsters)
-            {
-                monster.Damage(monster.TotalHealth, Weapon.QuantumPlasma);
-            }
 
             var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (powerUpUnderPlayer != null)
@@ -1585,6 +1560,7 @@ namespace DeenGames.AliTheAndroid.Model
             throw new InvalidOperationException($"{display} ???");
         }
 
+        // For when the player took a turn (rest? fire?), but DID NOT MOVE. For post-move things, see OnPlayerMoved.
         private void PlayerTookTurn()
         {
             this.ProcessMonsterTurns();
@@ -1592,11 +1568,33 @@ namespace DeenGames.AliTheAndroid.Model
             var deadPlasma = this.PlasmaResidue.Where(p => !p.IsAlive);
             this.PlasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
 
+            // Copy to array to prevent concurrent modification exception
+            foreach (var plasma in this.QuantumPlasma.ToArray())
+            {
+                this.SpawnQuantumPlasma(plasma.X - 1, plasma.Y);
+                this.SpawnQuantumPlasma(plasma.X + 1, plasma.Y);
+                this.SpawnQuantumPlasma(plasma.X, plasma.Y - 1);
+                this.SpawnQuantumPlasma(plasma.X, plasma.Y + 1);
+            }
+
+            if (this.QuantumPlasma.Any(q => q.X == Player.X && q.Y == Player.Y))
+            {
+                Player.Damage(Player.TotalHealth, Weapon.QuantumPlasma);
+                this.LatestMessage = "As quantum plasma rips through you, the Ameer's laughter echoes in your ears ...";
+            }
+
+            // Copy array to prevent concurrent modification exception
+            var vapourizedMonsters = this.Monsters.ToArray().Where(m => this.QuantumPlasma.Any(p => m.X == p.X && m.Y == p.Y));
+            foreach (var monster in vapourizedMonsters)
+            {
+                monster.Damage(monster.TotalHealth, Weapon.QuantumPlasma);
+            }
+
             var ameer = this.Monsters.SingleOrDefault(m => m is Ameer);
             if (ameer != null)
             {
                 ((Ameer)ameer).OnPlayerMoved();
-            }
+            }            
         }
 
         private void ProcessMonsterTurns()
@@ -1802,11 +1800,8 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.Fire]) && (Player.CurrentWeapon != Weapon.GravityCannon || Player.CanFireGravityCannon))
             {
-                // If gravity cannon wasn't fireable, but it's not equipped, make it fireable. This allows us to fire gravity/rocket/gravity/blaster/etc.
-                if (Player.CurrentWeapon != Weapon.GravityCannon && !Player.CanFireGravityCannon) {
-                    Player.CanFireGravityCannon = true;
-                }
                 this.FireShot();
+                // No need to set processedInput=true, that's handled when the weapon effect despawns
             }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
@@ -1834,6 +1829,11 @@ namespace DeenGames.AliTheAndroid.Model
                 processedInput = true;
             }
 
+            if (processedInput && !Player.CanFireGravityCannon)
+            {
+                Player.CanFireGravityCannon = true;
+            }
+            
             return processedInput;
         }
 

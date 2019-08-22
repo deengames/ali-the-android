@@ -14,6 +14,7 @@ namespace DeenGames.AliTheAndroid
         public static bool IsFullScreen = false;
         public static int EffectsDelayMultiplier = 1;
         public static int SoundEffectsVolume = 100; // 0-100%
+        public static float GlobalSfxVolumeNerf = 0.55f; // SFX are really loud. Nerf it so 100% is a nice loudness.
 
         public static bool DeleteSaveGameOnDeath = true;
 
