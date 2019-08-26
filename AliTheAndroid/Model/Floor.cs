@@ -258,6 +258,7 @@ namespace DeenGames.AliTheAndroid.Model
                 foreach (var bolt in backlashes.Where(b => b.Character == '$')) {
                     foreach (var door in Doors.Where(d => d.IsLocked && d.X == bolt.X && d.Y == bolt.Y)) {
                         door.IsLocked = false;
+                        AudioManager.Instance.Play("UnlockDoor");
                         this.LatestMessage = "You unlock the door!";
                     }
                 }
@@ -578,15 +579,20 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        internal void CreateExplosion(int centerX, int centerY) {
-            for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++) {
-                for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++) {
+        internal void CreateExplosion(int centerX, int centerY)
+        {
+            for (var y = centerY - ExplosionRadius; y <= centerY + ExplosionRadius; y++)
+            {
+                for (var x = centerX - ExplosionRadius; x <= centerX + ExplosionRadius; x++)
+                {
                     var distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
-                    if (distance <= ExplosionRadius) {
+                    if (distance <= ExplosionRadius)
+                    {
                         this.EffectEntities.Add(new Explosion(x, y));
                     }
                 }
             }
+            AudioManager.Instance.Play("Explosion");
         }
 
         
@@ -1809,6 +1815,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (!door.IsOpened) {
                     door.IsOpened = true;
                     this.LatestMessage = "You open the door.";
+                    AudioManager.Instance.Play("OpenDoor");
                 } else {
                     Player.X = door.X;
                     Player.Y = door.Y;
