@@ -66,8 +66,7 @@ namespace DeenGames.AliTheAndroid.Model
         
         // Internal for unit testing
         internal ArrayMap<bool> Map; // Initial map ONLY: no secret rooms, monsters, locked doors, etc. true = walkable
-        internal IList<GoRogue.Rectangle> Rooms = new List<GoRogue.Rectangle>();
-
+        
         [JsonProperty]
         internal int FloorNum = 0;
 
@@ -78,7 +77,9 @@ namespace DeenGames.AliTheAndroid.Model
         [JsonProperty]
         internal int Height = 0;
 
-        internal GoRogue.FOV PlayerFieldOfView;
+        private GoRogue.FOV PlayerFieldOfView;
+
+        private IList<GoRogue.Rectangle> rooms = new List<GoRogue.Rectangle>();
         
         // Used for deterministic things like dungeon generation
         private IGenerator globalRandom;
@@ -162,6 +163,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 if (Dungeon.Instance.CurrentFloorNum == this.FloorNum && e == Player)
                 {
+                    AudioManager.Instance.Play("Die");
                     LastGameLogger.Instance.Log($"Player died!!!");
                     this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to return to the title.";
                     this.Player.Character = '%';
@@ -373,11 +375,12 @@ namespace DeenGames.AliTheAndroid.Model
                 // Find active gravity shots and destroy rooms full of gravity waves appropriately
                 gravityShot = EffectEntities.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
                 if (gravityShot != null) {
-                    var room = this.Rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
+                    var room = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
                     if (room != GoRogue.Rectangle.EMPTY) {
                         var waves = this.GravityWaves.Where(g => room.Contains(new GoRogue.Coord(g.X, g.Y)));
                         waves.ToList().ForEach(w => w.StopReactingToPlayer());
                         this.GravityWaves.RemoveAll(w => waves.Contains(w));
+                        AudioManager.Instance.Play("DisperseGravity");
                     }
                 }
 
@@ -656,7 +659,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             foreach (var step in path.StepsWithStart)
             {
-                var stepRoom = this.Rooms.SingleOrDefault(r => r.Contains(step));
+                var stepRoom = this.rooms.SingleOrDefault(r => r.Contains(step));
                 if (stepRoom != GoRogue.Rectangle.EMPTY && !roomsInPath.Contains(stepRoom))
                 {
                     roomsInPath.Add(stepRoom);
@@ -670,7 +673,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.GravityWaves.Clear();
 
-            var playerRoom = this.Rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
+            var playerRoom = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y)));
             var roomsInPath = this.RoomsInPathFromStairsToStairs();
             roomsInPath.Remove(playerRoom);
 
@@ -688,7 +691,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             var extraRooms = ExtraGravityWaveRooms;
             var stairsUpCoordinates = new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y);
-            var candidateRooms = Rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates)).ToList();
+            var candidateRooms = rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates)).ToList();
 
             while (extraRooms > 0 && candidateRooms.Any())
             {
@@ -773,7 +776,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 // Find the room whose center is closest to the map center. NOT the stairs-up room!
                 var mapCenter = new GoRogue.Coord(this.Width / 2, this.Height / 2);
-                var roomsWithoutStairs = this.Rooms.Where(r => !r.Contains(StairsUpLocation)).ToArray();
+                var roomsWithoutStairs = this.rooms.Where(r => !r.Contains(StairsUpLocation)).ToArray();
 
                 var closestRoom = roomsWithoutStairs[0];
                 var closestDistance = DistanceFrom(mapCenter, closestRoom.Center);
@@ -849,7 +852,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
             {
-                var secretRooms = this.GenerateSecretRooms(Rooms, 1, true);
+                var secretRooms = this.GenerateSecretRooms(rooms, 1, true);
                 if (secretRooms.Any())
                 {
                     room = secretRooms.First();
@@ -973,7 +976,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.Walls.RemoveAll(w => innerWalls.Contains(w));
 
             // Find the nearest room and naively connect to it
-            var nearestRoom = this.Rooms.OrderBy(r => Math.Sqrt(Math.Pow(r.Center.X - toReturn.Center.X, 2) + Math.Pow(r.Center.Y - toReturn.Center.Y, 2))).First();
+            var nearestRoom = this.rooms.OrderBy(r => Math.Sqrt(Math.Pow(r.Center.X - toReturn.Center.X, 2) + Math.Pow(r.Center.Y - toReturn.Center.Y, 2))).First();
 
             if (globalRandom.NextBoolean())
             {
@@ -1108,7 +1111,7 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     // Not 100% accurate since we have monsters, ec.
                     var coordinates = new GoRogue.Coord(x, y);
-                    if (IsWalkable(x, y) && !this.Rooms.Any(r => r.Contains(coordinates)))
+                    if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
                     {
                         hallwayTiles.Add(coordinates);
                     }
@@ -1234,13 +1237,13 @@ namespace DeenGames.AliTheAndroid.Model
         private void GenerateMapRooms() {
             var actualFloorNum = this.FloorNum + 1;
 
-            this.Rooms = this.GenerateWalls();
+            this.rooms = this.GenerateWalls();
             this.HighlightWalls();
             this.GenerateFakeWallClusters();
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
-                this.GenerateSecretRooms(Rooms);
+                this.GenerateSecretRooms(rooms);
             }
         }
 
@@ -1344,7 +1347,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             // Generate regular doors: any time we have a room, look at the perimeter tiles around that room.
             // If any of them have two ground tiles (including tiles with doors on them already), add a door.
-            foreach (var room in Rooms) {
+            foreach (var room in rooms) {
                 this.AddDoorsToRoom(room);
             }
 

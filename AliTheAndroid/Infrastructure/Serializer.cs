@@ -13,18 +13,18 @@ namespace DeenGames.AliTheAndroid.Infrastructure
             return JsonConvert.SerializeObject(target, Formatting.None, settings);
         }
 
+        public static T Deserialize<T>(string serialized)
+        {
+            var settings = GetSerializerSettings();
+            return JsonConvert.DeserializeObject<T>(serialized, settings);
+        }
+        
         private static JsonSerializerSettings GetSerializerSettings()
         {
             return new JsonSerializerSettings() {
                 ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize,
                 PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects
             };
-        }
-
-        public static T Deserialize<T>(string serialized)
-        {
-            var settings = GetSerializerSettings();
-            return JsonConvert.DeserializeObject<T>(serialized, settings);
         }
     }
 }
