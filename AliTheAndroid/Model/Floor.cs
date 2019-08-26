@@ -18,6 +18,7 @@ using DeenGames.AliTheAndroid.IO;
 using Newtonsoft.Json;
 using System.IO;
 using DeenGames.AliTheAndroid.Infrastructure;
+using DeenGames.AliTheAndroid.Helpers;
 
 namespace DeenGames.AliTheAndroid.Model
 {
@@ -375,9 +376,10 @@ namespace DeenGames.AliTheAndroid.Model
                 // Find active gravity shots and destroy rooms full of gravity waves appropriately
                 gravityShot = EffectEntities.SingleOrDefault(e => e.Character == GravityCannonShot) as Shot;
                 if (gravityShot != null) {
-                    var room = this.rooms.SingleOrDefault(r => r.Contains(new GoRogue.Coord(gravityShot.X, gravityShot.Y)));
-                    if (room != GoRogue.Rectangle.EMPTY) {
-                        var waves = this.GravityWaves.Where(g => room.Contains(new GoRogue.Coord(g.X, g.Y)));
+                    var wave = this.GravityWaves.SingleOrDefault(g => g.X == gravityShot.X && g.Y == gravityShot.Y);
+                    if (wave != null)
+                    {
+                        var waves = GravityWaveFinder.FloodFillFind(wave, this.GravityWaves);
                         waves.ToList().ForEach(w => w.StopReactingToPlayer());
                         this.GravityWaves.RemoveAll(w => waves.Contains(w));
                         AudioManager.Instance.Play("DisperseGravity");
