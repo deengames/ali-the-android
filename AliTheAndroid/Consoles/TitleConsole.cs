@@ -49,18 +49,33 @@ namespace DeenGames.AliTheAndroid.Consoles
         private IKeyboard keyboard;
         private int currentItemIndex = 0;
 
-        private MenuItem CurrentItem { get { 
-            switch (currentItemIndex) {
-                case 0:
-                    return MenuItem.NewGame;
-                case 1:
-                    return MenuItem.Options;
-                case 2: 
-                    return MenuItem.Quit;
-                default:
-                    throw new InvalidOperationException();
+        private MenuItem GetCurrentItem() {
+            if (File.Exists(Serializer.SaveGameFileName)) {
+                switch (currentItemIndex) {
+                    case 0:
+                        return MenuItem.NewGame;
+                    case 1:
+                        return MenuItem.LoadGame;
+                    case 2:
+                        return MenuItem.Options;
+                    case 3: 
+                        return MenuItem.Quit;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            } else {
+                switch (currentItemIndex) {
+                    case 0:
+                        return MenuItem.NewGame;
+                    case 1:
+                        return MenuItem.Options;
+                    case 2: 
+                        return MenuItem.Quit;
+                    default:
+                        throw new InvalidOperationException();
+                }
             }
-        }}
+        }
 
         private OptionsMenuStrategy optionsMenu = null;
 
@@ -139,13 +154,15 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
                 else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveDown]))
                 {
-                    this.currentItemIndex = (this.currentItemIndex + 1) % Enum.GetValues(typeof(MenuItem)).Length;
+                    var numItems = File.Exists(Serializer.SaveGameFileName) ? 4 : 3;
+                    this.currentItemIndex = (this.currentItemIndex + 1) % numItems;
                     this.DrawMenu();
                 }
 
                 if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SkipTurn]))
                 {
-                    switch (this.CurrentItem) {
+                    var currentItem = this.GetCurrentItem();
+                    switch (currentItem) {
                         case MenuItem.NewGame:
                             this.StartNewGame();
                             break;
@@ -280,13 +297,14 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void DrawMenu()
         {
-            this.PrintText("[N] New Game", 0, CurrentItem == MenuItem.NewGame ? MainColour : Palette.Grey);
+            var currentItem = this.GetCurrentItem();
+            this.PrintText("[N] New Game", 0, currentItem == MenuItem.NewGame ? MainColour : Palette.Grey);
             if (File.Exists(Serializer.SaveGameFileName))
             {
-                this.PrintText("[L] Load Game", 1, CurrentItem == MenuItem.LoadGame ? MainColour : Palette.Grey);   
+                this.PrintText("[L] Load Game", 1, currentItem == MenuItem.LoadGame ? MainColour : Palette.Grey);   
             }
-            this.PrintText("[O] Options", 3, CurrentItem == MenuItem.Options ? MainColour : Palette.Grey);
-            this.PrintText("[ESC] Quit", 4, CurrentItem == MenuItem.Quit ? MainColour : Palette.Grey);
+            this.PrintText("[O] Options", 3, currentItem == MenuItem.Options ? MainColour : Palette.Grey);
+            this.PrintText("[ESC] Quit", 4, currentItem == MenuItem.Quit ? MainColour : Palette.Grey);
 
             this.PrintText("Arrow keys or WASD to move, enter/space to select an item", 6, Palette.OffWhite);
         }
