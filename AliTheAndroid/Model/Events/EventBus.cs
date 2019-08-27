@@ -10,6 +10,15 @@ namespace DeenGames.AliTheAndroid.Model.Events
 
         public static EventBus Instance { get; private set; } = new EventBus();
 
+        /// <summary>
+        /// Resets the event bus, by setting the instance to a new event bus.
+        /// This causes all the handlers to be destroyed, which GCs the original dungeon/floors too (I hope).
+        /// </summary>
+        public static void Reset()
+        {
+            EventBus.Instance = new EventBus();
+        }
+
         private EventBus()
         {
             EventBus.Instance = this;

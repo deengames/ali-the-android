@@ -13,6 +13,7 @@ using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Infrastructure;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Entities;
+using DeenGames.AliTheAndroid.Model.Events;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
@@ -66,6 +67,8 @@ namespace DeenGames.AliTheAndroid.Consoles
         public TitleConsole(int width, int height) : base(width, height)
         {
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
+            EventBus.Reset();
+
             MenuY = (this.Height / 2) + 1;
 
             this.DrawTitleText();
