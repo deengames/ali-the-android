@@ -225,7 +225,7 @@ namespace DeenGames.AliTheAndroid.Model
                     var distanceToCore = this.DistanceFrom(
                         new GoRogue.Coord(this.Player.X, this.Player.Y), new GoRogue.Coord(this.ShipCore.X, this.ShipCore.Y));
 
-                    if (distanceToCore <= 1)
+                    if (distanceToCore <= 2)
                     {
                         this.LatestMessage = "The ship core thrums and glows with energy.";
                     }
@@ -543,6 +543,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 this.PowerUps.Remove(powerUpUnderPlayer);
                 Player.Absorb(powerUpUnderPlayer);
+                AudioManager.Instance.Play("PowerUp");
                 powerUpUnderPlayer.PickUp();
                 this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}. (Game saved)";
                 SaveManager.SaveGame();
@@ -552,6 +553,8 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 var weaponType = this.WeaponPickUp.Weapon;
                 this.Player.Acquire(weaponType);
+                AudioManager.Instance.Play("PickUpWeapon");
+
                 var key = this.GetKeyFor(weaponType);
                 var keyText = key.ToString().Replace("NumPad", "");
                 var weaponInfo = DeenGames.AliTheAndroid.Model.Entities.Player.WeaponPickupMessages[weaponType];
@@ -568,6 +571,8 @@ namespace DeenGames.AliTheAndroid.Model
                 EventBus.Instance.Broadcast(GameEvent.ShowSubMenu);
                 EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
                 EventBus.Instance.Broadcast(GameEvent.ShowDataCube, this.DataCube);
+
+                AudioManager.Instance.Play("PickUpDataCube");
 
                 this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.' (Game saved)";
                 this.DataCube = null;
@@ -1770,26 +1775,32 @@ namespace DeenGames.AliTheAndroid.Model
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectBlaster]) && Player.Has(Weapon.Blaster))
             {
                 Player.CurrentWeapon = Weapon.Blaster;
+                AudioManager.Instance.Play("ChangeGun");
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectMiniMissile]) && Player.Has(Weapon.MiniMissile))
             {
                 Player.CurrentWeapon = Weapon.MiniMissile;
+                AudioManager.Instance.Play("ChangeGun");
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectZapper]) && Player.Has(Weapon.Zapper))
             {
                 Player.CurrentWeapon = Weapon.Zapper;
+                AudioManager.Instance.Play("ChangeGun");
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectGravityCannon]) && Player.Has(Weapon.GravityCannon))
             {
                 Player.CurrentWeapon = Weapon.GravityCannon;
+                AudioManager.Instance.Play("ChangeGun");
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectPlasmaCannon]) && Player.Has(Weapon.PlasmaCannon))
             {
                 Player.CurrentWeapon = Weapon.PlasmaCannon;
+                AudioManager.Instance.Play("ChangeGun");
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectTeleporter]))
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
+                AudioManager.Instance.Play("ChangeGun");
             }
             else if (this.FloorNum < 9 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.DescendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
             {
