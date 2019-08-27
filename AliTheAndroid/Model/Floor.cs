@@ -1644,6 +1644,7 @@ namespace DeenGames.AliTheAndroid.Model
                         var damage = Math.Max(monster.Strength - Player.Defense, 0);
                         Player.Damage(damage, Weapon.Undefined);
                         this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
+                        AudioManager.Instance.Play($"{monster.Name.Replace(" ", "")}Attacks");
                     }
                     else
                     {
