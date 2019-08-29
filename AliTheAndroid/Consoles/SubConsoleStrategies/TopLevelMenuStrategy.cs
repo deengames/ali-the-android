@@ -1,8 +1,7 @@
-using System.IO;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Infrastructure;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
-using DeenGames.AliTheAndroid.Model;
+using DeenGames.AliTheAndroid.IO;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 
@@ -56,6 +55,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 else if (keyboard.IsKeyPressed(Key.S))
                 {
                     SaveManager.SaveGame();
+                    AudioManager.Instance.Play("Save");
                     this.justSaved = true;
                 }
             }
