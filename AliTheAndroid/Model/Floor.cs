@@ -178,6 +178,7 @@ namespace DeenGames.AliTheAndroid.Model
                 else
                 {
                     this.Monsters.Remove(e as Entity);
+                    AudioManager.Instance.Play("MonsterDies");
                 }
             });
 
@@ -191,6 +192,7 @@ namespace DeenGames.AliTheAndroid.Model
                     if (egg != null)
                     {
                         this.Monsters.Remove(egg);
+                        AudioManager.Instance.Play("EggHatches");
                     }
 
                     // Add monster
@@ -1634,6 +1636,7 @@ namespace DeenGames.AliTheAndroid.Model
                         {
                             var floor = floors.OrderBy(f => random.Next()).First();
                             this.Monsters.Add(Entity.CreateFromTemplate("Egg", floor.X, floor.Y));
+                            AudioManager.Instance.Play("EggLaid");
                         }
                     }
                     
