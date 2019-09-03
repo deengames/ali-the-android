@@ -280,24 +280,6 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(p2.PairedTo, Is.EqualTo(p1));
         }
 
-        [Test]
-        public void TenLegsDeserializesAsSpawner()
-        {
-            var dungeon = new Dungeon(80, 30);
-            var monsters = new List<Entity>();
-            dungeon.Floors.ForEach(f => monsters.AddRange(f.Monsters));
-            Assert.That(monsters.Any(a => a is Spawner), $"Precondition failed: dungeon doesn't have any spawners in {monsters.Count()} entities");
-
-            // Act
-            var serialized = Serializer.Serialize(dungeon);
-            var deserialized = Serializer.Deserialize<Dungeon>(serialized);
-
-            // Assert
-            var actualMonsters = new List<Entity>();
-            deserialized.Floors.ForEach(f => actualMonsters.AddRange(f.Monsters));
-            Assert.That(actualMonsters.Any(a => a is Spawner), "Deserialized dungeon has no Spawner monsters");
-        }
-
         private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)
         {
             Assert.That(e1.X, Is.EqualTo(e2.X));

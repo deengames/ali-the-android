@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Xna.Framework;
-using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Events;
 using System.Collections.Generic;

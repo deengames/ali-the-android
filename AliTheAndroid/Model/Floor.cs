@@ -487,6 +487,40 @@ namespace DeenGames.AliTheAndroid.Model
 
             this.PlayerFieldOfView = new GoRogue.FOV(Map);
         }
+
+        public void RecreateSpawners()
+        {
+            // https://trello.com/c/PHKmRlcg/86-after-loading-tenlegs-no-longer-lay-eggs
+            // After loading, Spawners no longer spawn any eggs. Why? Dunno. Probably because
+            // We add instances of Spawner to a collection of Entity, then serialize, then
+            // deserialize; that initial fact that it's a Spawner, seems to be gone. BUT!
+            // We can't prove this in a test, because instances of Entity are never Spawners.
+            // So, this is all conjecture and experimentation. IT WORKS!
+            var toRemove = new List<Entity>();
+            var toAdd = new List<Entity>();
+
+            foreach (var monster in this.Monsters)
+            {
+                if (monster.Name == "TenLegs")
+                {
+                    toRemove.Add(monster);
+                    var replacement = Entity.CreateFromTemplate("TenLegs", monster.X, monster.Y);
+                    // Assumes health, etc. is deterministic. Which it is. So ...
+                    replacement.CurrentHealth = monster.CurrentHealth;
+                    toAdd.Add(replacement);
+                }
+            }
+
+            foreach (var monster in toRemove)
+            {
+                this.Monsters.Remove(monster);
+            }
+
+            foreach (var monster in toAdd)
+            {
+                this.Monsters.Add(monster);
+            }
+        }
         
         // Only used for generating rock clusters and doors; ignores doors (they're considered walkable)
         internal int CountAdjacentFloors(GoRogue.Coord coordinates) {
