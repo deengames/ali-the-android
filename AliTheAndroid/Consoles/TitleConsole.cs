@@ -111,6 +111,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                     {
                         floor.PairPowerUps();
                         floor.InitializeMapAndFov();
+                        floor.RecreateSpawners();
                     }
                     dungeon.CurrentFloor.RecalculatePlayerFov();
                     Dungeon.Instance = dungeon;

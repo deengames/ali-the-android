@@ -21,8 +21,6 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         {
             // TODO: DELETE! Refactor into "if not bound ..."
             DependencyInjection.kernel.Bind<IKeyboard>().To<DeadKeyboard>();
-            
-            
         }
 
         // Just the core dungeon properties, not recurisvely on all sub-entities/properties
