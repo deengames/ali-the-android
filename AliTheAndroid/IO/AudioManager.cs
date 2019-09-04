@@ -10,6 +10,8 @@ namespace  DeenGames.AliTheAndroid.IO
     public class AudioManager
     {
         public static AudioManager Instance = new AudioManager();
+        private const string AudioFilesDirectory = "Content";
+        private bool isInitialized = false;
 
         private IDictionary<string, SoundEffect> soundLibrary = new Dictionary<string, SoundEffect>();
         
@@ -18,6 +20,11 @@ namespace  DeenGames.AliTheAndroid.IO
 
         public void Play(string sound)
         {
+            if (!isInitialized)
+            {
+                return; // Running tests, didn't load sounds
+            }
+
             if (!this.soundLibrary.ContainsKey(sound))
             {
                 throw new ArgumentException($"Can't play {sound} because it wasn't preloaded. Make sure the .wav file is located in the 'Content' directory.");
@@ -52,17 +59,22 @@ namespace  DeenGames.AliTheAndroid.IO
 
         private void PreloadSounds()
         {
-            var files = Directory.GetFiles("Content", "*.wav");
-            foreach (var fileName in files)
+            // Doesn't exist in test enviornment
+            if (Directory.Exists(AudioFilesDirectory))
             {
-                using (var stream = System.IO.File.OpenRead(fileName))
+                var files = Directory.GetFiles(AudioFilesDirectory, "*.wav");
+                foreach (var fileName in files)
                 {
-                    var sound = SoundEffect.FromStream(stream);
-                    var startIndex = fileName.LastIndexOf(Path.DirectorySeparatorChar) + 1;
-                    var stopIndex = fileName.LastIndexOf('.');
-                    var key = fileName.Substring(startIndex, stopIndex - startIndex);
-                    soundLibrary[key] = sound;
+                    using (var stream = System.IO.File.OpenRead(fileName))
+                    {
+                        var sound = SoundEffect.FromStream(stream);
+                        var startIndex = fileName.LastIndexOf(Path.DirectorySeparatorChar) + 1;
+                        var stopIndex = fileName.LastIndexOf('.');
+                        var key = fileName.Substring(startIndex, stopIndex - startIndex);
+                        soundLibrary[key] = sound;
+                    }
                 }
+                isInitialized = true;
             }
         }
     }
