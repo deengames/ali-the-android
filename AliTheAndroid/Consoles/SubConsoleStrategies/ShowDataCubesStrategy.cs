@@ -13,7 +13,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
     public class ShowDataCubesStrategy : AbstractConsole, ISubConsoleStrategy
     {
         private Player player;
-        private DataCube cubeShown = null; // null = none
+        private DataCube cubeShown = null; // null = show list, non-null = show a specific cube
         
         public ShowDataCubesStrategy(Player player)
         {
@@ -122,12 +122,20 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         private void ShowSelectedCube(SadConsole.Console console)
         {
             console.Print(2, 2, cubeShown.Title, Palette.LightRed);
-            this.PrettyPrint(console, 2, 4, cubeShown.Text, Palette.OffWhite);
+            var lastY = this.PrettyPrint(console, 2, 4, cubeShown.Text, Palette.OffWhite);
+            
+            if (cubeShown == DataCube.EndGameCube)
+            {
+                console.Print(2, lastY + 2, "Congratulations on completing the game!", Palette.White);
+                console.Print(2, lastY + 4, "Thanks for playing! If you have any feedback,", Palette.Blue);
+                console.Print(2, lastY + 5, "please send it to @nightblade99 on Twitter!", Palette.Blue);
+                console.Print(2, lastY + 7, "Press any key to quit to the title screen.", Palette.White);
+            }
         }
 
         // Prints a continuous text, breaking at word-boundaries instead of mid-word,
         // and taking into account the border and padding around the edge of the window.
-        private void PrettyPrint(SadConsole.Console console, int x, int y, string text, Color colour)
+        private int PrettyPrint(SadConsole.Console console, int x, int y, string text, Color colour)
         {
             var words = text.Split(' ');
             const int StartX = 2; // border + padding
@@ -149,6 +157,8 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 console.Print(currentX, currentY, toPrint, colour);
                 currentX += toPrint.Length;
             }
+
+            return currentY;
         }
     }
 }
