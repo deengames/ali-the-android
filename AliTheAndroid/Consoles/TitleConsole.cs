@@ -82,7 +82,10 @@ namespace DeenGames.AliTheAndroid.Consoles
         public TitleConsole(int width, int height) : base(width, height)
         {
             this.keyboard = DependencyInjection.kernel.Get<IKeyboard>();
+
+            // Reset things if, say, you died, or beat the game
             EventBus.Reset();
+            InGameSubMenuConsole.IsOpen = false;
 
             MenuY = (this.Height / 2) + 1;
 

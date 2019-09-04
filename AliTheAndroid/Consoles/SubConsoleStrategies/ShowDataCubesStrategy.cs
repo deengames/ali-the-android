@@ -143,7 +143,6 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 console.Print(2, lastY + 2, "Congratulations on completing the game!", Palette.White);
                 console.Print(2, lastY + 4, "Thanks for playing! If you have any feedback,", Palette.Blue);
                 console.Print(2, lastY + 5, "please send it to @nightblade99 on Twitter!", Palette.Blue);
-                console.Print(2, lastY + 7, "Press any key to quit to the title.", Palette.White);
             }
         }
 
