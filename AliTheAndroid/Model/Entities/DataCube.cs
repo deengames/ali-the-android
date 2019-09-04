@@ -26,6 +26,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             new Tuple<string, string>("Too Late", @"The Ameer finished the AllCure, infected himself, and killed everyone. His wounds heal instantly. If I can overload the ship core with my plasma cannon, the resulting quantum plasma will vapourize everything - that abomindable AllCure ceases to exist. There are no escape pods.")
         };
 
+        internal static DataCube EndGameCube = new DataCube(0, 0, 0, "Ameer's Message", "At last! The experiments were a success - I used the final version of the AllCure virus on myself, and I am indestructible! Our plan to end the khilafah and achieve wealth beyond imagination can now begin in earnest. I sent you the genetic blueprints for replication - please begin production immediately.");
 
         private const char DisplayCharacter = (char)240; // ≡
 

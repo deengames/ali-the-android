@@ -187,7 +187,7 @@ namespace DeenGames.AliTheAndroid.Model
                             AudioManager.Instance.Play("AmeerDies");
                             
                             // Trigger end-game data cube
-                            this.ShowDataCube(DataCube.GetCube(5, GoRogue.Coord.NONE));
+                            this.ShowDataCube(DataCube.EndGameCube);
                         }
                         else
                         {
