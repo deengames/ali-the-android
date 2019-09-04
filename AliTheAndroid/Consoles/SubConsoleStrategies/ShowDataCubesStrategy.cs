@@ -32,7 +32,14 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 this.ShowSelectedCube(console);
             }
 
-            console.Print(2, console.Height - 4, $"[{Options.KeyBindings[GameAction.OpenMenu]}] Go back", Palette.White);
+            if (cubeShown != DataCube.EndGameCube)
+            {
+                console.Print(2, console.Height - 4, $"[{Options.KeyBindings[GameAction.OpenMenu]}] Go back", Palette.White);
+            }
+            else
+            {
+                console.Print(2, console.Height - 4, $"[{Options.KeyBindings[GameAction.OpenMenu]}] Quit to title", Palette.White);
+            }
         }
 
         public void ProcessInput(IKeyboard keyboard)
@@ -64,7 +71,14 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 {
                     if (keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                     {
-                        this.cubeShown = null;
+                        if (cubeShown != DataCube.EndGameCube)
+                        {
+                            this.cubeShown = null;
+                        }
+                        else
+                        {
+                            SadConsole.Global.CurrentScreen = new TitleConsole(Program.GameWidthInTiles, Program.GameHeightInTiles);
+                        }
                     }
                 }
             }
@@ -129,7 +143,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                 console.Print(2, lastY + 2, "Congratulations on completing the game!", Palette.White);
                 console.Print(2, lastY + 4, "Thanks for playing! If you have any feedback,", Palette.Blue);
                 console.Print(2, lastY + 5, "please send it to @nightblade99 on Twitter!", Palette.Blue);
-                console.Print(2, lastY + 7, "Press any key to quit to the title screen.", Palette.White);
+                console.Print(2, lastY + 7, "Press any key to quit to the title.", Palette.White);
             }
         }
 
