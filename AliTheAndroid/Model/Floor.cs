@@ -162,23 +162,38 @@ namespace DeenGames.AliTheAndroid.Model
 
             eventBus.AddListener(GameEvent.EntityDeath, (e) =>
             {
-                if (Dungeon.Instance.CurrentFloorNum == this.FloorNum && e == Player)
+                if (Dungeon.Instance.CurrentFloorNum == this.FloorNum)
                 {
-                    AudioManager.Instance.Play("Die");
-                    LastGameLogger.Instance.Log($"Player died!!!");
-                    this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to return to the title.";
-                    this.Player.Character = '%';
-                    this.Player.Color = Palette.DarkBurgandyPurple;
-
-                    if (Options.DeleteSaveGameOnDeath && File.Exists(Serializer.SaveGameFileName))
+                    if (e == Player)
                     {
-                        File.Delete(Serializer.SaveGameFileName);
+                        AudioManager.Instance.Play("Die");
+                        LastGameLogger.Instance.Log($"Player died!!!");
+                        this.LatestMessage = $"YOU DIE! Press {Options.KeyBindings[GameAction.OpenMenu]} to return to the title.";
+                        this.Player.Character = '%';
+                        this.Player.Color = Palette.DarkBurgandyPurple;
+
+                        if (Options.DeleteSaveGameOnDeath && File.Exists(Serializer.SaveGameFileName))
+                        {
+                            File.Delete(Serializer.SaveGameFileName);
+                        }
                     }
-                }
-                else
-                {
-                    this.Monsters.Remove(e as Entity);
-                    AudioManager.Instance.Play("MonsterDies");
+                    else
+                    {
+                        var monster = e as Entity;
+                        this.Monsters.Remove(monster);
+
+                        if (monster.Name.Contains("Ameer"))
+                        {
+                            AudioManager.Instance.Play("AmeerDies");
+                            
+                            // Trigger end-game data cube
+                            this.ShowDataCube(DataCube.GetCube(5, GoRogue.Coord.NONE));
+                        }
+                        else
+                        {
+                            AudioManager.Instance.Play("MonsterDies");
+                        }
+                    }
                 }
             });
 
@@ -614,12 +629,7 @@ namespace DeenGames.AliTheAndroid.Model
             if (this.DataCube != null && DataCube.X == Player.X && DataCube.Y == Player.Y)
             {
                 this.Player.GotDataCube(this.DataCube);
-                
-                // Trigger the data cube screen and select the cube in question
-                EventBus.Instance.Broadcast(GameEvent.ShowSubMenu);
-                EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
-                EventBus.Instance.Broadcast(GameEvent.ShowDataCube, this.DataCube);
-
+                this.ShowDataCube(this.DataCube);
                 AudioManager.Instance.Play("PickUpDataCube");
 
                 this.LatestMessage = $"You find a data cube titled '{this.DataCube.Title}.' (Game saved)";
@@ -1533,6 +1543,14 @@ namespace DeenGames.AliTheAndroid.Model
             if (this.IsWalkable(coord.X + 1, coord.Y)) { return true; }
             if (this.IsWalkable(coord.X + 1, coord.Y + 1)) { return true; }
             return false;
+        }
+
+        private void ShowDataCube(DataCube cube)
+        {
+            // Trigger the data cube screen and select the cube in question
+            EventBus.Instance.Broadcast(GameEvent.ShowSubMenu);
+            EventBus.Instance.Broadcast(GameEvent.ChangeSubMenu, typeof(ShowDataCubesStrategy));
+            EventBus.Instance.Broadcast(GameEvent.ShowDataCube, cube);
         }
 
         private void ApplyKnockbacks(Entity entity, int centerX, int centerY, int distance, Direction optionalDirection)
