@@ -490,7 +490,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.PlayerFieldOfView = new GoRogue.FOV(Map);
         }
 
-        public void RecreateSpawners()
+        public void RecreateSubclassedMonsters()
         {
             // https://trello.com/c/PHKmRlcg/86-after-loading-tenlegs-no-longer-lay-eggs
             // After loading, Spawners no longer spawn any eggs. Why? Dunno. Probably because
@@ -498,6 +498,8 @@ namespace DeenGames.AliTheAndroid.Model
             // deserialize; that initial fact that it's a Spawner, seems to be gone. BUT!
             // We can't prove this in a test, because instances of Entity are never Spawners.
             // So, this is all conjecture and experimentation. IT WORKS!
+            
+            // Ditto for the Ameer: https://trello.com/c/JEDA1zH3/92-ameer-is-killable-if-you-load
             var toRemove = new List<Entity>();
             var toAdd = new List<Entity>();
 
@@ -509,6 +511,16 @@ namespace DeenGames.AliTheAndroid.Model
                     var replacement = Entity.CreateFromTemplate("TenLegs", monster.X, monster.Y);
                     // Assumes health, etc. is deterministic. Which it is. So ...
                     replacement.CurrentHealth = monster.CurrentHealth;
+                    toAdd.Add(replacement);
+                }
+                else if (monster.Name.Contains("Ameer"))
+                {
+                    toRemove.Add(monster);
+                    var replacement = new Ameer();
+                    replacement.X = monster.X;
+                    replacement.Y = monster.Y;
+                    // Can't copy over number of turns stunned, since that information is lost on serialization
+                    
                     toAdd.Add(replacement);
                 }
             }
