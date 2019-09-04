@@ -116,8 +116,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     }
                     if (keyboard.IsKeyPressed(Key.NumPad5))
                     {
-                        Options.SoundEffectsVolume = (Options.SoundEffectsVolume + SfxIncrement) % 110;
-                        Microsoft.Xna.Framework.Audio.SoundEffect.MasterVolume = (Options.SoundEffectsVolume / 100f) * Options.GlobalSfxVolumeNerf;
+                        Options.SoundEffectsVolume = (Options.SoundEffectsVolume + SfxIncrement) % (100 + SfxIncrement);
                         AudioManager.Instance.Play("Blaster");
                         this.SaveOptionsToDisk();
                     }

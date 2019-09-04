@@ -256,7 +256,6 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
                 
                 Options.SoundEffectsVolume = int.Parse(data["SoundEffectsVolume"]);
-                Microsoft.Xna.Framework.Audio.SoundEffect.MasterVolume = (Options.SoundEffectsVolume / 100f) * Options.GlobalSfxVolumeNerf;
             }
             else
             {
