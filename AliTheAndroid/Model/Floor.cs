@@ -87,11 +87,15 @@ namespace DeenGames.AliTheAndroid.Model
         // Used for non-deterministic things, like monster movement
         private Random random = new Random(); 
 
-
         // Super hack. Key is "x, y", value is IsDiscovered.
         [JsonProperty]
         private Dictionary<string, bool> isTileDiscovered = new Dictionary<string, bool>();
 
+        // https://trello.com/c/P4udy0Cn/85-fire-gravity-change-gun-fire-gravity-doesnt-recharge
+        // We set CanFireGravityCannon = false, then immediately emit a player-moved event, which
+        // resets the value to true. Instead of that, set the value to true the next time the player
+        // takes a turn (rests, etc.), not immediatley.
+        private bool EnableGravityCannonNextTurn = false;
 
         private string lastMessage = "";
         private bool justScrolledMessage = false;
@@ -587,8 +591,6 @@ namespace DeenGames.AliTheAndroid.Model
         /// For when the player ACTUALLY MOVED, like changed squares. For non-post-move-turn things (like after firing), see PlayerTookTurn.
         internal void OnPlayerMoved()
         {
-            Player.CanFireGravityCannon = true;
-
             this.RecalculatePlayerFov();
 
             foreach (var newlySeen in this.PlayerFieldOfView.NewlySeen)
@@ -1656,6 +1658,19 @@ namespace DeenGames.AliTheAndroid.Model
             var deadPlasma = this.PlasmaResidue.Where(p => !p.IsAlive);
             this.PlasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
 
+            if (!this.Player.CanFireGravityCannon)
+            {
+                if (!this.EnableGravityCannonNextTurn)
+                {
+                    this.EnableGravityCannonNextTurn = true;
+                }
+                else
+                {
+                    this.EnableGravityCannonNextTurn = false;
+                    Player.CanFireGravityCannon = true;
+                }
+            }
+            
             // Copy to array to prevent concurrent modification exception
             foreach (var plasma in this.QuantumPlasma.ToArray())
             {
@@ -1926,11 +1941,6 @@ namespace DeenGames.AliTheAndroid.Model
                 processedInput = true;
             }
 
-            if (processedInput && !Player.CanFireGravityCannon)
-            {
-                Player.CanFireGravityCannon = true;
-            }
-            
             return processedInput;
         }
 
@@ -2011,6 +2021,7 @@ namespace DeenGames.AliTheAndroid.Model
                 } else {
                     shot = new Shot(Player.X + dx, Player.Y + dy, character, Palette.Red, Player.DirectionFacing, this.IsFlyable);
                 }
+                
                 if (character == GravityCannonShot) {
                     Player.CanFireGravityCannon = false;
                 }
