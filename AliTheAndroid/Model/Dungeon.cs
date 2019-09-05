@@ -103,9 +103,11 @@ namespace DeenGames.AliTheAndroid.Model
             LastGameLogger.Instance.Log($"Descended to B{this.CurrentFloorNum + 1}");
             this.CurrentFloor.LatestMessage = "Game saved.";
 
+            // End game floor
             if (this.CurrentFloorNum == 9)
             {
                 this.CurrentFloor.LatestMessage += "You detect an abnormal life-form. Mad laughter echoes from afar.";
+                Options.EnableOmniSight = true;
             }
             
             this.CurrentFloor.Player = this.Player;
@@ -117,6 +119,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         public void GoToPreviousFloor()
         {
+            Options.EnableOmniSight = false;
             AudioManager.Instance.Play("Ascend");
             this.CurrentFloorNum--;
             this.CurrentFloor = this.Floors[this.CurrentFloorNum];

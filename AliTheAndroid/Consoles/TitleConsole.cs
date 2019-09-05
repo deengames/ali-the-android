@@ -108,6 +108,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                     }
                     dungeon.CurrentFloor.RecalculatePlayerFov();
                     Dungeon.Instance = dungeon;
+
+                    if (dungeon.CurrentFloorNum == 9) // B10
+                    {
+                        Options.EnableOmniSight = true;
+                    }
                 }
                 else
                 {

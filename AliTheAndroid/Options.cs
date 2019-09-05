@@ -15,8 +15,10 @@ namespace DeenGames.AliTheAndroid
         public static int EffectsDelayMultiplier = 1;
         public static int SoundEffectsVolume = 100; // 0-100%
         public static float GlobalSfxVolumeNerf = 0.55f; // SFX are really loud. Nerf it so 100% is a nice loudness.
-
         public static bool DeleteSaveGameOnDeath = true;
+
+        // Set on B10
+        public static bool EnableOmniSight = false;
 
         // Sorted because the order matters when we display it for key-rebinding
         public static SortedDictionary<GameAction, Key> KeyBindings = new SortedDictionary<GameAction, Key>()
@@ -47,7 +49,6 @@ namespace DeenGames.AliTheAndroid
 
         // Debug stuff
         public const bool StartWithAllWeapons = false;
-        public const bool EnableOmniSight = false;
         public const bool CanUseStairsFromAnywhere = false;
         public const bool PlayerStartsWithAllDataCubes = false;
         internal const int MaxEffectsDelayMultiplier = 4; // 4x
