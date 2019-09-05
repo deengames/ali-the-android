@@ -26,23 +26,13 @@ namespace DeenGames.AliTheAndroid.Consoles
         private readonly int gameSeed = new Random().Next();
 
         private readonly Color MainColour = Palette.Blue;
-        private const int TitleY = 2;
+        private const int TitleY = 7;
         private ReadOnlyCollection<string> tips = new ReadOnlyCollection<string>(new string[] {
             "View your most recent game run details on disk in LastGame.txt.",
             "You can switch to oldstyle ASCII graphics mode in Options.",
             "You can change object colours to a high-saturation palette in Options.",
             "You can rebind keys for all in-game actions (minus menus) in Options.",
         });
-
-        private readonly string[] titleText = new string[] {
-            "#=# #  *   =#= # # #==",
-            "#=# #  #    #  ### #=",
-            "# # #= #    #  # # #==",
-            "",
-            "#=# ## # ##  #=#  #=# * ## ",
-            "#=# # ## # # #=#  # # # # #",
-            "# # #  # ##  #  # #=# # ## ",
-        };
 
         private readonly int MenuY;
 
@@ -87,7 +77,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             EventBus.Reset();
             InGameSubMenuConsole.IsOpen = false;
 
-            MenuY = (this.Height / 2) + 1;
+            MenuY = (this.Height / 2) - 2;
 
             this.DrawTitleText();
             this.DrawMenu();
@@ -277,25 +267,18 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         private void DrawTitleText()
         {
-            var dark = Palette.DarkestBlue;
-
-            for (int i = 0; i < this.titleText.Length; i++)
-            {
-                var line = this.titleText[i];
-                var x = (this.Width - line.Length) / 2;
-                var y = TitleY + i;
-                var colour = (i == 1 || i == 5 ? MainColour : dark);
-                this.Print(x, y, line, colour);
-            }
-
             var plainX = (this.Width - "Ali the Android".Length) / 2;
-            var plainY = TitleY + this.titleText.Length + 2;
+            var plainY = TitleY;
             this.Print(plainX, plainY, "Ali the Android", MainColour);
             this.Print(plainX + 4, plainY, "the", Palette.OffWhite);
 
             var deenGamesX = (this.Width - "By Deen Games".Length) / 2;
             var deenGamesY = plainY + 1;
             this.Print(deenGamesX, deenGamesY, "By Deen Games", Palette.OffWhite);
+
+            var twitterX = (this.Width - "Twitter: @nightblade99".Length) / 2;
+            var twitterY = deenGamesY + 1;
+            this.Print(twitterX, twitterY, "Twitter: @nightblade99", Palette.Blue);
         }
 
         private void DrawMenu()
