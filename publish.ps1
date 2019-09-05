@@ -16,5 +16,6 @@ Add-Type -A 'System.IO.Compression.FileSystem'
 [IO.Compression.ZipFile]::CreateFromDirectory('AliTheAndroid\out_windows', $windowsZipFile);
 Write-Host DONE! Zipped to $windowsZipFile
 
-# for Linux builds!
+# for Linux/MacOS builds!
 # dotnet publish -c Release -r ubuntu.16.10-x64 -o out_linux
+# dotnet publish -c Release -r osx.10.11-x64 -o out_macos
