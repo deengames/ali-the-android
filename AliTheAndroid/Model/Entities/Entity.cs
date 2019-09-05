@@ -93,6 +93,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             if (this.CurrentHealth <= 0)
             {
                 EventBus.Instance.Broadcast(GameEvent.EntityDeath, this);
+                this.Die();
             }
         }
 
