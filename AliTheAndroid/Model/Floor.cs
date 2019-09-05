@@ -605,8 +605,6 @@ namespace DeenGames.AliTheAndroid.Model
                 this.PlasmaResidue.Remove(plasmaUnderPlayer);
             }
 
-            this.PlasmaResidue.ForEach(p => p.Degenerate());
-
             var powerUpUnderPlayer = this.PowerUps.SingleOrDefault(p => p.X == Player.X && p.Y == Player.Y);
             if (powerUpUnderPlayer != null)
             {
@@ -1653,6 +1651,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.ProcessMonsterTurns();
             
+            this.PlasmaResidue.ForEach(p => p.Degenerate());
             var deadPlasma = this.PlasmaResidue.Where(p => !p.IsAlive);
             this.PlasmaResidue.RemoveAll(p => deadPlasma.Contains(p));
 
