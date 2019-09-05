@@ -404,7 +404,8 @@ namespace DeenGames.AliTheAndroid.Model
                 }
 
                 var teleporterShot = destroyedEffects.SingleOrDefault(s => s.Character == InstaTeleporterShot) as TeleporterShot;
-                if (teleporterShot != null) {
+                if (teleporterShot != null && IsWalkable(teleporterShot.TeleportTo.X, teleporterShot.TeleportTo.Y))
+                {
                     Player.X = teleporterShot.TeleportTo.X;
                     Player.Y = teleporterShot.TeleportTo.Y;
                     AudioManager.Instance.Play("Teleport");
