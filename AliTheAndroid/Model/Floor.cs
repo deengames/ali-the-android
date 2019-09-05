@@ -524,7 +524,6 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     toRemove.Add(monster);
                     var replacement = Entity.CreateFromTemplate("TenLegs", monster.X, monster.Y);
-                    // Assumes health, etc. is deterministic. Which it is. So ...
                     replacement.CurrentHealth = monster.CurrentHealth;
                     toAdd.Add(replacement);
                 }
@@ -536,6 +535,13 @@ namespace DeenGames.AliTheAndroid.Model
                     replacement.Y = monster.Y;
                     // Can't copy over number of turns stunned, since that information is lost on serialization
                     
+                    toAdd.Add(replacement);
+                }
+                else if (monster.Name.Contains("Egg"))
+                {
+                    toRemove.Add(monster);
+                    var replacement = Entity.CreateFromTemplate("Egg", monster.X, monster.Y);
+                    replacement.CurrentHealth = monster.CurrentHealth;
                     toAdd.Add(replacement);
                 }
             }
