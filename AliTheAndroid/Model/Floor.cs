@@ -216,6 +216,7 @@ namespace DeenGames.AliTheAndroid.Model
 
                     // Add monster
                     this.Monsters.Add(Entity.CreateFromTemplate("Fuseling", position.X, position.Y));
+                    this.LatestMessage = "An egg hatches into a Fuseling!";
                 }
             });
         }
@@ -1670,7 +1671,7 @@ namespace DeenGames.AliTheAndroid.Model
                     Player.CanFireGravityCannon = true;
                 }
             }
-            
+
             // Copy to array to prevent concurrent modification exception
             foreach (var plasma in this.QuantumPlasma.ToArray())
             {
