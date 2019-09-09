@@ -83,11 +83,11 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         }
 
         [Test]
-        public void GeneratePowerUpsPicksTwoRandomChoices()
+        public void GeneratePicksTwoRandomChoicesForPairedPowerUps()
         {
             RestrictRuntime(() => {
+                // Check two floors have different power-ups
                 var floor1 = new Floor(40, 30, 7, new StandardGenerator(1234));
-
                 var floor2 = new Floor(40, 30, 7, new StandardGenerator(4321));
 
                 Assert.That(floor1.PowerUps.Any());
@@ -96,6 +96,10 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 {
                     Assert.That(!floor2.PowerUps.Contains(p1));
                 }
+
+                // Check that each floor has distinct power-ups (different messages = different types)
+                Assert.That(floor1.PairedPowerUps.GroupBy(p => p.Message).Count(),
+                    Is.EqualTo(floor1.PairedPowerUps.Length));
             });
         }
 

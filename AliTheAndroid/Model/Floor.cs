@@ -1737,24 +1737,32 @@ namespace DeenGames.AliTheAndroid.Model
                     }
                     else
                     {
-                        // Move closer. Naively. Randomly.
-                        var dx = Player.X - monster.X;
-                        var dy = Player.Y - monster.Y;
-                        var tryHorizontallyFirst = this.random.Next(0, 100) <= 50;
+                        // Move closer. Randomly-chosen axis.
+                        var dx = Math.Sign(Player.X - monster.X);
+                        var dy = Math.Sign(Player.Y - monster.Y);
                         var moved = false;
-
-                        if (tryHorizontallyFirst && dx != 0)
+                        var validMoves = new List<GoRogue.Coord>(2);
+                        
+                        if (this.IsWalkable(monster.X + dx, monster.Y))
                         {
-                            moved = this.TryToMove(monster, monster.X + Math.Sign(dx), monster.Y);
+                            validMoves.Add(new GoRogue.Coord(monster.X + dx, monster.Y));
                         }
-                        else
+                        if (this.IsWalkable(monster.X, monster.Y + dy))
                         {
-                            moved = this.TryToMove(monster, monster.X, monster.Y + Math.Sign(dy));
+                            validMoves.Add(new GoRogue.Coord(monster.X, monster.Y + dy));
                         }
 
-                        if (moved) {
+                        if (validMoves.Any())
+                        {
+                            var move = validMoves[this.random.Next(0, validMoves.Count)];
+                            moved = this.TryToMove(monster, move.X, move.Y);
+                        }
+
+                        if (moved)
+                        {
                             var plasma = this.PlasmaResidue.SingleOrDefault(p => p.X == monster.X && p.Y == monster.Y);
-                            if (plasma != null) {
+                            if (plasma != null)
+                            {
                                 // Damaging here may cause the monsters collection to modify while iterating over it
                                 plasmaBurnedMonsters.Add(monster);
                                 this.PlasmaResidue.Remove(plasma);

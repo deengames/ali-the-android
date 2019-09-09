@@ -45,17 +45,17 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             {
                 return new PowerUp(0, 0, visionBoost: TypicalVisionBoost);
             }
-            else if (next >= buckets["Vision"] && next <= buckets["Health"])
+            else if (next > buckets["Vision"] && next <= buckets["Health"])
             {
                 return new PowerUp(0, 0, healthBoost: TypicalHealthBoost);
             }
-            else if (next >= buckets["Health"] && next <= buckets["Strength"])
+            else if (next > buckets["Health"] && next <= buckets["Strength"])
             {
-                return new PowerUp(0, 0, healthBoost: TypicalHealthBoost);
+                return new PowerUp(0, 0, strengthBoost: TypicalStrengthBoost);
             }
-            else if (next >= buckets["Strength"] && next <= buckets["Defense"])
+            else if (next > buckets["Strength"] && next <= buckets["Defense"])
             {
-                return new PowerUp(0, 0, healthBoost: TypicalHealthBoost);
+                return new PowerUp(0, 0, defenseBoost: TypicalDefenseBoost);
             }
             else
             {
