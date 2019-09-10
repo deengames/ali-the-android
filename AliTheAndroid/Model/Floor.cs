@@ -1657,7 +1657,7 @@ namespace DeenGames.AliTheAndroid.Model
         private int CalculateDamage(char weaponCharacter)
         {
             if (weaponCharacter == '*') {
-                return (int)Math.Ceiling(this.CalculateDamage(Weapon.MiniMissile) * 0.75); // 1.5x
+                return (int)Math.Ceiling(this.CalculateDamage(Weapon.MiniMissile) * 0.75);
             }
 
             switch (weaponCharacter) {

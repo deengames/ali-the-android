@@ -38,9 +38,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             switch (name.ToLower()) {
                 case "egg": return new Egg(x, y, Options.CurrentPalette.Monster3Colour);
                 // Regular enemy. Takes a bit of skill to kill.
-                case "fuseling": return new Entity("Fuseling", 'f', Options.CurrentPalette.Monster1Colour, x, y, 42, 9, 4);
+                case "fuseling": return new Entity("Fuseling", 'f', Options.CurrentPalette.Monster1Colour, x, y, 21, 9, 4);
                 // Fodder. Generates in big groups, though.
-                case "slink": return new Entity("Slink", 's', Options.CurrentPalette.Monster2Colour, x, y, 33, 6, 2);
+                case "slink": return new Entity("Slink", 's', Options.CurrentPalette.Monster2Colour, x, y, 14, 6, 2);
                 // Spawner. Tough, and lays eggs frequently.
                 case "tenlegs": return new Spawner("TenLegs", 't', Options.CurrentPalette.Monster3Colour, x, y, 60, 12, 5);
                 // Tank. REALLY hard to kill.
