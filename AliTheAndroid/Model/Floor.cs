@@ -220,6 +220,8 @@ namespace DeenGames.AliTheAndroid.Model
                     this.LatestMessage = "An egg hatches into a Fuseling!";
                 }
             });
+
+            eventBus.AddListener(GameEvent.AmeerStunned, (obj) => this.LatestMessage = "The ameer roars as bolts surge through his body!" );
         }
 
         /// <summary>
