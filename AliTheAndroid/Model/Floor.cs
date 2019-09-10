@@ -1224,10 +1224,7 @@ namespace DeenGames.AliTheAndroid.Model
                 var spot = this.FindEmptySpot();
                 // Changing this to IsChasmCandidate causes tests to hang, because we don't have enough chasm-candidate
                 // spots in some dungeons/maps.
-                if (spot != StairsUpLocation && spot != StairsDownLocation)
-                {
-                    this.GenerateChasmIfNotTooClose(spot);
-                }
+                this.GenerateChasmIfNotTooClose(spot);
             }
         }
 
@@ -2153,19 +2150,16 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        // Finds an empty spot. Secret-room floors are not considered empty.
         private GoRogue.Coord FindEmptySpot()
         {
-            int targetX = 0;
-            int targetY = 0;
-            
+            var target = new GoRogue.Coord(0, 0);
+
             do 
             {
-                targetX = this.globalRandom.Next(0, this.Width);
-                targetY = this.globalRandom.Next(0, this.Height);
-            } while (!this.IsWalkable(targetX, targetY));
+                target = new GoRogue.Coord(this.globalRandom.Next(0, this.Width), this.globalRandom.Next(0, this.Height));
+            } while (!this.IsWalkable(target.X, target.Y) || target == this.StairsDownLocation || target == this.StairsUpLocation );
 
-            return new GoRogue.Coord(targetX, targetY);
+            return target;
         }
 
         private Entity GetMonsterAt(int x, int y)

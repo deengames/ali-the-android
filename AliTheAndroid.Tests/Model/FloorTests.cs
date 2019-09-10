@@ -607,5 +607,17 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 Assert.That(new GoRogue.Coord(floor.WeaponPickUp.X, floor.WeaponPickUp.Y), Is.Not.EqualTo(floor.StairsUpLocation));
             });
         }
+
+        // Known offender, see https://trello.com/c/ZLF4LCGz/103-stairs-can-generate-under-data-cube
+        [Test]
+        public void GenerateDoesntGenerateDataCubeOnStairs()
+        {
+            var seed = 1470491287;
+            var dungeon = new Dungeon(80, 30, seed);
+            var b9 = dungeon.Floors[8];
+            var dataCubePosition = new GoRogue.Coord(b9.DataCube.X, b9.DataCube.Y);
+            Assert.That(b9.StairsDownLocation, Is.Not.EqualTo(dataCubePosition));
+            Assert.That(b9.StairsUpLocation, Is.Not.EqualTo(dataCubePosition));
+        }
     }
 }
