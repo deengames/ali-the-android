@@ -696,7 +696,15 @@ namespace DeenGames.AliTheAndroid.Model
             // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
             // https://trello.com/c/Cp7V5SWW/43-dungeon-generates-with-two-power-ups-on-the-same-spot
             var locations = floorsNearStairs.Distinct().OrderBy(f => globalRandom.Next()).Take(2).ToArray();
-            var powerUps = new List<PowerUp>() { PowerUp.Generate(globalRandom), PowerUp.Generate(globalRandom) };
+            var firstPowerUp = PowerUp.Generate(globalRandom);
+            var secondPowerUp = PowerUp.Generate(globalRandom);
+
+            // Make sure they're different types. Same message = same type
+            while (secondPowerUp.Message == firstPowerUp.Message)
+            {
+                secondPowerUp = PowerUp.Generate(globalRandom);
+            }
+            var powerUps = new List<PowerUp>() { firstPowerUp, secondPowerUp };
 
             for (var i = 0; i < locations.Count(); i++)
             {
@@ -1306,47 +1314,52 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
-                var secretRoom = this.GenerateSecretRooms(rooms).First();
-                // Generating too many power-ups is game-breaking, so do this 50% of the time.
-                // Generating out-of-depth monsters is game-breaking, so no TenLegs until the appropriate floor.
-                // There are eight floors. I'll give you two power-ups (25%), and two empties (25%), 4 monsters (50%)
-                var contents = this.globalRandom.Next(100);
-                if (contents <= 50)
+                var secretRooms = this.GenerateSecretRooms(rooms);
+                // At this point (going to prod "soon", I'm okay with not generating secret rooms. It's OK, really.)
+                if (secretRooms.Any())
                 {
-                    var whichMonster = this.globalRandom.Next(100);
-                    var spot = secretRoom.Center;
-                    var template = "Fuseling";
-                    if (whichMonster <= 50 && actualFloorNum >= monsterFloors["slink"])
+                    var secretRoom = secretRooms.First();
+                    // Generating too many power-ups is game-breaking, so do this 50% of the time.
+                    // Generating out-of-depth monsters is game-breaking, so no TenLegs until the appropriate floor.
+                    // There are eight floors. I'll give you two power-ups (25%), and two empties (25%), 4 monsters (50%)
+                    var contents = this.globalRandom.Next(100);
+                    if (contents <= 50)
                     {
-                        template = "Slink";
-                    }
-                    if (whichMonster <= 75 && actualFloorNum >= monsterFloors["tenlegs"])
-                    {
-                        template = "TenLegs";
-                    }
-                    else if (whichMonster > 75 && actualFloorNum >= monsterFloors["zug"])
-                    {
-                        template = "Zug";
-                    }
+                        var whichMonster = this.globalRandom.Next(100);
+                        var spot = secretRoom.Center;
+                        var template = "Fuseling";
+                        if (whichMonster <= 50 && actualFloorNum >= monsterFloors["slink"])
+                        {
+                            template = "Slink";
+                        }
+                        if (whichMonster <= 75 && actualFloorNum >= monsterFloors["tenlegs"])
+                        {
+                            template = "TenLegs";
+                        }
+                        else if (whichMonster > 75 && actualFloorNum >= monsterFloors["zug"])
+                        {
+                            template = "Zug";
+                        }
 
-                    var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
-                    this.Monsters.Add(monster);
+                        var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
+                        this.Monsters.Add(monster);
 
-                    // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
-                    if (template == "Slink") {
-                        this.GenerateSlinkHorde(spot);
+                        // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
+                        if (template == "Slink") {
+                            this.GenerateSlinkHorde(spot);
+                        }
                     }
-                }
-                else if (contents <= 75)
-                {
-                    var powerUp = PowerUp.Generate(this.globalRandom);
-                    this.PowerUps.Add(powerUp);
-                    powerUp.X = secretRoom.Center.X;
-                    powerUp.Y = secretRoom.Center.Y;
-                }
-                else
-                {
-                    // Empty.
+                    else if (contents <= 75)
+                    {
+                        var powerUp = PowerUp.Generate(this.globalRandom);
+                        this.PowerUps.Add(powerUp);
+                        powerUp.X = secretRoom.Center.X;
+                        powerUp.Y = secretRoom.Center.Y;
+                    }
+                    else
+                    {
+                        // Empty.
+                    }
                 }
             }
         }
@@ -1417,6 +1430,7 @@ namespace DeenGames.AliTheAndroid.Model
             var actualFloorNum = this.FloorNum + 1;
 
             var secretRooms = this.FindPotentialSecretRooms(rooms).Take(numRooms);
+
             foreach (var room in secretRooms) {
                 // Fill the interior with fake walls. Otherwise, FOV gets complicated.
                 // Trim perimeter by 1 tile so we get an interior only
