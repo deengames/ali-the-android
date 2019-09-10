@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Tests.Helpers;
@@ -15,7 +10,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
     public class GenerateAllDungeonsTests
     {
         const int RealGameWidth = 80;
-        const int RealGameHeight = 30;
+        const int RealGameHeight = 28;
 
         [OneTimeSetUp]
         public void SetupKeyboard()

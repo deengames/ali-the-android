@@ -6,7 +6,7 @@ namespace DeenGames.AliTheAndroid
     public static class Program
     {
         internal const int GameWidthInTiles = 80;
-        internal const int GameHeightInTiles = 30;
+        internal const int GameHeightInTiles = 28;
 
         [STAThread]
         static void Main()
