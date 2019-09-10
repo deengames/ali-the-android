@@ -305,7 +305,14 @@ namespace DeenGames.AliTheAndroid.Model
 
                 // Destroyed fake walls don't block vision.
                 // Update FOV by updating map and re-instantiating; there's no other way
-                destroyedFakeWalls.ForEach(f => Map[f.X, f.Y] = true);
+                foreach (var f in destroyedFakeWalls)
+                {
+                    // Make it visible if there's no wall underneath (like in clusters)
+                    if (!Walls.Any(w => w.X == f.X && w.Y == f.Y))
+                    {
+                        Map[f.X, f.Y] = true;
+                    }
+                }
                 this.PlayerFieldOfView = new GoRogue.FOV(this.Map);
                 this.RecalculatePlayerFov();
                 this.FakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
