@@ -86,12 +86,9 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ?
-                    FakeWall.Colour : wall.Color;
-
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    this.SetGlyph(wall.X, wall.Y, wallCharacter, colour);
+                    this.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.LightGrey);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
@@ -163,16 +160,12 @@ namespace DeenGames.AliTheAndroid.Consoles
             // Drawn over monsters because THEY HIDE IN FAKE WALLS. Sometimes.
             foreach (var wall in dungeon.CurrentFloor.FakeWalls)
             {
-                // Duplicate of the draw-walls code
                 var x = wall.X;
                 var y = wall.Y;
 
-                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ?
-                    FakeWall.Colour : wall.Color;
-
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    this.SetGlyph(wall.X, wall.Y, wallCharacter, colour);
+                    this.SetGlyph(wall.X, wall.Y, wallCharacter, FakeWall.Colour);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
