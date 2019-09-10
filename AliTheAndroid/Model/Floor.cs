@@ -41,6 +41,7 @@ namespace DeenGames.AliTheAndroid.Model
         private const char InstaTeleporterShot = '?';
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
         private const int MinimumChasmDistance = 3;
+        private const int MinimumChasmToDoorDistance = 5;
         
 
         public readonly List<Plasma> PlasmaResidue = new List<Plasma>();
@@ -1171,7 +1172,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 for (var x = 0; x < this.Width; x++)
                 {
-                    // Not 100% accurate since we have monsters, ec.
+                    // Not 100% accurate since we have monsters, etc.
                     var coordinates = new GoRogue.Coord(x, y);
                     if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
                     {
@@ -1220,8 +1221,11 @@ namespace DeenGames.AliTheAndroid.Model
         private bool GenerateChasmIfNotTooClose(GoRogue.Coord spot)
         {
             // Calculate the distance to the closest chasm, and make sure it's distant enough.
-            var minDistance = this.Chasms.Any() ? this.Chasms.Select(c => Math.Sqrt(Math.Pow(c.X - spot.X, 2) + Math.Pow(c.Y - spot.Y, 2))).Min() : int.MaxValue;
-            if (minDistance >= MinimumChasmDistance) {
+            var minDistanceToOtherChasms = this.Chasms.Any() ? this.Chasms.Select(c => Math.Sqrt(Math.Pow(c.X - spot.X, 2) + Math.Pow(c.Y - spot.Y, 2))).Min() : int.MaxValue;
+            // Make sure we're not near any doors, either.
+            var minDistanceToDoors = this.Doors.Select(d => Math.Sqrt(Math.Pow(d.X - spot.X, 2) + Math.Pow(d.Y - spot.Y, 2))).Min();
+            if (minDistanceToOtherChasms >= MinimumChasmDistance && minDistanceToDoors >= MinimumChasmToDoorDistance)
+            {
                 this.GenerateChasmAt(spot);
                 return true;
             }

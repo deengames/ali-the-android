@@ -5,6 +5,7 @@ using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Tests.Helpers;
+using DeenGames.AliTheAndroid.Tests.LongRunning;
 using Ninject;
 using NUnit.Framework;
 using Troschuetz.Random.Generators;
@@ -125,7 +126,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             RestrictRuntime(() => {
                 // 0 = B1 = has two power-ups behind a fake wall
-                var floor = new Floor(80, 30, 0, new StandardGenerator(23985));
+                var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 0, new StandardGenerator(23985));
                 var backTrackingPowerUps = floor.PowerUps.Where(p => p.IsBacktrackingPowerUp);
                 // Probably two
                 backTrackingPowerUps.First().PickUp();
@@ -306,7 +307,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(356);
                 var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(80, 30, GravityCannonFloor - 1, random);
+                var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, GravityCannonFloor - 1, random);
                 Assert.That(floor.GravityWaves.Any());
                 Assert.That(floor.GravityWaves.All(g => !g.IsBacktrackingWave)); 
             });
@@ -429,7 +430,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void StairsUpAndDownAreAlwaysWalkable()
         {
             RestrictRuntime(() => {
-                var dungeon = new Dungeon(80, 30, gameSeed: 1036496413);
+                var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, gameSeed: 1036496413);
                 while (dungeon.CurrentFloorNum < 9)
                 {
                     dungeon.GoToNextFloor();
@@ -458,7 +459,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void CountAdjacentFloorsReturnsCorrectCountExcludingCenter()
         {
             RestrictRuntime(() => {
-                var floor = new Floor(80, 30, 0, new StandardGenerator(69874632));
+                var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 0, new StandardGenerator(69874632));
                 floor.Walls.RemoveAll(w => true);
 
                 Assert.That(floor.CountAdjacentFloors(new GoRogue.Coord(2, 2)), Is.EqualTo(8));
@@ -472,16 +473,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
                 var generator = new StandardGenerator(452323);
 
-                var firstFloor = new Floor(80, 30, 0, generator);
+                var firstFloor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 0, generator);
                 Assert.That(firstFloor.DataCube, Is.Null);
 
                 for (var floorNum = 1; floorNum < 9; floorNum++)
                 {
-                    var floor = new Floor(80, 30, floorNum, generator);
+                    var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, floorNum, generator);
                     Assert.That(floor.DataCube, Is.Not.Null);
                 }
 
-                var lastFloor = new Floor(80, 30, 10, generator);
+                var lastFloor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 10, generator);
                 Assert.That(lastFloor.DataCube, Is.Null);
             });
         }
@@ -496,7 +497,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             var generator = new StandardGenerator(313821775);
 
-            var floor = new Floor(80, 30, 0, generator);
+            var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 0, generator);
             var epicenter = new GoRogue.Coord(5, 5);
             var radius = Floor.ExplosionRadius;
 
@@ -524,7 +525,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var generator = new StandardGenerator(562365845);
                 for (var i = 0; i < 10; i++)
                 {
-                    var floor = new Floor(80, 30, i, generator);
+                    var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, i, generator);
                     var expectDrive = i == 9;
 
                     if (expectDrive)
@@ -553,7 +554,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void BossGeneratesOnB10()
         {
             var generator = new StandardGenerator(6846452);
-            var floor = new Floor(80, 30, 9, generator);
+            var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 9, generator);
             Assert.That(floor.Monsters.Where(m => m is Ameer).Count(), Is.EqualTo(1));
         }
 
@@ -564,7 +565,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var generator = new StandardGenerator(4653256);            
                 for (var i = 0; i < 9; i++)
                 {
-                    var floor = new Floor(80, 30, i, generator);
+                    var floor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, i, generator);
                     Assert.That(floor.Monsters.All(m => !(m is Ameer)));
                 }
             });
@@ -579,7 +580,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
                 for (var i = 0; i < 10; i++)
                 {
-                    lastFloor = new Floor(80, 30, i, generator);
+                    lastFloor = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, i, generator);
                 }
 
                 Assert.That(lastFloor.ShipCore, Is.Not.Null);
@@ -596,7 +597,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void WeaponsDontGenerateOnStairsUp()
         {
             RestrictRuntime(() => {
-                var dungeon = new Dungeon(80, 30, 1714594838);
+                var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 1714594838);
                 // Advance to B4
                 dungeon.GoToNextFloor();
                 dungeon.GoToNextFloor();
@@ -613,11 +614,23 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void GenerateDoesntGenerateDataCubeOnStairs()
         {
             var seed = 1470491287;
-            var dungeon = new Dungeon(80, 30, seed);
+            var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, seed);
             var b9 = dungeon.Floors[8];
             var dataCubePosition = new GoRogue.Coord(b9.DataCube.X, b9.DataCube.Y);
             Assert.That(b9.StairsDownLocation, Is.Not.EqualTo(dataCubePosition));
             Assert.That(b9.StairsUpLocation, Is.Not.EqualTo(dataCubePosition));
+        }
+
+        // https://trello.com/c/KtLsagTW/105-doors-generating-next-to-chasms-make-the-game-unbeatable
+        [Test]
+        public void GenerateDoesntGenerateDoorsNextToChasms()
+        {
+            var seed = 1352595784;
+            var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, seed);
+            var b10 = dungeon.Floors.Last();
+            
+            var offendingDoors = b10.Doors.Where(d => b10.Chasms.Any(c => Math.Pow(c.X - d.X, 2) + Math.Pow(c.Y - d.Y, 2) <= 1));
+            Assert.That(!offendingDoors.Any(), $"Expected no doors adjacent to chasms but found {offendingDoors.Count()}!");
         }
     }
 }
