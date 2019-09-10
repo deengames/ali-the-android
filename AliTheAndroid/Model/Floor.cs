@@ -915,9 +915,6 @@ namespace DeenGames.AliTheAndroid.Model
 
         // Generates things out-of-depth (eg. fake walls before the missile launcher pick-up or gaps before the teleporter pick-up).
         // Each one generates just one floor back, for simplicity and user experience (backtracking 2-4 floors is painful).
-
-        // TODO: instead of using an existing room, generate a new room that connects to the rest on only one point. Makes it feel
-        // more like a secret/intentional room that way. Instead, now, it can be a room with multiple paths/exits.
         private void GenerateBacktrackingObstacles()
         {            
             var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
@@ -925,21 +922,13 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNumber == weaponPickUpFloors[Weapon.MiniMissile] - 1)
             {
-                var secretRooms = this.GenerateSecretRooms(rooms, 1, true);
-                if (secretRooms.Any())
-                {
-                    room = secretRooms.First();
-                }
-                else
-                {
-                    // Some dungeon layouts leave no space for secret rooms, because every room
-                    // is either close to the edge or has a hallway poking out of the other side.
-                    // https://trello.com/c/3xHowpLR/42-dungeon-crashes-because-it-cant-have-secret-rooms
-                    room = this.CreateIsolatedRoom();
-                    for (var y = room.MinExtentY; y <= room.MaxExtentY; y++) {
-                        for (var x = room.MinExtentX; x <= room.MaxExtentX; x++) {
-                            this.FakeWalls.Add(new FakeWall(x, y, true));
-                        }
+                // Some dungeon layouts leave no space for secret rooms, because every room
+                // is either close to the edge or has a hallway poking out of the other side.
+                // https://trello.com/c/3xHowpLR/42-dungeon-crashes-because-it-cant-have-secret-rooms
+                room = this.CreateIsolatedRoom();
+                for (var y = room.MinExtentY; y <= room.MaxExtentY; y++) {
+                    for (var x = room.MinExtentX; x <= room.MaxExtentX; x++) {
+                        this.FakeWalls.Add(new FakeWall(x, y, true));
                     }
                 }
                 this.GeneratePowerUpsInRoom(room);
@@ -1313,7 +1302,48 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
-                this.GenerateSecretRooms(rooms);
+                var secretRoom = this.GenerateSecretRooms(rooms).First();
+                // Generating too many power-ups is game-breaking, so do this 50% of the time.
+                // Generating out-of-depth monsters is game-breaking, so no TenLegs until the appropriate floor.
+                // There are eight floors. I'll give you two power-ups (25%), and two empties (25%), 4 monsters (50%)
+                var contents = this.globalRandom.Next(100);
+                if (contents <= 50)
+                {
+                    var whichMonster = this.globalRandom.Next(100);
+                    var spot = secretRoom.Center;
+                    var template = "Fuseling";
+                    if (whichMonster <= 50 && actualFloorNum >= monsterFloors["slink"])
+                    {
+                        template = "Slink";
+                    }
+                    if (whichMonster <= 75 && actualFloorNum >= monsterFloors["tenlegs"])
+                    {
+                        template = "TenLegs";
+                    }
+                    else if (whichMonster > 75 && actualFloorNum >= monsterFloors["zug"])
+                    {
+                        template = "Zug";
+                    }
+
+                    var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
+                    this.Monsters.Add(monster);
+
+                    // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
+                    if (template == "Slink") {
+                        this.GenerateSlinkHorde(spot);
+                    }
+                }
+                else if (contents <= 75)
+                {
+                    var powerUp = PowerUp.Generate(this.globalRandom);
+                    this.PowerUps.Add(powerUp);
+                    powerUp.X = secretRoom.Center.X;
+                    powerUp.Y = secretRoom.Center.Y;
+                }
+                else
+                {
+                    // Empty.
+                }
             }
         }
 
@@ -2123,29 +2153,34 @@ namespace DeenGames.AliTheAndroid.Model
 
                     // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
                     if (template == "Slink") {
-                        var numSubSlinks = this.globalRandom.Next(3, 7); // 3-6 in a bunch
-                        var spots = this.GetAdjacentFloors(spot);
-                        var spotsToUse = spots.Where(s => IsWalkable(s.X, s.Y)).OrderBy(s => this.globalRandom.Next());
-                        
-                        var leftInGroup = Math.Min(spots.Count, numSubSlinks);
-
-                        foreach (var slinkSpot in spotsToUse)
-                        {
-                            distanceToStairsUp = Math.Sqrt(Math.Pow(slinkSpot.X - StairsUpLocation.X, 2) + Math.Pow(slinkSpot.Y - StairsUpLocation.Y, 2));
-                            distanceToStairsDown = Math.Sqrt(Math.Pow(slinkSpot.X - StairsDownLocation.X, 2) + Math.Pow(slinkSpot.Y - StairsDownLocation.Y, 2));
-                            if (distanceToStairsUp >= MinimumDistanceFromMonsterToStairs && distanceToStairsDown >= MinimumDistanceFromMonsterToStairs)
-                            {
-                                monster = Entity.CreateFromTemplate(template, slinkSpot.X, slinkSpot.Y);
-                                this.Monsters.Add(monster);
-                                leftInGroup--;
-                            }
-
-                            if (leftInGroup == 0)
-                            {
-                                break;
-                            }
-                        }
+                        this.GenerateSlinkHorde(spot);
                     }
+                }
+            }
+        }
+
+        private void GenerateSlinkHorde(GoRogue.Coord spot)
+        {
+            var numSubSlinks = this.globalRandom.Next(3, 7); // 3-6 in a bunch
+            var spots = this.GetAdjacentFloors(spot);
+            var spotsToUse = spots.Where(s => IsWalkable(s.X, s.Y)).OrderBy(s => this.globalRandom.Next());
+            
+            var leftInGroup = Math.Min(spots.Count, numSubSlinks);
+
+            foreach (var slinkSpot in spotsToUse)
+            {
+                var distanceToStairsUp = Math.Sqrt(Math.Pow(slinkSpot.X - StairsUpLocation.X, 2) + Math.Pow(slinkSpot.Y - StairsUpLocation.Y, 2));
+                var distanceToStairsDown = Math.Sqrt(Math.Pow(slinkSpot.X - StairsDownLocation.X, 2) + Math.Pow(slinkSpot.Y - StairsDownLocation.Y, 2));
+                if (distanceToStairsUp >= MinimumDistanceFromMonsterToStairs && distanceToStairsDown >= MinimumDistanceFromMonsterToStairs)
+                {
+                    var monster = Entity.CreateFromTemplate("Slink", slinkSpot.X, slinkSpot.Y);
+                    this.Monsters.Add(monster);
+                    leftInGroup--;
+                }
+
+                if (leftInGroup == 0)
+                {
+                    return;
                 }
             }
         }
