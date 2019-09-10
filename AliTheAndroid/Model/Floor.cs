@@ -619,6 +619,13 @@ namespace DeenGames.AliTheAndroid.Model
                 Player.Absorb(powerUpUnderPlayer);
                 AudioManager.Instance.Play("PowerUp");
                 powerUpUnderPlayer.PickUp();
+
+                //  Heal if it's a health power-up
+                if (powerUpUnderPlayer.HealthBoost > 0)
+                {
+                    Player.CurrentHealth = Player.TotalHealth;
+                }
+
                 this.LatestMessage = $"You activate the power-up. {powerUpUnderPlayer.Message}. (Game saved)";
                 SaveManager.SaveGame();
             }
