@@ -13,4 +13,4 @@ install:
   - sudo ./generate.sh && yes Y|sudo ./monogame-linux.run; # install monogame sdk
 script:
   - cd AliTheAndroid.Tests
-  - dotnet test
+  - dotnet test --verbosity normal
