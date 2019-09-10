@@ -47,9 +47,9 @@ namespace DeenGames.AliTheAndroid
         // Constants
         public const bool ShowFakeWalls = true; // Should always be true
 
-        // Debug stuff
-        public const bool StartWithAllWeapons = false;
-        public const bool CanUseStairsFromAnywhere = false;
+        // Manual testing stuff
+        public const bool StartWithAllWeapons = true;
+        public const bool CanUseStairsFromAnywhere = true;
         public const bool PlayerStartsWithAllDataCubes = false;
         internal const int MaxEffectsDelayMultiplier = 4; // 4x
     }
