@@ -302,6 +302,12 @@ namespace DeenGames.AliTheAndroid.Model
                 if (destroyedFakeWalls.Any()) {
                     this.LatestMessage = "You discovered a secret room!";
                 }
+
+                // Destroyed fake walls don't block vision.
+                // Update FOV by updating map and re-instantiating; there's no other way
+                destroyedFakeWalls.ForEach(f => Map[f.X, f.Y] = true);
+                this.PlayerFieldOfView = new GoRogue.FOV(this.Map);
+                this.RecalculatePlayerFov();
                 this.FakeWalls.RemoveAll(e => destroyedFakeWalls.Contains(e));
 
                 // Process if the player shot a plasma shot. 
@@ -597,8 +603,10 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.RecalculatePlayerFov();
 
+            Console.WriteLine($"Player is at {Player.X}, {Player.Y}. Newly seen:");
             foreach (var newlySeen in this.PlayerFieldOfView.NewlySeen)
             {
+                Console.WriteLine($"{newlySeen.X}, {newlySeen.Y}");
                 this.MarkAsSeen(newlySeen.X, newlySeen.Y);
             }
 
