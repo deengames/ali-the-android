@@ -81,9 +81,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            var allWalls = this.dungeon.CurrentFloor.Walls.Union(this.dungeon.CurrentFloor.FakeWalls);
-
-            foreach (var wall in allWalls)
+            foreach (var wall in dungeon.CurrentFloor.Walls)
             {
                 var x = wall.X;
                 var y = wall.Y;
@@ -156,9 +154,29 @@ namespace DeenGames.AliTheAndroid.Consoles
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(monster.X, monster.Y))
                 {
                     var character = monster.Character;
-                    var colour = Entity.MonsterColours[monster.Name];
+                    var colour = monster is Ameer ? monster.Color : Entity.MonsterColours[monster.Name];
 
                     this.SetGlyph(monster.X, monster.Y, character, colour);
+                }
+            }
+
+            // Drawn over monsters because THEY HIDE IN FAKE WALLS. Sometimes.
+            foreach (var wall in dungeon.CurrentFloor.FakeWalls)
+            {
+                // Duplicate of the draw-walls code
+                var x = wall.X;
+                var y = wall.Y;
+
+                var colour = Options.ShowFakeWalls && this.dungeon.CurrentFloor.FakeWalls.Contains(wall) ?
+                    FakeWall.Colour : wall.Color;
+
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
+                {
+                    this.SetGlyph(wall.X, wall.Y, wallCharacter, colour);
+                }
+                else if (this.dungeon.CurrentFloor.IsSeen(x, y))
+                {
+                  this.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
                 }
             }
 
