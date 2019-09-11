@@ -28,7 +28,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         internal List<Weapon> Weapons { get; private set; } = new List<Weapon>() { Weapon.Blaster };
 
 
-        public Player(List<Weapon> weapons = null) : base("You", '@', Palette.White, 0, 0, 50, 7, 5, 4)
+        public Player(List<Weapon> weapons = null) : base("You", '@', Palette.White, 0, 0, 250, 35, 25, 4)
         {
             if (weapons != null)
             {
