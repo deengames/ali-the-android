@@ -15,9 +15,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public const int StrengthPowerUpProbability = 30;
         public const int DefensePowerUpProbability = 30;
 
-        public const int TypicalHealthBoost = 20;
-        public const int TypicalStrengthBoost = 4;
-        public const int TypicalDefenseBoost = 3;
+        public const int TypicalHealthBoost = 50;
+        public const int TypicalStrengthBoost = 5;
+        public const int TypicalDefenseBoost = 5;
         public const int TypicalVisionBoost = 1;
 
         // TODO: character/colour should NOT be part of model!
