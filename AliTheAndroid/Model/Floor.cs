@@ -299,10 +299,6 @@ namespace DeenGames.AliTheAndroid.Model
                     }
                 });
 
-                if (destroyedFakeWalls.Any()) {
-                    this.LatestMessage = "You discovered a secret room!";
-                }
-
                 // Destroyed fake walls don't block vision.
                 // Update FOV by updating map and re-instantiating; there's no other way
                 foreach (var f in destroyedFakeWalls)
