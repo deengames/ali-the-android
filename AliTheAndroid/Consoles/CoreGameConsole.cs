@@ -255,7 +255,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             if (this.dungeon.Player.CurrentWeapon == Weapon.GravityCannon && !this.dungeon.Player.CanFireGravityCannon) {
                 weaponString += " (charging)";
             }
-            string message = $"You: {this.dungeon.Player.CurrentHealth}/{this.dungeon.Player.TotalHealth} (facing {this.dungeon.Player.DirectionFacing.ToString()}) Equipped: {weaponString}";
+            string message = $"You: {this.dungeon.Player.CurrentHealth}/{this.dungeon.Player.TotalHealth} health, {this.dungeon.Player.CurrentShield}/{Player.MaxShield} shield (facing {this.dungeon.Player.DirectionFacing.ToString()}) Equipped: {weaponString}";
             
             foreach (var monster in this.dungeon.CurrentFloor.Monsters)
             {

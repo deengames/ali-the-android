@@ -2,12 +2,16 @@ using System;
 using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Loggers;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class Player : Entity
     {
+        private static readonly Color ShieldedColor = Palette.Cyan;
+        private static readonly Color NormalColor = Palette.White;
+
         internal static readonly Dictionary<Weapon, string> WeaponPickupMessages = new Dictionary<Weapon, string>() {
             { Weapon.MiniMissile,       "Fire missiles to destroy weak walls and debris." },
             { Weapon.Zapper,            "Unjam sealed doors with a jolt of energy." },
@@ -19,7 +23,11 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public Direction DirectionFacing { get; private set; }
         public Weapon CurrentWeapon = Weapon.Blaster;
         public bool HasEnvironmentSuit = false;
+        private const int ShieldRegenPerMove = 1;
+
         public bool CanFireGravityCannon { get; set; } = true;
+        public int CurrentShield { get; private set; }
+        public const int MaxShield = 100;
 
         [JsonProperty]
         internal List<DataCube> DataCubes { get; set; } = new List<DataCube>();
@@ -28,7 +36,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         internal List<Weapon> Weapons { get; private set; } = new List<Weapon>() { Weapon.Blaster };
 
 
-        public Player(List<Weapon> weapons = null) : base("You", '@', Palette.White, 0, 0, 250, 35, 25, 4)
+        public Player(List<Weapon> weapons = null) : base("You", '@', ShieldedColor, 0, 0, 250, 35, 25, 4)
         {
             if (weapons != null)
             {
@@ -37,6 +45,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
             
             this.DirectionFacing = Direction.Up;
+            this.CurrentShield = Player.MaxShield;
 
             if (Options.PlayerStartsWithAllDataCubes)
             {
@@ -112,6 +121,19 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
         }
 
+        override public void Damage(int damage, Weapon source)
+        {
+            var shieldDamage = Math.Min(this.CurrentShield, damage);
+            var leftoverDamage = damage - shieldDamage;
+            this.CurrentShield -= shieldDamage;
+            base.Damage(leftoverDamage, source);
+
+            if (this.CurrentShield == 0)
+            {
+                this.Color = NormalColor;
+            }
+        }
+
         internal void TurnCounterClockwise()
         {
             switch (this.DirectionFacing) {
@@ -148,5 +170,11 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
         }
 
+        internal void RegenerateShield()
+        {
+            this.CurrentShield += Player.ShieldRegenPerMove;
+            this.CurrentShield = Math.Min(this.CurrentShield, Player.MaxShield);
+            this.Color = ShieldedColor;
+        }
     }
 }
