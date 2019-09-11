@@ -610,10 +610,8 @@ namespace DeenGames.AliTheAndroid.Model
         {
             this.RecalculatePlayerFov();
 
-            Console.WriteLine($"Player is at {Player.X}, {Player.Y}. Newly seen:");
             foreach (var newlySeen in this.PlayerFieldOfView.NewlySeen)
             {
-                Console.WriteLine($"{newlySeen.X}, {newlySeen.Y}");
                 this.MarkAsSeen(newlySeen.X, newlySeen.Y);
             }
 
