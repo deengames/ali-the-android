@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Loggers;
 using Microsoft.Xna.Framework;
@@ -9,8 +10,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public class Player : Entity
     {
-        private static readonly Color ShieldedColor = Palette.Cyan;
-        private static readonly Color NormalColor = Palette.White;
+        private static Color NormalColor = Palette.White;
 
         internal static readonly Dictionary<Weapon, string> WeaponPickupMessages = new Dictionary<Weapon, string>() {
             { Weapon.MiniMissile,       "Fire missiles to destroy weak walls and debris." },
@@ -36,7 +36,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         internal List<Weapon> Weapons { get; private set; } = new List<Weapon>() { Weapon.Blaster };
 
 
-        public Player(List<Weapon> weapons = null) : base("You", '@', ShieldedColor, 0, 0, 250, 35, 25, 4)
+        public Player(List<Weapon> weapons = null) : base("You", '@', NormalColor, 0, 0, 250, 35, 25, 4)
         {
             if (weapons != null)
             {
@@ -66,6 +66,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                     }
                 }
             }
+
+            this.ChangeToShieldColor();
         }
 
         public void OnMove(int previousX, int previousY)
@@ -174,7 +176,12 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         {
             this.CurrentShield += Player.ShieldRegenPerMove;
             this.CurrentShield = Math.Min(this.CurrentShield, Player.MaxShield);
-            this.Color = ShieldedColor;
+            this.ChangeToShieldColor();
+        }
+
+        private void ChangeToShieldColor()
+        {
+            this.Color = Options.CurrentPalette == SelectablePalette.StandardPalette ? Palette.Cyan : Palette.Blue;
         }
     }
 }

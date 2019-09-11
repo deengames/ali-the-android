@@ -1,3 +1,4 @@
+using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Events;
 
@@ -28,7 +29,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                     break;
                 case Weapon.Zapper:
                     this.turnsLeftStunned += StunRoundsPerZap + 1; // +1 because current round expires
-                    this.Color = Palette.Cyan;
+                    this.Color = Options.CurrentPalette == SelectablePalette.StandardPalette ? Palette.Cyan : Palette.Blue;
                     EventBus.Instance.Broadcast(GameEvent.AmeerStunned);
                     break;
             }
