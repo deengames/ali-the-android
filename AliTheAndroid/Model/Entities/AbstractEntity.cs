@@ -38,7 +38,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                     return new AbstractEntity(x, y, chasmCharacter, Palette.BlackAlmost);
                 case SimpleEntity.Wall:
                     // Value is determined at draw-time so options auto-change everything
-                    return new AbstractEntity(x, y, 'X', Palette.Grey);
+                    return new AbstractEntity(x, y, 'X', Palette.LightGrey);
                 case SimpleEntity.QuantumPlasma:
                     return new AbstractEntity(x, y, WallCharacter["solid"], Palette.White);
                 default:

@@ -88,7 +88,7 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    this.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.LightGrey);
+                    this.SetGlyph(wall.X, wall.Y, wallCharacter, wall.Color);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
