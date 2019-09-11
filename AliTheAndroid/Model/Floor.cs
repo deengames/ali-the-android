@@ -1963,7 +1963,7 @@ namespace DeenGames.AliTheAndroid.Model
                 Player.CurrentWeapon = Weapon.PlasmaCannon;
                 AudioManager.Instance.Play("ChangeGun");
             }
-            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectTeleporter]))
+            else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectTeleporter]) && Player.Has(Weapon.InstaTeleporter))
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
                 AudioManager.Instance.Play("ChangeGun");
