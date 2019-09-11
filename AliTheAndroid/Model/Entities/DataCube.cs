@@ -15,7 +15,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private static List<Tuple<string, string>> cubeTexts = new List<Tuple<string, string>>()
         {
             // B2
-            new Tuple<string, string>("First Day", @"Marbellu Corporation hired me to work on some sort of cure. It's exciting to start working here, because the Qur'an teaches us that saving one life is like save humanity!"),
+            new Tuple<string, string>("First Day", @"Marbellu Corporation hired me to work on some sort of cure. It's exciting to start working at this space station, because the Qur'an teaches us that saving one life is like save humanity!"),
             new Tuple<string, string>("Explosion", @"There was an explosion in the Experiment Chamber. AllCure prototype #37 leaked and affected a couple of the crew. The Ameer put them in quarantine. Why? Was it an accident? Or ... sabotage?"),
             new Tuple<string, string>("Weapon", @"We're not building a cure. We're building a weapon. We told the Ameer, but he didn't even blink.  He knew.  How can he support this? Doesn't he know that he will be held accountable after death?"),
             new Tuple<string, string>("Virus", @"After hours, I gained access to the Experiment Chamber through the vents.  I found and analyzed a blood sample with AllCure.  It's an air-borne virus. It's in the vents. It's everywhere."),
