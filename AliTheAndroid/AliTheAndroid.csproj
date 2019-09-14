@@ -14,6 +14,8 @@
   <ItemGroup>
     <None Update="Fonts\IBM.font" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fonts\IBM8x16.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fonts\AliTheAndroid.font" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fonts\AliTheAndroid_32x32.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

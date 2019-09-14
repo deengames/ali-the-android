@@ -30,7 +30,6 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
             SadConsole.Settings.ResizeMode = Settings.WindowResizeOptions.Stretch;
             
             // Setup the engine and creat the main window.
-            // 120x50
             SadConsole.Game.Create("Fonts/IBM.font", widthInTiles, heightInTiles);
             
             //SadConsole.Engine.Initialize("IBM.font", 80, 25, (g) => { g.GraphicsDeviceManager.HardwareModeSwitch = false; g.Window.AllowUserResizing = true; });

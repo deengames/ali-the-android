@@ -22,6 +22,10 @@ namespace DeenGames.AliTheAndroid.Consoles
 
         public CoreGameConsole(int width, int height, Dungeon dungeon) : base(width, height)
         {
+            var fontMaster = SadConsole.Global.LoadFont("Fonts/AliTheAndroid.font");
+            var normalSizedFont = fontMaster.GetFont(SadConsole.Font.FontSizes.Two);
+            this.Font = normalSizedFont;
+            
             this.dungeon = dungeon;
             
             EventBus.Instance.AddListener(GameEvent.ShowSubMenu, (obj) =>
