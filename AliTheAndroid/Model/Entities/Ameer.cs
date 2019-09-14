@@ -15,7 +15,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         internal int turnsLeftStunned = 0;
 
         // Colour is ignored and derived at runtime from current palette
-        public Ameer() : base("The Ameer", '@', Options.CurrentPalette.Monster4Colour, 0, 0, 999, 150, 25, 4)
+        public Ameer() : base("The Ameer", 'A', Options.CurrentPalette.Monster4Colour, 0, 0, 999, 150, 25, 4)
         {
         }
 
