@@ -21,6 +21,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         private InGameSubMenuConsole subMenuConsole = null;
         private Random random = new Random();
         private SadConsole.Console backBuffer;
+        private SadConsole.Console messageConsole;
 
         public CoreGameConsole(int width, int height, Dungeon dungeon) : base(width, height)
         {
@@ -29,8 +30,11 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.Font = normalSizedFont;
 
             this.backBuffer = new SadConsole.Console(width, height);
-            
             this.dungeon = dungeon;
+
+            this.messageConsole = new SadConsole.Console(this.Width, 2);
+            this.messageConsole.Position = new Point(0, this.Height - this.messageConsole.Height);
+            this.Children.Add(this.messageConsole);
             
             EventBus.Instance.AddListener(GameEvent.ShowSubMenu, (obj) =>
             {
@@ -250,11 +254,17 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            this.DrawLine(new Point(0, this.dungeon.Height - 2), new Point(this.dungeon.Width, this.dungeon.Height - 2), null, Palette.BlackAlmost, ' ');
-            this.DrawLine(new Point(0, this.dungeon.Height - 1), new Point(this.dungeon.Width, this.dungeon.Height - 1), null, Palette.BlackAlmost, ' ');
+            this.DrawMessageConsole();
+            this.DrawSubMenu(delta);
+        }
+
+        private void DrawMessageConsole()
+        {
+            this.messageConsole.DrawLine(new Point(0, 0), new Point(this.dungeon.Width, 0), null, Palette.BlackAlmost, ' ');
+            this.messageConsole.DrawLine(new Point(0, 1), new Point(this.dungeon.Width, 1), null, Palette.BlackAlmost, ' ');
             this.DrawHealthAndPowerUpIndicators();
 
-            this.Print(this.dungeon.Width - 4, this.dungeon.Height - 2, $"B{this.dungeon.CurrentFloorNum + 1}", Palette.White);
+            this.messageConsole.Print(this.dungeon.Width - 4, 0, $"B{this.dungeon.CurrentFloorNum + 1}", Palette.White);
 
             var message = this.dungeon.CurrentFloor.LatestMessage;
             
@@ -263,14 +273,12 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var firstLineBreak = message.Substring(0, this.dungeon.Width - 7).LastIndexOfAny(new char[] { ' ', '.'} ) + 1;
                 var firstLine = message.Substring(0, firstLineBreak);
 
-                this.Print(1, this.dungeon.Height - 1, $"{firstLine} [more]", Palette.White);
+                this.messageConsole.Print(1, 1, $"{firstLine} [more]", Palette.White);
             }
             else
             {
-                this.Print(1, this.dungeon.Height - 1, message, Palette.White);
+                this.messageConsole.Print(1, 1, message, Palette.White);
             }
-
-            this.DrawSubMenu(delta);
         }
 
         private void DrawHealthAndPowerUpIndicators()
@@ -291,8 +299,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            this.Print(1, this.dungeon.Height - 2, message, Palette.White);
-
+            this.messageConsole.Print(1, 0, message, Palette.White);
 
             var powerUpMessage = "";
 
@@ -305,7 +312,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            this.Print(1, this.dungeon.Height - 1, powerUpMessage, Palette.White);
+            this.messageConsole.Print(1, 1, powerUpMessage, Palette.White);
         }
 
         private void DrawSubMenu(TimeSpan delta)
