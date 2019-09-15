@@ -37,8 +37,10 @@ namespace DeenGames.AliTheAndroid.Model
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
 
-        private const char GravityCannonShot = (char)246; 
+        private const char BlasterShot = '0';
+        private const char GravityCannonShot = (char)246; // ÷
         private const char InstaTeleporterShot = '?';
+        
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
         private const int MinimumChasmDistance = 3;
         private const int MinimumChasmToDoorDistance = 5;
@@ -1702,7 +1704,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private Weapon CharacterToWeapon(char display) {
             switch(display) {
-                case '+': return Weapon.Blaster;
+                case BlasterShot: return Weapon.Blaster;
                 case '!': return Weapon.MiniMissile;
                 case '$': return Weapon.Zapper;
                 case 'o': return Weapon.PlasmaCannon;
@@ -2046,7 +2048,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void FireShot()
         {
-            var character = '+';
+            var character = BlasterShot;
             string soundEffect = "";
 
             if (Player.CurrentWeapon != Weapon.Zapper) {
@@ -2056,7 +2058,7 @@ namespace DeenGames.AliTheAndroid.Model
                 // Plasma: o
                 switch (Player.CurrentWeapon) {
                     case Weapon.Blaster:
-                        character = '+';
+                        character = BlasterShot;
                         soundEffect = "Blaster";
                         break;
                     case Weapon.MiniMissile:
