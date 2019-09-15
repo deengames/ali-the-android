@@ -11,6 +11,8 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class CoreGameConsole : SadConsole.Console
     {
+        private const int ScreenTilesWidth = 20;
+        private const int ScreenTilesHeight = 14;
         private const int RotatePowerUpColorEveryMilliseconds = 334;
         private const int RotateWeaponColorEveryMilliseconds = 400;
         private const int RotatePlasmaDriveColorEveryMilliseconds = 250;
@@ -18,13 +20,15 @@ namespace DeenGames.AliTheAndroid.Consoles
         private Dungeon dungeon;
         private InGameSubMenuConsole subMenuConsole = null;
         private Random random = new Random();
-
+        private SadConsole.Console backBuffer;
 
         public CoreGameConsole(int width, int height, Dungeon dungeon) : base(width, height)
         {
             var fontMaster = SadConsole.Global.LoadFont("Fonts/AliTheAndroid.font");
-            var normalSizedFont = fontMaster.GetFont(SadConsole.Font.FontSizes.One);
+            var normalSizedFont = fontMaster.GetFont(SadConsole.Font.FontSizes.Two);
             this.Font = normalSizedFont;
+
+            this.backBuffer = new SadConsole.Console(width, height);
             
             this.dungeon = dungeon;
             
@@ -56,13 +60,15 @@ namespace DeenGames.AliTheAndroid.Consoles
             this.RedrawEverything(delta);
         }
 
+        // Redraws only what fits on-screen, thus being a "camera" of sorts
+        // Redraws ENTIRE MAP, then global-to-local redraws the camera part on screen
         private void RedrawEverything(TimeSpan delta)
         {
             var floorCharacter = Options.DisplayOldStyleAsciiCharacters ? '.' : ' ';
             var wallCharacter = Options.DisplayOldStyleAsciiCharacters ? 
                 AbstractEntity.WallCharacter["ascii"] : AbstractEntity.WallCharacter["solid"];            
 
-            this.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
+            backBuffer.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
 
             for (var y = 0; y < this.dungeon.Height; y++)
             {
@@ -70,18 +76,18 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                     {
-                        this.SetGlyph(x, y, floorCharacter, Palette.Grey);
+                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.Grey);
                     }
                     else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                     {
-                        this.SetGlyph(x, y, floorCharacter, Palette.DarkPurple);
+                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.DarkPurple);
                     }
                 }
             }
 
             foreach (var residue in this.dungeon.CurrentFloor.PlasmaResidue) {
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(residue.X, residue.Y)) {
-                    this.SetGlyph(residue.X, residue.Y, residue.Character, residue.Color);
+                    backBuffer.SetGlyph(residue.X, residue.Y, residue.Character, residue.Color);
                 }
             }
 
@@ -92,11 +98,11 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    this.SetGlyph(wall.X, wall.Y, wallCharacter, wall.Color);
+                    backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, wall.Color);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  this.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
+                  backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
                 }
             }
 
@@ -104,10 +110,10 @@ namespace DeenGames.AliTheAndroid.Consoles
             {
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(chasm.X, chasm.Y))
                 {
-                    this.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color, Palette.DarkMutedBrown);
+                    backBuffer.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color, Palette.DarkMutedBrown);
                 } else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y))
                 {
-                    this.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
+                    backBuffer.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
                 }
             }
             
@@ -118,17 +124,17 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    this.SetGlyph(x, y, door.Character, door.Color);
+                    backBuffer.SetGlyph(x, y, door.Character, door.Color);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  this.SetGlyph(x, y, door.Character, Palette.Grey);
+                  backBuffer.SetGlyph(x, y, door.Character, Palette.Grey);
                 }
             }
             
             foreach (var wave in this.dungeon.CurrentFloor.GravityWaves) {
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(wave.X, wave.Y)) {
-                    this.SetGlyph(wave.X, wave.Y, wave.Character, wave.Color);
+                    backBuffer.SetGlyph(wave.X, wave.Y, wave.Character, wave.Color);
                 }
             }
 
@@ -137,7 +143,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 int stairsY = this.dungeon.CurrentFloor.StairsDownLocation.Y;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                    this.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                    backBuffer.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
                 }
             }
 
@@ -146,7 +152,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 int stairsY = this.dungeon.CurrentFloor.StairsUpLocation.Y;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                    this.SetGlyph(stairsX, stairsY, '<', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                    backBuffer.SetGlyph(stairsX, stairsY, '<', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
                 }
             }
 
@@ -157,7 +163,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                     var character = monster.Character;
                     var colour = monster is Ameer ? monster.Color : Entity.MonsterColours[monster.Name];
 
-                    this.SetGlyph(monster.X, monster.Y, character, colour);
+                    backBuffer.SetGlyph(monster.X, monster.Y, character, colour);
                 }
             }
 
@@ -169,11 +175,11 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    this.SetGlyph(wall.X, wall.Y, wallCharacter, FakeWall.Colour);
+                    backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, FakeWall.Colour);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  this.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
+                  backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
                 }
             }
 
@@ -183,7 +189,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                     var elapsedSeconds = this.gameTime.TotalMilliseconds;
                     var colours = Options.CurrentPalette.PowerUpColours;
                     var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
-                    this.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, colours[colourIndex]);
+                    backBuffer.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, colours[colourIndex]);
                 }
             }
 
@@ -194,7 +200,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colours = Options.CurrentPalette.WeaponColours;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotateWeaponColorEveryMilliseconds) % colours.Count;
-                this.SetGlyph(weaponPickUp.X, weaponPickUp.Y, weaponPickUp.Character, colours[colourIndex]);
+                backBuffer.SetGlyph(weaponPickUp.X, weaponPickUp.Y, weaponPickUp.Character, colours[colourIndex]);
             }
 
             var dataCube = this.dungeon.CurrentFloor.DataCube;
@@ -203,7 +209,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colours = Options.CurrentPalette.DataCubeColours;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
-                this.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, colours[colourIndex]);
+                backBuffer.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, colours[colourIndex]);
             }
 
             var shipCore = this.dungeon.CurrentFloor.ShipCore;
@@ -211,7 +217,7 @@ namespace DeenGames.AliTheAndroid.Consoles
             {
                 var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePlasmaDriveColorEveryMilliseconds) % ShipCore.Colours.Length;
-                this.SetGlyph(shipCore.X, shipCore.Y, shipCore.Character, ShipCore.Colours[colourIndex]);
+                backBuffer.SetGlyph(shipCore.X, shipCore.Y, shipCore.Character, ShipCore.Colours[colourIndex]);
             }
 
             foreach (var plasma in this.dungeon.CurrentFloor.QuantumPlasma)
@@ -219,14 +225,28 @@ namespace DeenGames.AliTheAndroid.Consoles
                 // Doesn't care about LOS. You're dead if you get cornered.
                 // Disable flickering because of potential for seizures.
                 //var plasmaColor = random.Next(100) <= 7 ? Palette.LilacPinkPurple : plasma.Color;
-                this.SetGlyph(plasma.X, plasma.Y, plasma.Character, plasma.Color);
+                backBuffer.SetGlyph(plasma.X, plasma.Y, plasma.Character, plasma.Color);
             }
 
-            this.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
+            backBuffer.SetGlyph(this.dungeon.Player.X, this.dungeon.Player.Y, this.dungeon.Player.Character, this.dungeon.Player.Color);
 
             foreach (var effect in this.dungeon.CurrentFloor.EffectEntities) {
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(effect.X, effect.Y)) {
-                    this.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
+                    backBuffer.SetGlyph(effect.X, effect.Y, effect.Character, effect.Color);
+                }
+            }
+
+            var cameraStartX = Math.Max(0, dungeon.CurrentFloor.Player.X - (ScreenTilesWidth / 2));
+            var cameraStartY = Math.Max(0, dungeon.CurrentFloor.Player.Y - (ScreenTilesHeight / 2));
+            var cameraStopX = Math.Min(cameraStartX + ScreenTilesWidth, dungeon.Width);
+            var cameraStopY = Math.Min(cameraStartY + ScreenTilesWidth, dungeon.Height);
+
+            for (var y = cameraStartY; y < cameraStopY; y++)
+            {
+                for (var x = cameraStartX; x < cameraStopX; x++)
+                {
+                    // Global to local
+                    this.SetGlyph(x - cameraStartX, y - cameraStartY, this.backBuffer.GetGlyph(x, y), backBuffer.GetForeground(x, y));
                 }
             }
 
