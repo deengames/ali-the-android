@@ -10,7 +10,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         // Values duplicated in AbstractEntity.Create
         public FakeWall(int x, int y, bool isBacktrackingWall = false)
-            : base(x, y, Options.DisplayOldStyleAsciiCharacters ? AbstractEntity.WallCharacter["ascii"] : AbstractEntity.WallCharacter["solid"], Palette.Grey)
+            : base(x, y, '#', Palette.Grey)
         {
             this.IsBacktrackingWall = isBacktrackingWall;
         }

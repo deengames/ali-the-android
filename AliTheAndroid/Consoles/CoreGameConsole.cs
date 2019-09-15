@@ -69,8 +69,6 @@ namespace DeenGames.AliTheAndroid.Consoles
         private void RedrawEverything(TimeSpan delta)
         {
             var floorCharacter = Options.DisplayOldStyleAsciiCharacters ? '.' : ' ';
-            var wallCharacter = Options.DisplayOldStyleAsciiCharacters ? 
-                AbstractEntity.WallCharacter["ascii"] : AbstractEntity.WallCharacter["solid"];            
 
             backBuffer.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
 
@@ -102,11 +100,11 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, wall.Color);
+                    backBuffer.SetGlyph(wall.X, wall.Y, wall.Character, wall.Color);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
+                  backBuffer.SetGlyph(wall.X, wall.Y, wall.Character, Palette.Grey);
                 }
             }
 
@@ -179,11 +177,11 @@ namespace DeenGames.AliTheAndroid.Consoles
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                 {
-                    backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, FakeWall.Colour);
+                    backBuffer.SetGlyph(wall.X, wall.Y, wall.Character, FakeWall.Colour);
                 }
                 else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                 {
-                  backBuffer.SetGlyph(wall.X, wall.Y, wallCharacter, Palette.Grey);
+                  backBuffer.SetGlyph(wall.X, wall.Y, wall.Character, Palette.Grey);
                 }
             }
 

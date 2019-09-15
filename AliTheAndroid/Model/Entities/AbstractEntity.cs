@@ -16,10 +16,9 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int X { get; set; }
         public int Y { get; set; }
 
-        internal static readonly Dictionary<string, char> WallCharacter = new Dictionary<string, char>
-        {
-            { "ascii", '#' }, { "solid",(char)219 } // 219 = █
-        };
+        private const char SolidWallCharacter = (char)219; // █
+        private const char QuantumPlasmaCharacter = (char)219; // █
+        private const char ChasmCharacter = ' ';
         
         public AbstractEntity(int x, int y, char character, Color color)
         {
@@ -34,13 +33,11 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             switch (type)
             {
                 case SimpleEntity.Chasm:
-                    var chasmCharacter = Options.DisplayOldStyleAsciiCharacters ? ' ' : '.';
-                    return new AbstractEntity(x, y, chasmCharacter, Palette.BlackAlmost);
+                    return new AbstractEntity(x, y, ChasmCharacter, Palette.BlackAlmost);
                 case SimpleEntity.Wall:
-                    // Value is determined at draw-time so options auto-change everything
-                    return new AbstractEntity(x, y, 'X', Palette.LightGrey);
+                    return new AbstractEntity(x, y, SolidWallCharacter, Palette.LightGrey);
                 case SimpleEntity.QuantumPlasma:
-                    return new AbstractEntity(x, y, WallCharacter["solid"], Palette.White);
+                    return new AbstractEntity(x, y, QuantumPlasmaCharacter, Palette.White);
                 default:
                     throw new ArgumentException($"Not sure how to create a '{type}' entity");
             }
