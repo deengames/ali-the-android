@@ -78,11 +78,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                     {
-                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.Grey);
+                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.Grey, Palette.Grey);
                     }
                     else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                     {
-                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.DarkPurple);
+                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.DarkPurple, Palette.DarkPurple);
                     }
                 }
             }
@@ -225,8 +225,6 @@ namespace DeenGames.AliTheAndroid.Consoles
             foreach (var plasma in this.dungeon.CurrentFloor.QuantumPlasma)
             {
                 // Doesn't care about LOS. You're dead if you get cornered.
-                // Disable flickering because of potential for seizures.
-                //var plasmaColor = random.Next(100) <= 7 ? Palette.LilacPinkPurple : plasma.Color;
                 backBuffer.SetGlyph(plasma.X, plasma.Y, plasma.Character, plasma.Color);
             }
 
@@ -242,13 +240,13 @@ namespace DeenGames.AliTheAndroid.Consoles
             var cameraStartY = Math.Max(0, dungeon.CurrentFloor.Player.Y - (ScreenTilesHeight / 2));
             var cameraStopX = Math.Min(cameraStartX + ScreenTilesWidth, dungeon.Width);
             var cameraStopY = Math.Min(cameraStartY + ScreenTilesWidth, dungeon.Height);
-
+            
             for (var y = cameraStartY; y < cameraStopY; y++)
             {
                 for (var x = cameraStartX; x < cameraStopX; x++)
                 {
                     // Global to local
-                    this.SetGlyph(x - cameraStartX, y - cameraStartY, this.backBuffer.GetGlyph(x, y), backBuffer.GetForeground(x, y));
+                    this.SetGlyph(x - cameraStartX, y - cameraStartY, this.backBuffer.GetGlyph(x, y), backBuffer.GetForeground(x, y), backBuffer.GetBackground(x, y));
                 }
             }
 
