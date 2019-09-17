@@ -1,8 +1,8 @@
 {
-    "FilePath":"AliTheAndroid_32x32.png",
-    "GlyphHeight":16,
-    "GlyphPadding":0,
-    "GlyphWidth":16,
-    "Name":"AliTheAndroid",
-    "SolidGlyphIndex":0
+    "FilePath": "AliTheAndroid_32x32.png",
+    "GlyphHeight": 16,
+    "GlyphPadding": 0,
+    "GlyphWidth": 16,
+    "Name": "AliTheAndroid",
+    "SolidGlyphIndex": 46
 }
