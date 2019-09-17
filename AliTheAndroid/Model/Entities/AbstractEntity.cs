@@ -16,7 +16,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int X { get; set; }
         public int Y { get; set; }
 
-        private const char SolidWallCharacter = (char)219; // █
+        private const char SolidWallCharacter = (char)46; // ,
         private const char QuantumPlasmaCharacter = (char)219; // █
         private const char ChasmCharacter = ' ';
         
