@@ -27,7 +27,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         }
 
         [TestCase(SimpleEntity.Chasm, ' ')]
-        [TestCase(SimpleEntity.Wall, (char)219)]
+        [TestCase(SimpleEntity.Wall, (char)46)]
         public void CreateCreatesKnownEntities(SimpleEntity type, char expectedCharacter)
         {
             var actual = AbstractEntity.Create(type, 0, 0);
