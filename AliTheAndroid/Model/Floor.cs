@@ -395,6 +395,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (gravityShot != null) {                    
                     foreach (var monster in this.Monsters) {
                         var distance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(monster.X - gravityShot.X, 2) + Math.Pow(monster.Y - gravityShot.Y, 2)));
+                        Console.WriteLine($"Monster at {monster.X}, {monster.Y}: distance={distance}");
                         if (distance <= GravityRadius) {
                             int moveBy = GravityRadius - distance;
                             this.ApplyKnockbacks(monster, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
@@ -1654,14 +1655,25 @@ namespace DeenGames.AliTheAndroid.Model
             var maxY = Math.Max(startY, stopY);
 
             // Move if spaces are clear
-            for (var y = minY; y <= maxY; y++) {
-                for (var x = minX; x <= maxX; x++) {
-                    // Check all spaces and move the entity one by one if the space is empty.
-                    if (this.IsWalkable(entity.X + dx, entity.Y + dy))
+            for (var y = minY; y <= maxY; y++)
+            {
+                for (var x = minX; x <= maxX; x++)
+                {
+                    if (x != entity.X || y != entity.Y)
                     {
-                        // One of these is zero so we're really just moving in one direction.
-                        entity.X += dx;                            
-                        entity.Y += dy;
+                        // Check all spaces and move the entity one by one if the space is empty.
+                        if (this.IsWalkable(entity.X + Math.Sign(dx), entity.Y + Math.Sign(dy)))
+                        {
+                            // One of these is zero so we're really just moving in one direction.
+                            // We can't just set entity position because maybe the knockback is 
+                            // knocking back to the leftm we're always iterating to the right.
+                            entity.X += Math.Sign(dx);                            
+                            entity.Y += Math.Sign(dy);
+                        }
+                        else
+                        {
+                            return;
+                        }
                     }
                 }
             }
