@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using GoRogue.MapViews;
 using DeenGames.AliTheAndroid.Enums;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model;
@@ -70,7 +69,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         {
             var floorCharacter = Options.DisplayOldStyleAsciiCharacters ? '.' : ' ';
 
-            backBuffer.Fill(Palette.BlackAlmost, Palette.BlackAlmost, ' ');
+            backBuffer.Fill(Color.Black, Color.Black, ' ');
 
             for (var y = 0; y < this.dungeon.Height; y++)
             {
@@ -78,11 +77,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                     {
-                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.Grey, Palette.Grey);
+                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.DarkPurple, Palette.DarkPurple);
                     }
                     else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                     {
-                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.DarkPurple, Palette.DarkPurple);
+                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.BlackAlmost, Palette.BlackAlmost);
                     }
                 }
             }
@@ -113,7 +112,8 @@ namespace DeenGames.AliTheAndroid.Consoles
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(chasm.X, chasm.Y))
                 {
                     backBuffer.SetGlyph(chasm.X, chasm.Y, chasm.Character, chasm.Color, Palette.DarkMutedBrown);
-                } else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y))
+                }
+                else if (this.dungeon.CurrentFloor.IsSeen(chasm.X, chasm.Y))
                 {
                     backBuffer.SetGlyph(chasm.X, chasm.Y, chasm.Character, Palette.Grey);
                 }
