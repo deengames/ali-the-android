@@ -9,7 +9,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private const int Lifespan = 10; // turns
         private int lifeLeft = Lifespan;
 
-        public Plasma(int x, int y) : base(x, y, '.', Palette.Red)
+        public Plasma(int x, int y) : base(x, y, '*', Palette.BlackAlmost)
         {
         }
 

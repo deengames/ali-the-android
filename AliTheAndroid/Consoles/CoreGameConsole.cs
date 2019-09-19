@@ -86,9 +86,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
-            foreach (var residue in this.dungeon.CurrentFloor.PlasmaResidue) {
-                if (this.dungeon.CurrentFloor.IsInPlayerFov(residue.X, residue.Y)) {
-                    backBuffer.SetGlyph(residue.X, residue.Y, residue.Character, residue.Color);
+            foreach (var residue in this.dungeon.CurrentFloor.PlasmaResidue)
+            {
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(residue.X, residue.Y))
+                {
+                    backBuffer.SetGlyph(residue.X, residue.Y, residue.Character, residue.Color, Palette.LightRed);
                 }
             }
 
