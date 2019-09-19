@@ -142,12 +142,15 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
+            var elapsedSeconds = this.gameTime.TotalMilliseconds;
+            var stairsCharIndex = (int)Math.Floor(elapsedSeconds / RotatePlasmaDriveColorEveryMilliseconds) % 3;
+
             if (this.dungeon.CurrentFloor.StairsDownLocation != GoRogue.Coord.NONE) {
                 int stairsX = this.dungeon.CurrentFloor.StairsDownLocation.X;
                 int stairsY = this.dungeon.CurrentFloor.StairsDownLocation.Y;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                    backBuffer.SetGlyph(stairsX, stairsY, '>', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                    backBuffer.SetGlyph(stairsX, stairsY, stairsCharIndex, this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
                 }
             }
 
@@ -156,7 +159,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 int stairsY = this.dungeon.CurrentFloor.StairsUpLocation.Y;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                    backBuffer.SetGlyph(stairsX, stairsY, '<', this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                    backBuffer.SetGlyph(stairsX, stairsY, stairsCharIndex, this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
                 }
             }
 
@@ -190,7 +193,6 @@ namespace DeenGames.AliTheAndroid.Consoles
             foreach (var powerUp in this.dungeon.CurrentFloor.PowerUps) {
                 // B1 has power-ups under the fake wall. Don't show it.
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y) && !this.dungeon.CurrentFloor.FakeWalls.Any(f => f.X == powerUp.X && f.Y == powerUp.Y)) {
-                    var elapsedSeconds = this.gameTime.TotalMilliseconds;
                     var colours = Options.CurrentPalette.PowerUpColours;
                     var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
                     backBuffer.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, colours[colourIndex]);
@@ -201,7 +203,6 @@ namespace DeenGames.AliTheAndroid.Consoles
             // Weapons are always visible. This adds tension/arrow-of-play. You need them to 
             // get through obstacles on later floors. #notabug
             if (weaponPickUp != null) {
-                var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colours = Options.CurrentPalette.WeaponColours;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotateWeaponColorEveryMilliseconds) % colours.Count;
                 backBuffer.SetGlyph(weaponPickUp.X, weaponPickUp.Y, weaponPickUp.Character, colours[colourIndex]);
@@ -210,7 +211,6 @@ namespace DeenGames.AliTheAndroid.Consoles
             var dataCube = this.dungeon.CurrentFloor.DataCube;
             if (dataCube != null)
             {
-                var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colours = Options.CurrentPalette.DataCubeColours;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
                 backBuffer.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, colours[colourIndex]);
@@ -219,7 +219,6 @@ namespace DeenGames.AliTheAndroid.Consoles
             var shipCore = this.dungeon.CurrentFloor.ShipCore;
             if (shipCore != null)
             {
-                var elapsedSeconds = this.gameTime.TotalMilliseconds;
                 var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePlasmaDriveColorEveryMilliseconds) % ShipCore.Colours.Length;
                 backBuffer.SetGlyph(shipCore.X, shipCore.Y, shipCore.Character, ShipCore.Colours[colourIndex]);
             }
