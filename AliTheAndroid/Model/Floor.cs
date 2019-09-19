@@ -32,7 +32,7 @@ namespace DeenGames.AliTheAndroid.Model
         private const int MinRoomSize = 7;
         private const int MaxRoomSize = 10;
         private const int NumberOfLockedDoors = 3;
-        private const int PlasmaResidueDamage = 10;
+        private const int PlasmaResidueDamage = 30;
         private const int GravityRadius = 3;
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
