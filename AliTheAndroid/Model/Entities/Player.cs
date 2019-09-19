@@ -134,6 +134,10 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             {
                 this.Color = NormalColor;
             }
+            if (this.CurrentHealth <= 0)
+            {
+                this.Color = Palette.Grey;
+            }
         }
 
         internal void TurnCounterClockwise()
