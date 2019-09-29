@@ -163,7 +163,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                 int stairsY = this.dungeon.CurrentFloor.StairsUpLocation.Y;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                    backBuffer.SetGlyph(stairsX, stairsY, stairsCharIndex, this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                    backBuffer.SetGlyph(stairsX, stairsY, stairsCharIndex, this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? stairsColour : Palette.Grey);
                 }
             }
 

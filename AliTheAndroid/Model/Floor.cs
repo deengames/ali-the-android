@@ -40,6 +40,9 @@ namespace DeenGames.AliTheAndroid.Model
         private const char BlasterShot = '0';
         private const char GravityCannonShot = (char)246; // ÷
         private const char InstaTeleporterShot = '?';
+        private static readonly char[] MissileCharacters = new char[] {
+            '`', 'a', 'b', 'c'
+        };
         
         private const int MinimumDistanceFromPlayerToStairs = 10; // be more than MaxRoomSize so they're not in the same room
         private const int MinimumChasmDistance = 3;
@@ -433,7 +436,7 @@ namespace DeenGames.AliTheAndroid.Model
                 }
 
                 // Missiles explode
-                var missiles = destroyedEffects.Where(e => e.Character == '!');
+                var missiles = destroyedEffects.Where(e => MissileCharacters.Contains(e.Character));
                 foreach (var missile in missiles) {
                     this.CreateExplosion(missile.X, missile.Y);
                 }
@@ -1692,7 +1695,11 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             switch (weaponCharacter) {
-                case '!': return this.CalculateDamage(Weapon.MiniMissile);
+                case '`':
+                case 'a':
+                case 'b':
+                case 'c':
+                    return this.CalculateDamage(Weapon.MiniMissile);
                 case '$': return 0; // Short-range, shouldn't damage you back
                 case 'o': return this.CalculateDamage(Weapon.PlasmaCannon);
                 case GravityCannonShot: return this.CalculateDamage(Weapon.GravityCannon);
@@ -1717,7 +1724,11 @@ namespace DeenGames.AliTheAndroid.Model
         private Weapon CharacterToWeapon(char display) {
             switch(display) {
                 case BlasterShot: return Weapon.Blaster;
-                case '!': return Weapon.MiniMissile;
+                case '`':
+                case 'a':
+                case 'b':
+                case 'c':
+                    return Weapon.MiniMissile;
                 case '$': return Weapon.Zapper;
                 case 'o': return Weapon.PlasmaCannon;
                 case InstaTeleporterShot: return Weapon.InstaTeleporter;
@@ -2074,7 +2085,12 @@ namespace DeenGames.AliTheAndroid.Model
                         soundEffect = "Blaster";
                         break;
                     case Weapon.MiniMissile:
-                        character = '!';
+                        switch (Player.DirectionFacing) {
+                            case Direction.Up: character = MissileCharacters[0]; break;
+                            case Direction.Right: character = MissileCharacters[1]; break;
+                            case Direction.Down: character = MissileCharacters[2]; break;
+                            case Direction.Left: character = MissileCharacters[3]; break;
+                        }
                         soundEffect = "Missile";
                         break;
                     case Weapon.PlasmaCannon:
