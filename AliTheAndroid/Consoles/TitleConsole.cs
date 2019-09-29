@@ -199,13 +199,6 @@ namespace DeenGames.AliTheAndroid.Consoles
                     Options.CurrentPalette = SelectablePalette.SaturatedPalette;
                 }
 
-                // Default if missing/invalid/etc.
-                Options.DisplayOldStyleAsciiCharacters = false;
-                if (data.ContainsKey("Display") && data["Display"] == "ASCII")
-                {
-                    Options.DisplayOldStyleAsciiCharacters = true;
-                }
-
                 Options.EffectsDelayMultiplier = 1;
                 if (data.ContainsKey("EffectsDisplayMultiplier"))
                 {

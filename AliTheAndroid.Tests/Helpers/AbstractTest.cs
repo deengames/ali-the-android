@@ -11,9 +11,6 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
         [TearDown]
         public void ResetEventBus()
         {
-            // Set some stuff to values our tests depend on.
-            Options.DisplayOldStyleAsciiCharacters = true;
-
             // Call EventBus constructor, which is private; resets EventBus.Instance
             Activator.CreateInstance(typeof(EventBus), true);
         }

@@ -9,7 +9,6 @@ namespace DeenGames.AliTheAndroid
         internal static string FileName = "Options.txt";
         
         // Options
-        public static bool DisplayOldStyleAsciiCharacters = false;
         public static SelectablePalette CurrentPalette = SelectablePalette.StandardPalette;
         public static bool IsFullScreen = false;
         public static int EffectsDelayMultiplier = 1;
@@ -18,7 +17,7 @@ namespace DeenGames.AliTheAndroid
         public static bool DeleteSaveGameOnDeath = true;
 
         // Set on B10
-        public static bool EnableOmniSight = false;
+        public static bool EnableOmniSight = true;
 
         // Sorted because the order matters when we display it for key-rebinding
         public static SortedDictionary<GameAction, Key> KeyBindings = new SortedDictionary<GameAction, Key>()
@@ -48,8 +47,8 @@ namespace DeenGames.AliTheAndroid
         public const bool ShowFakeWalls = true; // Should always be true
 
         // Manual testing stuff
-        public const bool StartWithAllWeapons = false;
-        public const bool CanUseStairsFromAnywhere = false;
+        public const bool StartWithAllWeapons = true;
+        public const bool CanUseStairsFromAnywhere = true;
         public const bool PlayerStartsWithAllDataCubes = false;
         internal const int MaxEffectsDelayMultiplier = 4; // 4x
     }

@@ -72,8 +72,6 @@ namespace DeenGames.AliTheAndroid.Consoles
         // Redraws ENTIRE MAP, then global-to-local redraws the camera part on screen
         private void RedrawEverything(TimeSpan delta)
         {
-            var floorCharacter = Options.DisplayOldStyleAsciiCharacters ? '.' : ' ';
-
             backBuffer.Fill(Color.Black, Color.Black, ' ');
 
             for (var y = 0; y < this.dungeon.Height; y++)
@@ -82,11 +80,11 @@ namespace DeenGames.AliTheAndroid.Consoles
                 {
                     if (this.dungeon.CurrentFloor.IsInPlayerFov(x, y))
                     {
-                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.DarkPurple, Palette.DarkPurple);
+                        backBuffer.SetGlyph(x, y, '.', Palette.DarkPurple, Palette.DarkPurple);
                     }
                     else if (this.dungeon.CurrentFloor.IsSeen(x, y))
                     {
-                        backBuffer.SetGlyph(x, y, floorCharacter, Palette.BlackAlmost, Palette.BlackAlmost);
+                        backBuffer.SetGlyph(x, y, '.', Palette.BlackAlmost, Palette.BlackAlmost);
                     }
                 }
             }
