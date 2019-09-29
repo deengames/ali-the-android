@@ -1021,16 +1021,16 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 switch (type) {
                     case "health":
-                        powerups.Add(new PowerUp(0, room.Center.Y, true, healthBoost: PowerUp.TypicalHealthBoost));
+                        powerups.Add(new PowerUp(0, room.Center.Y, PowerUp.Characters["Health"], true, healthBoost: PowerUp.TypicalHealthBoost));
                         break;
                      case "strength":
-                        powerups.Add(new PowerUp(0, room.Center.Y, true, strengthBoost: PowerUp.TypicalStrengthBoost));
+                        powerups.Add(new PowerUp(0, room.Center.Y, PowerUp.Characters["Strength"], true, strengthBoost: PowerUp.TypicalStrengthBoost));
                         break;
                      case "defense":
-                        powerups.Add(new PowerUp(0, room.Center.Y, true, defenseBoost: PowerUp.TypicalDefenseBoost));
+                        powerups.Add(new PowerUp(0, room.Center.Y, PowerUp.Characters["Defense"], true, defenseBoost: PowerUp.TypicalDefenseBoost));
                         break;
                      case "vision":
-                        powerups.Add(new PowerUp(0, room.Center.Y, true, visionBoost: PowerUp.TypicalVisionBoost));
+                        powerups.Add(new PowerUp(0, room.Center.Y, PowerUp.Characters["Vision"], true, visionBoost: PowerUp.TypicalVisionBoost));
                         break;
                 }
             }

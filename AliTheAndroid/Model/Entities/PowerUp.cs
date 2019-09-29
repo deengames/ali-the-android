@@ -21,7 +21,14 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public const int TypicalVisionBoost = 1;
 
         // TODO: character/colour should NOT be part of model!
-        private const char DisplayCharacter = (char)175; // »
+        // No longer used.
+        internal const char DisplayCharacter = (char)175; // »
+        internal static readonly Dictionary<string, char> Characters = new Dictionary<string, char>() {
+            { "Health", 'P'},
+            { "Strength", 'Q'},
+            { "Defense", 'R'},
+            { "Vision", 'S'},
+        };
 
         public int HealthBoost { get; private set; }
         public int StrengthBoost { get; private set; }
@@ -29,6 +36,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int VisionBoost { get; private set; }
         public PowerUp PairedTo { get; private set; }
         public bool IsBacktrackingPowerUp { get; private set; }
+
         private Action onPickUp { get; set; }
 
         public static PowerUp Generate(IGenerator generator)
@@ -43,19 +51,19 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             
             if (next <= buckets["Vision"])
             {
-                return new PowerUp(0, 0, visionBoost: TypicalVisionBoost);
+                return new PowerUp(0, 0, Characters["Vision"], visionBoost: TypicalVisionBoost);
             }
             else if (next > buckets["Vision"] && next <= buckets["Health"])
             {
-                return new PowerUp(0, 0, healthBoost: TypicalHealthBoost);
+                return new PowerUp(0, 0, Characters["Health"], healthBoost: TypicalHealthBoost);
             }
             else if (next > buckets["Health"] && next <= buckets["Strength"])
             {
-                return new PowerUp(0, 0, strengthBoost: TypicalStrengthBoost);
+                return new PowerUp(0, 0, Characters["Strength"], strengthBoost: TypicalStrengthBoost);
             }
             else if (next > buckets["Strength"] && next <= buckets["Defense"])
             {
-                return new PowerUp(0, 0, defenseBoost: TypicalDefenseBoost);
+                return new PowerUp(0, 0, Characters["Defense"], defenseBoost: TypicalDefenseBoost);
             }
             else
             {
@@ -69,9 +77,10 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             p2.PairedTo = p1;
         }
 
-        public PowerUp(int x, int y, bool isBacktrackingPowerUp = false, int healthBoost = 0, int strengthBoost = 0, int defenseBoost = 0, int visionBoost = 0, PowerUp pairedTo = null)
+        public PowerUp(int x, int y, char character = DisplayCharacter, bool isBacktrackingPowerUp = false, int healthBoost = 0, int strengthBoost = 0, int defenseBoost = 0, int visionBoost = 0, PowerUp pairedTo = null)
         : base(x, y, DisplayCharacter, Palette.White)
         {
+            this.Character = character;
             this.HealthBoost = healthBoost;
             this.StrengthBoost = strengthBoost;
             this.DefenseBoost = defenseBoost;

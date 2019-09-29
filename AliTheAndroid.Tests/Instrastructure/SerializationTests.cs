@@ -214,7 +214,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         public void SerializeAndDeserializePowerUps()
         {
             var random = new StandardGenerator(2348321);
-            var e1 = new PowerUp(31, 12, true, 9, 8, 7, 6);
+            var e1 = new PowerUp(31, 12, '^', true, 9, 8, 7, 6);
             
             var e2 = PowerUp.Generate(random);
             PowerUp.Pair(e1, e2);
