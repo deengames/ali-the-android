@@ -15,6 +15,11 @@ namespace DeenGames.AliTheAndroid.Consoles
         private const int RotatePowerUpColorEveryMilliseconds = 334;
         private const int RotateWeaponColorEveryMilliseconds = 400;
         private const int RotatePlasmaDriveColorEveryMilliseconds = 250;
+        private readonly Color[] StairsColours = new Color[]
+        {
+            Palette.White, Palette.LightLilacPink, Palette.LilacPinkPurple
+        };
+
         private TimeSpan gameTime;
         private Dungeon dungeon;
         private InGameSubMenuConsole subMenuConsole = null;
@@ -144,13 +149,14 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             var elapsedSeconds = this.gameTime.TotalMilliseconds;
             var stairsCharIndex = (int)Math.Floor(elapsedSeconds / RotatePlasmaDriveColorEveryMilliseconds) % 3;
+            var stairsColour =  StairsColours[stairsCharIndex];
 
             if (this.dungeon.CurrentFloor.StairsDownLocation != GoRogue.Coord.NONE) {
                 int stairsX = this.dungeon.CurrentFloor.StairsDownLocation.X;
                 int stairsY = this.dungeon.CurrentFloor.StairsDownLocation.Y;
 
                 if (this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) || this.dungeon.CurrentFloor.IsSeen(stairsX, stairsY)) {
-                    backBuffer.SetGlyph(stairsX, stairsY, stairsCharIndex, this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? Palette.White : Palette.Grey);
+                    backBuffer.SetGlyph(stairsX, stairsY, stairsCharIndex, this.dungeon.CurrentFloor.IsInPlayerFov(stairsX, stairsY) ? stairsColour : Palette.Grey);
                 }
             }
 
