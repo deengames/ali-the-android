@@ -471,7 +471,7 @@ namespace DeenGames.AliTheAndroid.Model
         public bool IsSeen(int x, int y)
         {
             string key = $"{x}, {y}";
-            return isTileDiscovered.ContainsKey(key) && isTileDiscovered[key] == true;
+            return isTileDiscovered.ContainsKey(key);
         }
 
         public bool IsWalkable(int x, int y)
@@ -488,6 +488,20 @@ namespace DeenGames.AliTheAndroid.Model
         {
             // Recalculate FOV
             PlayerFieldOfView.Calculate(Player.X, Player.Y, Player.VisionRange);
+        }
+
+        public void MarkCurrentFovAsSeen()
+        {
+            // https://trello.com/c/neuspyiA/115-start-new-game-walk-around-seen-tiles-stay-black
+            // When starting a new game, and maybe descending, the starting area tiles stay black
+            // even when you walk around, until you see them the second time.
+            
+            // Root cause: they're in the FOV but not marked as seen, we only mark newly-seen
+            // tiles as seen! #derp #herp #lolwut
+            foreach (var tile in PlayerFieldOfView.CurrentFOV)
+            {
+                this.MarkAsSeen(tile.X, tile.Y);
+            }
         }
 
         public void PairPowerUps()

@@ -114,6 +114,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.Player.X = this.CurrentFloor.StairsUpLocation.X;
             this.Player.Y = this.CurrentFloor.StairsUpLocation.Y;
             this.CurrentFloor.RecalculatePlayerFov();
+            this.CurrentFloor.MarkCurrentFovAsSeen();
             SaveManager.SaveGame();
         }
 
