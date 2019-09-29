@@ -17,7 +17,7 @@ namespace DeenGames.AliTheAndroid
         public static bool DeleteSaveGameOnDeath = true;
 
         // Set on B10
-        public static bool EnableOmniSight = true;
+        public static bool EnableOmniSight = false;
 
         // Sorted because the order matters when we display it for key-rebinding
         public static SortedDictionary<GameAction, Key> KeyBindings = new SortedDictionary<GameAction, Key>()
