@@ -845,12 +845,17 @@ namespace DeenGames.AliTheAndroid.Model
             // Stairs before monsters because monsters don't generate close to stairs!
             this.GenerateStairs();
 
+            var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
+
+            var safeTiles = path.Steps;
+            this.GenerateFakeWallClusters(safeTiles);
+
+
             var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
                 // Add one more fake wall cluster between the player and the stairs down.
-                var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
-                var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
                 var middle = globalRandom.Next((int)(path.Length * 0.25), (int)(path.Length * 0.75));
                 var midPath = path.GetStep(middle);
                 this.CreateFakeWallClusterAt(midPath);
@@ -858,12 +863,12 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.GravityCannon])
             {
-                this.GenerateGravityWaves();
+                this.GenerateGravityWaves(safeTiles);
             }
             
-            if (actualFloorNum >= weaponPickUpFloors[Weapon.InstaTeleporter])
+            if (actualFloorNum > weaponPickUpFloors[Weapon.InstaTeleporter])
             {
-                this.GenerateChasms();
+                this.GenerateChasms(safeTiles);
             }
 
             this.GenerateBacktrackingObstacles();
@@ -1347,7 +1352,6 @@ namespace DeenGames.AliTheAndroid.Model
 
             this.rooms = this.GenerateWalls();
             this.HighlightWalls();
-            this.GenerateFakeWallClusters();
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
@@ -1437,7 +1441,10 @@ namespace DeenGames.AliTheAndroid.Model
             this.FakeWalls.Clear();
 
             var actualFloorNum = this.FloorNum + 1;
-            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
+            // Don't generate on the missile floor; doing so could block the exit, if we generate
+            // between the stairs and block the player if they have limited options to go forward.
+            // See: https://trello.com/c/DdNrWX6X/118-random-destructible-walls-block-2f
+            if (actualFloorNum > weaponPickUpFloors[Weapon.MiniMissile])
             {
                 // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
                 var numFakeWallClusters = 3;
