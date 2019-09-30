@@ -75,7 +75,6 @@ namespace DeenGames.AliTheAndroid.Consoles
         // Redraws ENTIRE MAP, then global-to-local redraws the camera part on screen
         private void RedrawEverything(TimeSpan delta)
         {
-            Console.WriteLine($"{Dungeon.Instance.Player.X}, {Dungeon.Instance.Player.Y}");
             backBuffer.Fill(Color.Black, Color.Black, ' ');
 
             for (var y = 0; y < this.dungeon.Height; y++)

@@ -283,7 +283,6 @@ namespace DeenGames.AliTheAndroid.Model
                 foreach (var backlash in playerBacklashes) {
                     var damage = this.CalculateDamage(backlash.Character);
                     var source = this.CharacterToWeapon(backlash.Character);
-                    Console.WriteLine("Player damaged by backlash for " + damage + " damage!");
                     Player.Damage(damage, source);
                 }
 
@@ -398,7 +397,6 @@ namespace DeenGames.AliTheAndroid.Model
                 if (gravityShot != null) {                    
                     foreach (var monster in this.Monsters) {
                         var distance = (int)Math.Ceiling(Math.Sqrt(Math.Pow(monster.X - gravityShot.X, 2) + Math.Pow(monster.Y - gravityShot.Y, 2)));
-                        Console.WriteLine($"Monster at {monster.X}, {monster.Y}: distance={distance}");
                         if (distance <= GravityRadius) {
                             int moveBy = GravityRadius - distance;
                             this.ApplyKnockbacks(monster, gravityShot.X, gravityShot.Y, moveBy, gravityShot.Direction);
