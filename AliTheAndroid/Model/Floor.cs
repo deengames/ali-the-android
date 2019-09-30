@@ -788,7 +788,7 @@ namespace DeenGames.AliTheAndroid.Model
             return roomsInPath;
         }
 
-        private void GenerateGravityWaves()
+        private void GenerateGravityWaves(IEnumerable<GoRogue.Coord> safeTiles)
         {
             this.GravityWaves.Clear();
 
@@ -1212,7 +1212,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void GenerateChasms()
+        private void GenerateChasms(IEnumerable<GoRogue.Coord> safeTiles)
         {
             this.Chasms.Clear();
             
@@ -1436,7 +1436,7 @@ namespace DeenGames.AliTheAndroid.Model
             return this.FloorNum >= 8;
         }
 
-        private void GenerateFakeWallClusters()
+        private void GenerateFakeWallClusters(IEnumerable<GoRogue.Coord> safeTiles)
         {
             this.FakeWalls.Clear();
 
