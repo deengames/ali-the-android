@@ -521,7 +521,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         public void InitializeMapAndFov()
         {
-                        // ArrayMap is not deserializable and neither is GoRogue.FOV
+            // ArrayMap is not deserializable and neither is GoRogue.FOV
             // Therefore, reconstruct it.
             // Used for deserialization; overwritten by the regular constructor
             this.Map = new ArrayMap<bool>(this.Width, this.Height);
@@ -1104,6 +1104,15 @@ namespace DeenGames.AliTheAndroid.Model
                 this.DigTunnel(toReturn.Center.X, nearestRoom.Center.Y, nearestRoom.Center.X, nearestRoom.Center.Y);
             }
 
+            // Allow the FOV to penetrate this room - it's not a wall any more.
+            for (int y = toReturn.MinExtentY; y <= toReturn.MaxExtentY; y++)
+            {
+                for (var x = toReturn.MinExtentX; x <= toReturn.MaxExtentX; x++)
+                {
+                    this.Map[x, y] = true;
+                }
+            }
+
             return toReturn;
         }
 
@@ -1480,11 +1489,13 @@ namespace DeenGames.AliTheAndroid.Model
                 for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
                     for (var x = room.Rectangle.X + 1; x < room.Rectangle.X + room.Rectangle.Width - 1; x++) {
                         var wall = this.Walls.SingleOrDefault(w => w.X == x && w.Y == y);
-                        if (wall != null) {
+                        if (wall != null)
+                        {
                             this.Walls.Remove(wall);
                         }
 
                         // Mark as "secret floor" if not perimeter
+                        /////////////// Y U NO WORK
                         this.FakeWalls.Add(new FakeWall(x, y, flagWallsAsBacktracking));
                     }
                 }
@@ -1493,7 +1504,8 @@ namespace DeenGames.AliTheAndroid.Model
                 var secretX = room.ConnectedOnLeft ? room.Rectangle.X + room.Rectangle.Width - 1 : room.Rectangle.X;
                 for (var y = room.Rectangle.Y + 1; y < room.Rectangle.Y + room.Rectangle.Height - 1; y++) {
                     var wall = this.Walls.SingleOrDefault(w => w.X == secretX && w.Y == y);
-                    if (wall != null) {
+                    if (wall != null)
+                    {
                         this.Walls.Remove(wall);
                     }
 
