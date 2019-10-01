@@ -17,34 +17,34 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
 
         public void RestrictRuntime(Action testCode, int maxWaitSeconds = 30)
         {
-            try {
-
-            ThreadStart runTest = () => testCode();
-            var thread = new Thread(runTest);
-
-            var startTime = DateTime.Now;
-            
-            thread.Start();
-
-            while (thread.ThreadState == ThreadState.Running && (
-                (DateTime.Now - startTime).TotalSeconds <= maxWaitSeconds) ||
-                System.Diagnostics.Debugger.IsAttached)
+            try
             {
-                Thread.Sleep(100);
-            }
+                ThreadStart runTest = () => testCode();
+                var thread = new Thread(runTest);
 
-            if (thread.ThreadState == ThreadState.Running)
-            {
-                Assert.Fail($"Test exceeded maximum timeout ({maxWaitSeconds}s); thread state is {thread.ThreadState}; runtime was {(DateTime.Now - startTime).TotalSeconds}");
-            }
+                var startTime = DateTime.Now;
+                
+                thread.Start();
 
-            // Thread.Abort is not supported on this platform. Leave the thread around, I guess...
-            // The test runner terminates, so the thread dies soon enough.
+                while (thread.ThreadState == ThreadState.Running && (
+                    (DateTime.Now - startTime).TotalSeconds <= maxWaitSeconds) ||
+                    System.Diagnostics.Debugger.IsAttached)
+                {
+                    Thread.Sleep(100);
+                }
+
+                if (thread.ThreadState == ThreadState.Running)
+                {
+                    Assert.Fail($"Test exceeded maximum timeout ({maxWaitSeconds}s); thread state is {thread.ThreadState}; runtime was {(DateTime.Now - startTime).TotalSeconds}");
+                }
+
+                // Thread.Abort is not supported on this platform. Leave the thread around, I guess...
+                // The test runner terminates, so the thread dies soon enough.
             }
             catch (Exception e)
             {
-                // Keep going so other tests run instead of NUnit crashing.
-                Assert.Fail($"Unexpected exception: {e}");
+                // Don't throw; we don't want NUnit to die if our thread timed out / aborted.
+                Assert.Fail($"Test threw an unexpected error: {e}");
             }
         }
     }
