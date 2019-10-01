@@ -890,6 +890,11 @@ namespace DeenGames.AliTheAndroid.Model
             this.GenerateShipCore();
 
             this.GenerateMonsters();
+
+            // Hack for bug: some rooms are like pocket dimensions for light
+            // See: https://trello.com/c/ZcMhxYPo/119-secret-rooms-arent-flooded-with-fake-walls
+            // Since save/load works, just use that workflow's treatment of the FOV map
+            this.InitializeMapAndFov();
         }
         
 
