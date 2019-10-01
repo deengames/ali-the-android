@@ -281,6 +281,37 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(p2.PairedTo, Is.EqualTo(p1));
         }
 
+        [Test]
+        public void PowerUpsInBacktrackingRoomOnB3ArePaired()
+        {
+            // https://trello.com/c/Gs0o4E8y/121-power-ups-in-a-room-of-locked-doors-on-b3-are-not-paired
+            // Seed 350164614, 3F: the power-ups aren't paired?! -_-
+
+            // TODO: try save/load if this doesn't reproduce the issue
+            var dungeon = new Dungeon(80, 30, 350164614);
+            var serialized = Serializer.Serialize(dungeon);
+
+            // Production work-flow, see TitleConsole.cs
+            dungeon = Serializer.Deserialize<Dungeon>(serialized);
+            // Go in and re-pair power-ups which are not paired any more
+            foreach (var floor in dungeon.Floors)
+            {
+                floor.PairPowerUps();
+                floor.InitializeMapAndFov();
+                floor.RecreateSubclassedMonsters();
+            }
+                
+            var b3 = dungeon.Floors[2];
+            
+            // Magic numbers deduced from testing
+            var topLeftDoor = b3.Doors[21]; // 60, 24
+            var bottomRightdoor = b3.Doors.Last();
+
+            // PowerUps[1] at (61, 25) and PowerUps[2] at (63, 26)
+            var shouldBePaired = b3.PowerUps.Where(p => p.X >= topLeftDoor.X && p.Y >= topLeftDoor.Y && p.X <= bottomRightdoor.X && p.Y <= bottomRightdoor.Y);
+            Assert.That(shouldBePaired.All(p => shouldBePaired.Contains(p.PairedTo)));
+        }
+
         private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)
         {
             Assert.That(e1.X, Is.EqualTo(e2.X));
