@@ -788,7 +788,7 @@ namespace DeenGames.AliTheAndroid.Model
             return roomsInPath;
         }
 
-        private void GenerateGravityWaves()
+        private void GenerateGravityWaves(IEnumerable<GoRogue.Coord> safeTiles)
         {
             this.GravityWaves.Clear();
 
@@ -849,11 +849,11 @@ namespace DeenGames.AliTheAndroid.Model
             var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
 
             var safeTiles = path.Steps;
-            this.GenerateFakeWallClusters();
+            this.GenerateFakeWallClusters(safeTiles);
 
 
             var actualFloorNum = this.FloorNum + 1;
-            if (actualFloorNum > weaponPickUpFloors[Weapon.MiniMissile])
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
                 // Add one more fake wall cluster between the player and the stairs down.
                 var middle = globalRandom.Next((int)(path.Length * 0.25), (int)(path.Length * 0.75));
@@ -861,14 +861,14 @@ namespace DeenGames.AliTheAndroid.Model
                 this.CreateFakeWallClusterAt(midPath);
             }
 
-            if (actualFloorNum > weaponPickUpFloors[Weapon.GravityCannon])
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.GravityCannon])
             {
-                this.GenerateGravityWaves();
+                this.GenerateGravityWaves(safeTiles);
             }
             
             if (actualFloorNum > weaponPickUpFloors[Weapon.InstaTeleporter])
             {
-                this.GenerateChasms();
+                this.GenerateChasms(safeTiles);
             }
 
             this.GenerateBacktrackingObstacles();
@@ -1221,7 +1221,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void GenerateChasms()
+        private void GenerateChasms(IEnumerable<GoRogue.Coord> safeTiles)
         {
             this.Chasms.Clear();
             
@@ -1445,21 +1445,22 @@ namespace DeenGames.AliTheAndroid.Model
             return this.FloorNum >= 8;
         }
 
-        private void GenerateFakeWallClusters()
+        private void GenerateFakeWallClusters(IEnumerable<GoRogue.Coord> safeTiles)
         {
             this.FakeWalls.Clear();
 
             var actualFloorNum = this.FloorNum + 1;
+            // Don't generate on the missile floor; doing so could block the exit, if we generate
+            // between the stairs and block the player if they have limited options to go forward.
+            // See: https://trello.com/c/DdNrWX6X/118-random-destructible-walls-block-2f
             if (actualFloorNum > weaponPickUpFloors[Weapon.MiniMissile])
             {
                 // Throw in a few fake walls in random places. Well, as long as that tile doesn't have more than 4 adjacent empty spaces.
                 var numFakeWallClusters = 3;
-                while (numFakeWallClusters > 0)
-                {
+                while (numFakeWallClusters > 0) {
                     var spot = this.FindEmptySpot();
                     var numFloors = this.CountAdjacentFloors(spot);
-                    if (numFloors <= 4)
-                    {
+                    if (numFloors <= 4) {
                         // Make a plus-shaped cluster. It's cooler.
                         this.CreateFakeWallClusterAt(spot);
                         numFakeWallClusters -= 1;
@@ -1526,7 +1527,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Generate locked doors: random spots with only two surrounding ground tiles.
             var actualFloorNum = this.FloorNum + 1;
-            if (actualFloorNum > weaponPickUpFloors[Weapon.Zapper])
+            if (actualFloorNum >= weaponPickUpFloors[Weapon.Zapper])
             {
                 var leftToGenerate = NumberOfLockedDoors;
                 var iterationsLeft = 50;
