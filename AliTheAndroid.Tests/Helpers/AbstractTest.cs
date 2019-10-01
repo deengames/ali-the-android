@@ -17,6 +17,8 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
 
         public void RestrictRuntime(Action testCode, int maxWaitSeconds = 30)
         {
+            try {
+
             ThreadStart runTest = () => testCode();
             var thread = new Thread(runTest);
 
@@ -38,6 +40,12 @@ namespace DeenGames.AliTheAndroid.Tests.Helpers
 
             // Thread.Abort is not supported on this platform. Leave the thread around, I guess...
             // The test runner terminates, so the thread dies soon enough.
+            }
+            catch (Exception e)
+            {
+                // Keep going so other tests run instead of NUnit crashing.
+                Assert.Fail($"Unexpected exception: {e}");
+            }
         }
     }
 }
