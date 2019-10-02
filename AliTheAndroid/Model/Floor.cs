@@ -36,6 +36,7 @@ namespace DeenGames.AliTheAndroid.Model
         private const int GravityRadius = 3;
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
+        private const int PairedPowerUpsMaxDistance = 5; // no more than N tiles apart
 
         private const char BlasterShot = '0';
         private const char GravityCannonShot = (char)246; // ÷
@@ -504,6 +505,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         public void PairPowerUps()
         {
+            // If we know they're supposed to be paired, pair 'em.
             if (this.PairedPowerUps.Any())
             {
                 PowerUp.Pair(this.PairedPowerUps[0], this.PairedPowerUps[1]);
@@ -513,9 +515,27 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 powerUp.OnPickUp(() => {
                     this.PowerUps.Remove(powerUp);
-                    this.PowerUps.Remove(powerUp);
                     this.PowerUps.Remove(powerUp.PairedTo);
                 });
+            }
+
+            // Then, if there are two in close proximity (eg. backtracking room),
+            // pair those, too.
+            foreach (var p1 in this.PowerUps)
+            {
+                foreach (var p2 in this.PowerUps)
+                {
+                    if (p1 != p2 && GoRogue.Distance.EUCLIDEAN.Calculate(p1.X, p1.Y, p2.X, p2.Y) <= PairedPowerUpsMaxDistance)
+                    {
+                        PowerUp.Pair(p1, p2);
+                        Action removeBoth = () => {
+                            this.PowerUps.Remove(p1);
+                            this.PowerUps.Remove(p2);
+                        };
+                        p1.OnPickUp(removeBoth);
+                        p2.OnPickUp(removeBoth);
+                    }
+                }
             }
         }
 
@@ -788,7 +808,7 @@ namespace DeenGames.AliTheAndroid.Model
             return roomsInPath;
         }
 
-        private void GenerateGravityWaves(IEnumerable<GoRogue.Coord> safeTiles)
+        private void GenerateGravityWaves()
         {
             this.GravityWaves.Clear();
 
@@ -848,9 +868,7 @@ namespace DeenGames.AliTheAndroid.Model
             var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
 
-            var safeTiles = path.Steps;
-            this.GenerateFakeWallClusters(safeTiles);
-
+            this.GenerateFakeWallClusters();
 
             var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
@@ -863,12 +881,12 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.GravityCannon])
             {
-                this.GenerateGravityWaves(safeTiles);
+                this.GenerateGravityWaves();
             }
             
             if (actualFloorNum > weaponPickUpFloors[Weapon.InstaTeleporter])
             {
-                this.GenerateChasms(safeTiles);
+                this.GenerateChasms();
             }
 
             this.GenerateBacktrackingObstacles();
@@ -897,7 +915,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.InitializeMapAndFov();
         }
         
-
         private void GenerateShipCore()
         {
             var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
@@ -1226,7 +1243,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void GenerateChasms(IEnumerable<GoRogue.Coord> safeTiles)
+        private void GenerateChasms()
         {
             this.Chasms.Clear();
             
@@ -1450,7 +1467,7 @@ namespace DeenGames.AliTheAndroid.Model
             return this.FloorNum >= 8;
         }
 
-        private void GenerateFakeWallClusters(IEnumerable<GoRogue.Coord> safeTiles)
+        private void GenerateFakeWallClusters()
         {
             this.FakeWalls.Clear();
 
@@ -1474,13 +1491,23 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void CreateFakeWallClusterAt(GoRogue.Coord spot)
+        private void CreateFakeWallClusterAt(GoRogue.Coord center)
         {
-            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X - 1, spot.Y), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X + 1, spot.Y), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y - 1), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
+            var spots = new List<GoRogue.Coord>() {
+                new GoRogue.Coord(center.X, center.Y),
+                new GoRogue.Coord(center.X - 1, center.Y),
+                new GoRogue.Coord(center.X + 1, center.Y),
+                new GoRogue.Coord(center.X, center.Y - 1),
+                new GoRogue.Coord(center.X, center.Y + 1),
+            };
+
+            foreach (var spot in spots)
+            {
+                if (this.IsWalkable(spot.X, spot.Y))
+                {
+                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
+                }
+            }
         }
 
         private IEnumerable<GoRogue.Rectangle> GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms, int numRooms = 2, bool flagWallsAsBacktracking = false)
