@@ -830,7 +830,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             var extraRooms = ExtraGravityWaveRooms;
             var stairsUpCoordinates = new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y);
-            var candidateRooms = rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates)).ToList();
+            var candidateRooms = rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates) && !roomsInPath.Contains(r)).ToList();
 
             while (extraRooms > 0 && candidateRooms.Any())
             {
