@@ -14,6 +14,7 @@ using DeenGames.AliTheAndroid.Infrastructure;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
+using DeenGames.AliTheAndroid.Loggers;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
@@ -108,6 +109,7 @@ namespace DeenGames.AliTheAndroid.Consoles
                     }
                     dungeon.CurrentFloor.RecalculatePlayerFov();
                     Dungeon.Instance = dungeon;
+                    LastGameLogger.Instance.Log($"Loaded game {dungeon.GameSeed}.");
 
                     if (dungeon.CurrentFloorNum == 9) // B10
                     {

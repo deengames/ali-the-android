@@ -36,6 +36,7 @@ namespace DeenGames.AliTheAndroid.Model
         private const int GravityRadius = 3;
         private const int ExtraGravityWaveRooms = 1;
         private const int NumChasms = 5;
+        private const int PairedPowerUpsMaxDistance = 5; // no more than N tiles apart
 
         private const char BlasterShot = '0';
         private const char GravityCannonShot = (char)246; // ÷
@@ -504,6 +505,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         public void PairPowerUps()
         {
+            // If we know they're supposed to be paired, pair 'em.
             if (this.PairedPowerUps.Any())
             {
                 PowerUp.Pair(this.PairedPowerUps[0], this.PairedPowerUps[1]);
@@ -513,9 +515,27 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 powerUp.OnPickUp(() => {
                     this.PowerUps.Remove(powerUp);
-                    this.PowerUps.Remove(powerUp);
                     this.PowerUps.Remove(powerUp.PairedTo);
                 });
+            }
+
+            // Then, if there are two in close proximity (eg. backtracking room),
+            // pair those, too.
+            foreach (var p1 in this.PowerUps)
+            {
+                foreach (var p2 in this.PowerUps)
+                {
+                    if (p1 != p2 && GoRogue.Distance.EUCLIDEAN.Calculate(p1.X, p1.Y, p2.X, p2.Y) <= PairedPowerUpsMaxDistance)
+                    {
+                        PowerUp.Pair(p1, p2);
+                        Action removeBoth = () => {
+                            this.PowerUps.Remove(p1);
+                            this.PowerUps.Remove(p2);
+                        };
+                        p1.OnPickUp(removeBoth);
+                        p2.OnPickUp(removeBoth);
+                    }
+                }
             }
         }
 
@@ -788,7 +808,7 @@ namespace DeenGames.AliTheAndroid.Model
             return roomsInPath;
         }
 
-        private void GenerateGravityWaves(IEnumerable<GoRogue.Coord> safeTiles)
+        private void GenerateGravityWaves()
         {
             this.GravityWaves.Clear();
 
@@ -810,7 +830,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             var extraRooms = ExtraGravityWaveRooms;
             var stairsUpCoordinates = new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y);
-            var candidateRooms = rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates)).ToList();
+            var candidateRooms = rooms.Where(r => r != gravityRoom && !r.Contains(stairsUpCoordinates) && !roomsInPath.Contains(r)).ToList();
 
             while (extraRooms > 0 && candidateRooms.Any())
             {
@@ -848,9 +868,7 @@ namespace DeenGames.AliTheAndroid.Model
             var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
 
-            var safeTiles = path.Steps;
-            this.GenerateFakeWallClusters(safeTiles);
-
+            this.GenerateFakeWallClusters();
 
             var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
@@ -863,12 +881,12 @@ namespace DeenGames.AliTheAndroid.Model
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.GravityCannon])
             {
-                this.GenerateGravityWaves(safeTiles);
+                this.GenerateGravityWaves();
             }
             
             if (actualFloorNum > weaponPickUpFloors[Weapon.InstaTeleporter])
             {
-                this.GenerateChasms(safeTiles);
+                this.GenerateChasms();
             }
 
             this.GenerateBacktrackingObstacles();
@@ -897,7 +915,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.InitializeMapAndFov();
         }
         
-
         private void GenerateShipCore()
         {
             var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
@@ -1226,7 +1243,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void GenerateChasms(IEnumerable<GoRogue.Coord> safeTiles)
+        private void GenerateChasms()
         {
             this.Chasms.Clear();
             
@@ -1361,7 +1378,8 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
 
-        private void GenerateMapRooms() {
+        private void GenerateMapRooms()
+        {
             var actualFloorNum = this.FloorNum + 1;
 
             this.rooms = this.GenerateWalls();
@@ -1370,50 +1388,54 @@ namespace DeenGames.AliTheAndroid.Model
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
                 var secretRooms = this.GenerateSecretRooms(rooms);
-                // At this point (going to prod "soon", I'm okay with not generating secret rooms. It's OK, really.)
+                // At this point (going to prod "soon"), I'm okay with not generating secret rooms. It's OK.
                 if (secretRooms.Any())
                 {
-                    var secretRoom = secretRooms.First();
-                    // Generating too many power-ups is game-breaking, so do this 50% of the time.
-                    // Generating out-of-depth monsters is game-breaking, so no TenLegs until the appropriate floor.
-                    // There are eight floors. I'll give you two power-ups (25%), and two empties (25%), 4 monsters (50%)
-                    var contents = this.globalRandom.Next(100);
-                    if (contents <= 50)
+                    foreach (var secretRoom in secretRooms)
                     {
-                        var whichMonster = this.globalRandom.Next(100);
-                        var spot = secretRoom.Center;
-                        var template = "Fuseling";
-                        if (whichMonster <= 50 && actualFloorNum >= monsterFloors["slink"])
+                        // Generating too many power-ups is game-breaking, so do this 50% of the time.
+                        // Generating out-of-depth monsters is game-breaking, so no TenLegs until the appropriate floor.
+                        // There are eight floors. I'll give you two power-ups (25%), and two empties (25%), 4 monsters (50%)
+                        var contents = this.globalRandom.Next(100);
+                        // 50% chance to have monsters
+                        if (contents <= 50)
                         {
-                            template = "Slink";
-                        }
-                        if (whichMonster <= 75 && actualFloorNum >= monsterFloors["tenlegs"])
-                        {
-                            template = "TenLegs";
-                        }
-                        else if (whichMonster > 75 && actualFloorNum >= monsterFloors["zug"])
-                        {
-                            template = "Zug";
-                        }
+                            var whichMonster = this.globalRandom.Next(100);
+                            var spot = secretRoom.Center;
+                            var template = "Fuseling";
+                            if (whichMonster <= 50 && actualFloorNum >= monsterFloors["slink"])
+                            {
+                                template = "Slink";
+                            }
+                            if (whichMonster <= 75 && actualFloorNum >= monsterFloors["tenlegs"])
+                            {
+                                template = "TenLegs";
+                            }
+                            else if (whichMonster > 75 && actualFloorNum >= monsterFloors["zug"])
+                            {
+                                template = "Zug";
+                            }
 
-                        var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
-                        this.Monsters.Add(monster);
+                            var monster = Entity.CreateFromTemplate(template, spot.X, spot.Y);
+                            this.Monsters.Add(monster);
 
-                        // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
-                        if (template == "Slink") {
-                            this.GenerateSlinkHorde(spot);
+                            // If it's a slink: look in the 3x3 tiles around/including it, and generate slinks.
+                            if (template == "Slink") {
+                                this.GenerateSlinkHorde(spot);
+                            }
                         }
-                    }
-                    else if (contents <= 75)
-                    {
-                        var powerUp = PowerUp.Generate(this.globalRandom);
-                        this.PowerUps.Add(powerUp);
-                        powerUp.X = secretRoom.Center.X;
-                        powerUp.Y = secretRoom.Center.Y;
-                    }
-                    else
-                    {
-                        // Empty.
+                        else if (contents <= 75)
+                        {
+                            // 25% chance to have a power-up
+                            var powerUp = PowerUp.Generate(this.globalRandom);
+                            this.PowerUps.Add(powerUp);
+                            powerUp.X = secretRoom.Center.X;
+                            powerUp.Y = secretRoom.Center.Y;
+                        }
+                        else
+                        {
+                            // 25% chance to be empty
+                        }
                     }
                 }
             }
@@ -1450,10 +1472,8 @@ namespace DeenGames.AliTheAndroid.Model
             return this.FloorNum >= 8;
         }
 
-        private void GenerateFakeWallClusters(IEnumerable<GoRogue.Coord> safeTiles)
+        private void GenerateFakeWallClusters()
         {
-            this.FakeWalls.Clear();
-
             var actualFloorNum = this.FloorNum + 1;
             // Don't generate on the missile floor; doing so could block the exit, if we generate
             // between the stairs and block the player if they have limited options to go forward.
@@ -1474,13 +1494,23 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void CreateFakeWallClusterAt(GoRogue.Coord spot)
+        private void CreateFakeWallClusterAt(GoRogue.Coord center)
         {
-            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X - 1, spot.Y), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X + 1, spot.Y), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y - 1), this.FakeWalls);
-            this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y + 1), this.FakeWalls);
+            var spots = new List<GoRogue.Coord>() {
+                new GoRogue.Coord(center.X, center.Y),
+                new GoRogue.Coord(center.X - 1, center.Y),
+                new GoRogue.Coord(center.X + 1, center.Y),
+                new GoRogue.Coord(center.X, center.Y - 1),
+                new GoRogue.Coord(center.X, center.Y + 1),
+            };
+
+            foreach (var spot in spots)
+            {
+                if (this.IsWalkable(spot.X, spot.Y))
+                {
+                    this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
+                }
+            }
         }
 
         private IEnumerable<GoRogue.Rectangle> GenerateSecretRooms(IEnumerable<GoRogue.Rectangle> rooms, int numRooms = 2, bool flagWallsAsBacktracking = false)
