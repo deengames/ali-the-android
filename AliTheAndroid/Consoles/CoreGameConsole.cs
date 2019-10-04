@@ -244,11 +244,22 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
             }
 
+            // Keeps rendering from going out-of-bounds
             var cameraStartX = Math.Max(0, dungeon.CurrentFloor.Player.X - (ScreenTilesWidth / 2));
             var cameraStartY = Math.Max(0, dungeon.CurrentFloor.Player.Y - (ScreenTilesHeight / 2));
             var cameraStopX = Math.Min(cameraStartX + ScreenTilesWidth, dungeon.Width);
-            var cameraStopY = Math.Min(cameraStartY + ScreenTilesWidth, dungeon.Height);
+            var cameraStopY = Math.Min(cameraStartY + ScreenTilesHeight, dungeon.Height);
             
+            // https://twitter.com/nightblade99/status/1180203280946864129
+            // What if the user is in the bottom-right corner of the map?
+            // camera start will be correct, but stop will be the max, meaning we're just rendering a tiny block.
+            // Nah, bro. Instead, offset start X/Y backward until we're rendering a full screen.
+            var dx = ScreenTilesWidth - (cameraStopX - cameraStartX);
+            var dy = ScreenTilesHeight - (cameraStopY - cameraStartY);
+            // dx/dy are only positive in the bottom-right quadrant
+            cameraStartX -= dx;
+            cameraStartY -= dy;
+
             for (var y = cameraStartY; y < cameraStopY; y++)
             {
                 for (var x = cameraStartX; x < cameraStopX; x++)
