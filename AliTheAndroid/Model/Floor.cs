@@ -106,6 +106,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private string lastMessage = "";
         private bool justScrolledMessage = false;
+        private string leftOverMessage = ""; // Replaced with [more], show next time
         private IKeyboard keyboard;
 
 
@@ -1975,17 +1976,24 @@ namespace DeenGames.AliTheAndroid.Model
             if (justScrolledMessage)
             {
                 // When pressing space => showing the last message, don't process THAT as a turn.
+                this.LatestMessage = this.leftOverMessage;
+                this.leftOverMessage = "";
                 justScrolledMessage = false;
                 return false;
             }
             if (this.LatestMessage.Length > this.Width && this.keyboard.GetKeysPressed().Any())
             {
-                this.LatestMessage = this.LatestMessage.Substring(this.Width - 7); // 7 = " [more]"
+                // -7 for [more]. Find the last word boundary before it, and everything after that, 
+                // (which we set to leftOverMessage) displays the next page/text.
+                var startIndex = this.LatestMessage.Substring(0, this.Width - 7).LastIndexOf(' ');
+                this.leftOverMessage = this.LatestMessage.Substring(startIndex);
+                this.LatestMessage = this.LatestMessage.Substring(0, startIndex); 
                 justScrolledMessage = true;
                 return false;
             }
 
-            if (!Player.CanMove) {
+            if (!Player.CanMove)
+            {
                 return false;
             }
 
