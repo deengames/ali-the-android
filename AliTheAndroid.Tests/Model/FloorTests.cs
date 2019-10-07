@@ -632,5 +632,17 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var offendingDoors = b10.Doors.Where(d => b10.Chasms.Any(c => Math.Pow(c.X - d.X, 2) + Math.Pow(c.Y - d.Y, 2) <= 1));
             Assert.That(!offendingDoors.Any(), $"Expected no doors adjacent to chasms but found {offendingDoors.Count()}!");
         }
+
+        // https://trello.com/c/BYFu7sGD/131-dungeon-generation-crashes
+        [Test]
+        public void GenerateDoesntGenerateFakeWallsOnTopOfStairs()
+        {
+            var seed = 808458114;
+            var dungeon = new Dungeon(80, 28, seed);
+            var b6 = dungeon.Floors.ElementAt(5);
+
+            Assert.That(!b6.FakeWalls.Any(f => f.X == b6.StairsUpLocation.X && f.Y == b6.StairsUpLocation.Y));
+            Assert.That(!b6.FakeWalls.Any(f => f.X == b6.StairsDownLocation.X && f.Y == b6.StairsDownLocation.Y));
+        }
     }
 }

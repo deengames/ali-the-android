@@ -1175,7 +1175,6 @@ namespace DeenGames.AliTheAndroid.Model
                 var weaponType = weaponPickUpFloors.Single(w => w.Value == actualFloorNumber).Key;
                 
                 var floorTiles = this.GetTilesAccessibleFromStairsWithoutWeapons();
-
                 var target = floorTiles.OrderByDescending(c => 
                     // Order by farthest to closest (compared to stairs)
                     Math.Sqrt(Math.Pow(c.X - this.StairsUpLocation.X, 2) + Math.Pow(c.Y - this.StairsUpLocation.Y, 2)))
@@ -1484,8 +1483,9 @@ namespace DeenGames.AliTheAndroid.Model
                 var numFakeWallClusters = 3;
                 while (numFakeWallClusters > 0) {
                     var spot = this.FindEmptySpot();
-                    var numFloors = this.CountAdjacentFloors(spot);
-                    if (numFloors <= 4) {
+                    var adjacentFloors = this.GetAdjacentFloors(spot);
+                    if (adjacentFloors.Count <= 4)
+                    {
                         // Make a plus-shaped cluster. It's cooler.
                         this.CreateFakeWallClusterAt(spot);
                         numFakeWallClusters -= 1;
@@ -1506,7 +1506,11 @@ namespace DeenGames.AliTheAndroid.Model
 
             foreach (var spot in spots)
             {
-                if (this.IsWalkable(spot.X, spot.Y))
+                // https://trello.com/c/BYFu7sGD/131-dungeon-generation-crashes
+                // Don't generate a fake-wall cluster where one of the peripheral pieces is on the stairs
+                if (this.IsWalkable(spot.X, spot.Y) &&
+                    !(spot.X == StairsUpLocation.X && spot.Y == StairsUpLocation.Y) &&
+                    !(spot.X == StairsDownLocation.X && spot.Y == StairsDownLocation.Y))
                 {
                     this.AddNonDupeEntity(new FakeWall(spot.X, spot.Y), this.FakeWalls);
                 }
