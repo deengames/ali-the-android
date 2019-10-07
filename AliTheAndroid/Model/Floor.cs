@@ -2082,6 +2082,15 @@ namespace DeenGames.AliTheAndroid.Model
                 this.FireShot();
                 // No need to set processedInput=true, that's handled when the weapon effect despawns
             }
+            else if (this.GetMonsterAt(destinationX, destinationY) != null)
+            {
+                var monster = this.GetMonsterAt(destinationX, destinationY);
+                processedInput = true;
+
+                var damage = Player.Strength - monster.Defense;
+                monster.Damage(damage, Weapon.Undefined);
+                this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
+            }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
                 var door = this.Doors.Single(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false);
@@ -2093,15 +2102,6 @@ namespace DeenGames.AliTheAndroid.Model
                     Player.X = door.X;
                     Player.Y = door.Y;
                 }
-            }
-            else if (this.GetMonsterAt(destinationX, destinationY) != null)
-            {
-                var monster = this.GetMonsterAt(destinationX, destinationY);
-                processedInput = true;
-
-                var damage = Player.Strength - monster.Defense;
-                monster.Damage(damage, Weapon.Undefined);
-                this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SkipTurn]))
             {
