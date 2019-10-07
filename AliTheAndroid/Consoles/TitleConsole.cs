@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Accessibility;
 using DeenGames.AliTheAndroid.Infrastructure;
 using DeenGames.AliTheAndroid.Model;
-using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Model.Events;
 using DeenGames.AliTheAndroid.Loggers;
 
