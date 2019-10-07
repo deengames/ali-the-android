@@ -10,8 +10,10 @@ namespace DeenGames.AliTheAndroid.Consoles
 {
     public class CoreGameConsole : SadConsole.Console
     {
-        private const int ScreenTilesWidth = 20;
-        private const int ScreenTilesHeight = 14;
+        private const int ScreenWidth = 640;
+        private const int ScreenHeight = 448;
+        private readonly int ScreenTilesWidth = 20;
+        private readonly int ScreenTilesHeight = 14;
         private const int RotatePowerUpColorEveryMilliseconds = 334;
         private const int RotateWeaponColorEveryMilliseconds = 400;
         private const int RotatePlasmaDriveColorEveryMilliseconds = 250;
@@ -32,6 +34,10 @@ namespace DeenGames.AliTheAndroid.Consoles
             var fontMaster = SadConsole.Global.LoadFont("Fonts/AliTheAndroid.font");
             var normalSizedFont = fontMaster.GetFont(SadConsole.Font.FontSizes.Two);
             this.Font = normalSizedFont;
+
+            this.ScreenTilesWidth = (int)Math.Floor(1.0f * ScreenWidth / normalSizedFont.Size.X);
+            this.ScreenTilesHeight = (int)Math.Floor(1.0f * ScreenHeight / normalSizedFont.Size.Y);
+            Console.WriteLine($"{this.ScreenTilesWidth}x{this.ScreenTilesHeight}");
 
             this.backBuffer = new SadConsole.Console(width, height);
             this.dungeon = dungeon;
