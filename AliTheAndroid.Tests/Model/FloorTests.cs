@@ -346,14 +346,16 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void GenerateMapGeneratesChasmsAfterTeleporterFloor()
         {
-            RestrictRuntime(() => {
-                const int InstaTeleporterFloor = 8; // B8
-                var random = new StandardGenerator(357);
-                var noPowerUps =  new List<PowerUp>();
+            const int InstaTeleporterFloor = 7; // B8
+            var random = new StandardGenerator(357);
+            var noPowerUps =  new List<PowerUp>();
 
-                var floor = new Floor(30, 30, InstaTeleporterFloor - 1, random);
-                Assert.That(floor.Chasms.Any());
-            });
+            // Teleporter floor itself should have no chasms; don't want to get stuck!
+            var floor = new Floor(30, 30, InstaTeleporterFloor, random);
+            Assert.That(!floor.Chasms.Any());
+
+            floor = new Floor(30, 30, InstaTeleporterFloor + 1, random);
+            Assert.That(floor.Chasms.Any());
         }
 
         [Test]
