@@ -193,6 +193,15 @@ namespace DeenGames.AliTheAndroid.Consoles
                 backBuffer.SetGlyph(dataCube.X, dataCube.Y, dataCube.Character, colours[colourIndex]);
             }
 
+            // B1 has power-ups under the fake wall, so we draw power-ups first.
+            foreach (var powerUp in this.dungeon.CurrentFloor.PowerUps) {
+                if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y))
+                {
+                    var colours = Options.CurrentPalette.PowerUpColours;
+                    var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
+                    backBuffer.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, colours[colourIndex]);
+                }
+            }
 
             foreach (var monster in this.dungeon.CurrentFloor.Monsters)
             {                
@@ -202,16 +211,6 @@ namespace DeenGames.AliTheAndroid.Consoles
                     var colour = monster is Ameer ? monster.Color : Entity.MonsterColours[monster.Name];
 
                     backBuffer.SetGlyph(monster.X, monster.Y, character, colour);
-                }
-            }
-
-            // B1 has power-ups under the fake wall, so we draw power-ups first.
-            foreach (var powerUp in this.dungeon.CurrentFloor.PowerUps) {
-                if (this.dungeon.CurrentFloor.IsInPlayerFov(powerUp.X, powerUp.Y))
-                {
-                    var colours = Options.CurrentPalette.PowerUpColours;
-                    var colourIndex = (int)Math.Floor(elapsedSeconds / RotatePowerUpColorEveryMilliseconds) % colours.Count;
-                    backBuffer.SetGlyph(powerUp.X, powerUp.Y, powerUp.Character, colours[colourIndex]);
                 }
             }
 
