@@ -90,23 +90,21 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void GoToNextFloorDoesntRegeneratePowerUps()
         {
-            RestrictRuntime(() => {
-                var dungeon = new Dungeon(35, 25, gameSeed: 12323);
+            var dungeon = new Dungeon(35, 25, gameSeed: 12323);
 
-                // Start at B2 / floor 1
-                dungeon.GoToNextFloor();
-                dungeon.GoToNextFloor();
-                Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
-                Assert.That(dungeon.CurrentFloor.PowerUps.Count > 0);
+            // Start at B2 / floor 1
+            dungeon.GoToNextFloor();
+            dungeon.GoToNextFloor();
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+            Assert.That(dungeon.CurrentFloor.PowerUps.Count > 0);
 
-                dungeon.CurrentFloor.PowerUps[0].PickUp();
-                Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);
+            dungeon.CurrentFloor.PowerUps[0].PickUp();
+            Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);
 
-                dungeon.GoToPreviousFloor();
-                dungeon.GoToNextFloor();
-                Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
-                Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);            
-            });
+            dungeon.GoToPreviousFloor();
+            dungeon.GoToNextFloor();
+            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+            Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);            
         }
     }
 }

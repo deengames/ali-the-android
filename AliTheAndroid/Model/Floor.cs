@@ -521,10 +521,12 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             // Then, if there are two in close proximity (eg. backtracking room),
-            // pair those, too.
-            foreach (var p1 in this.PowerUps)
+            // pair those, too. Make sure they're not already paired (during load game)
+            var unpaired = this.PowerUps.Where(p => p.PairedTo == null);
+
+            foreach (var p1 in unpaired)
             {
-                foreach (var p2 in this.PowerUps)
+                foreach (var p2 in unpaired)
                 {
                     if (p1 != p2 && GoRogue.Distance.EUCLIDEAN.Calculate(p1.X, p1.Y, p2.X, p2.Y) <= PairedPowerUpsMaxDistance)
                     {

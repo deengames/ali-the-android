@@ -251,8 +251,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var p1 = powerUps[0];
                 var p2 = powerUps[1];
 
-                Assert.That(p1.PairedTo, Is.EqualTo(p2));
-                Assert.That(p2.PairedTo, Is.EqualTo(p1));
+                Assert.That(p1.PairedTo, Is.EqualTo(p2), $"{p1.Message} should be paired to {p2.Message} but instead is paired to {p1.PairedTo.Message}!");
+                Assert.That(p2.PairedTo, Is.EqualTo(p1), $"{p2.Message} should be paired to {p1.Message} but instead is paired to {p2.PairedTo.Message}!");
             });
         }
 
@@ -413,16 +413,14 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void GenerateGeneratesFakeWallBetweenStairs()
         {
-            RestrictRuntime(() => {
-                var floor = new Floor(90, 45, 7, new StandardGenerator(777));
+            var floor = new Floor(90, 45, 7, new StandardGenerator(777));
 
-                var pathFinder = new AStar(floor.Map, GoRogue.Distance.EUCLIDEAN);
-                var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
-                
-                // Any steps have any fake walls on them. Alternatively, this can be negated as:
-                // For all steps, there are no fake walls.
-                Assert.That(path.Steps.Any(p => floor.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y)));
-            });
+            var pathFinder = new AStar(floor.Map, GoRogue.Distance.EUCLIDEAN);
+            var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
+            
+            // Any steps have any fake walls on them. Alternatively, this can be negated as:
+            // For all steps, there are no fake walls.
+            Assert.That(path.Steps.Any(p => floor.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y)));
         }
 
         // https://trello.com/c/fmynV9Qa/41-test-fails-because-chasm-generates-on-stairs-up
