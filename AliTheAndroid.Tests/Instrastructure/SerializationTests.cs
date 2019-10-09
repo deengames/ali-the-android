@@ -18,7 +18,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
     public class SerializationTests
     {
         [OneTimeSetUp]
-        public void LOL_WUT()
+        public void BindKeyboardToDeadKeyboard()
         {
             // TODO: DELETE! Refactor into "if not bound ..."
             DependencyInjection.kernel.Bind<IKeyboard>().To<DeadKeyboard>();
@@ -41,7 +41,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(actual.Height, Is.EqualTo(expected.Height));
             Assert.That(actual.CurrentFloorNum, Is.EqualTo(expected.CurrentFloorNum));
             Assert.That(actual.CurrentFloor, Is.Not.Null);
-            Assert.That(actual.GameSeed, Is.Null); // Readonly, only used in generation
+            Assert.That(actual.GameSeed, Is.EqualTo(expected.GameSeed));
             
             Assert.That(actual.Player, Is.Not.Null);
         }

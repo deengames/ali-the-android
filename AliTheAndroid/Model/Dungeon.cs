@@ -26,7 +26,7 @@ namespace DeenGames.AliTheAndroid.Model
         public int Height { get; private set; }
         public int CurrentFloorNum { get; private set; } = -1;
 
-        public readonly int? GameSeed = null ; // null = random each time
+        public int? GameSeed = null; // null = random each time
         public readonly List<Floor> Floors = new List<Floor>(NumFloors);
 
         private readonly IGenerator globalRandom;
