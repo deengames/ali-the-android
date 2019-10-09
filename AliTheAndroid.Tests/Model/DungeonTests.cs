@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Tests.Helpers;
@@ -96,15 +97,20 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             dungeon.GoToNextFloor();
             dungeon.GoToNextFloor();
             Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
-            Assert.That(dungeon.CurrentFloor.PowerUps.Count > 0);
 
-            dungeon.CurrentFloor.PowerUps[0].PickUp();
-            Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);
+            var currentFloor = dungeon.CurrentFloor;
+            Assert.That(currentFloor.PowerUps.Any());
+
+            while (currentFloor.PowerUps.Any())
+            {
+                currentFloor.PowerUps[0].PickUp();
+            }
+            Assert.That(currentFloor.PowerUps.Count, Is.EqualTo(0));
 
             dungeon.GoToPreviousFloor();
             dungeon.GoToNextFloor();
             Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
-            Assert.That(dungeon.CurrentFloor.PowerUps.Count == 0);            
+            Assert.That(dungeon.CurrentFloor.PowerUps.Count, Is.EqualTo(0));
         }
     }
 }

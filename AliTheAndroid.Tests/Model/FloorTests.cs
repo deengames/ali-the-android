@@ -112,7 +112,9 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var floor = new Floor(100, 100, 3, globalRandom);
                 var nextFloor = new Floor(25, 50, 4, globalRandom);
 
-                var twins = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp);
+                // We actually get three power-ups: two (paired/twins) and one in a secret room.
+                // Filter out the secret room easily: it's covered with fake walls.
+                var twins = floor.PowerUps.Where(p => !p.IsBacktrackingPowerUp && !floor.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y));
                 Assert.That(twins.Count, Is.EqualTo(2));
                 var twin = twins.First();
                 twin.PickUp();
@@ -416,8 +418,13 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void GenerateGeneratesFakeWallBetweenStairs()
         {
             var floor = new Floor(90, 45, 7, new StandardGenerator(777));
+            
+            // We need to use a modified map that doesn't treat fake walls as unwalkable, so that A* can find the right route.
+            // This was broken to fix pocket dimensions: https://trello.com/c/ZcMhxYPo/119-secret-rooms-arent-flooded-with-fake-walls
+            var map = floor.Map;
+            floor.FakeWalls.ForEach(f => map[f.X, f.Y] = true);
 
-            var pathFinder = new AStar(floor.Map, GoRogue.Distance.EUCLIDEAN);
+            var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
             
             // Any steps have any fake walls on them. Alternatively, this can be negated as:
