@@ -60,5 +60,17 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
             Assert.That(distinct.Count() == 3 || distinct.Count() == 4, // 4 types, should get 3-4 distinct types
                 $"Expected 3-4 types of power-ups but got {distinct.Count()}: {System.String.Join(", ", distinct)}"); 
         }
+
+        // https://trello.com/c/XU4p02Lk/135-power-ups-behind-a-chasm-arent-paired-if-you-load-game
+        // Root cause: PowerUp.ctor assignes PairedTo assymetrically; apply it symmetrically.
+        [Test]
+        public void ConstructorSymmetricallyPairsPowerUps()
+        {
+            var generator = new StandardGenerator(12311);
+            var p1 = PowerUp.Generate(generator);
+            var p2 = new PowerUp(0, 0, 'P', true, 99, 88, 77, 66, p1);
+            Assert.That(p2.PairedTo, Is.EqualTo(p1));
+            Assert.That(p1.PairedTo, Is.EqualTo(p2));
+        }
     }
 }

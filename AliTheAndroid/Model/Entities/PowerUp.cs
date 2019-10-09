@@ -88,7 +88,12 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.IsBacktrackingPowerUp = isBacktrackingPowerUp;
 
             // Serializer passes in this value, production code doesn't. Sometimes. (Not for both paired entities.)
-            this.PairedTo = pairedTo;
+            // Additional bug found in https://trello.com/c/XU4p02Lk/135-power-ups-behind-a-chasm-arent-paired-if-you-load-game
+            // Always pair symmetrically; not doing so, creates an assymetric relationship.
+            if (pairedTo != null)
+            {
+                PowerUp.Pair(this, pairedTo);
+            }
         }
 
         public string Message { get {

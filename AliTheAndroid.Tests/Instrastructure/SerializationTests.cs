@@ -286,7 +286,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         {
             // https://trello.com/c/Gs0o4E8y/121-power-ups-in-a-room-of-locked-doors-on-b3-are-not-paired
             // Seed 350164614, 3F: the power-ups aren't paired?! -_-
-
+            
             // TODO: try save/load if this doesn't reproduce the issue
             var dungeon = new Dungeon(80, 30, 350164614);
             var serialized = Serializer.Serialize(dungeon);
@@ -310,6 +310,29 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             // PowerUps[1] at (61, 25) and PowerUps[2] at (63, 26)
             var shouldBePaired = b3.PowerUps.Where(p => p.X >= topLeftDoor.X && p.Y >= topLeftDoor.Y && p.X <= bottomRightdoor.X && p.Y <= bottomRightdoor.Y);
             Assert.That(shouldBePaired.All(p => shouldBePaired.Contains(p.PairedTo)));
+        }
+
+        [Test]
+        public void PowerUpsInBacktrackingRoomOnB7ArePaired()
+        {
+            // https://trello.com/c/XU4p02Lk/135-power-ups-behind-a-chasm-arent-paired-if-you-load-game
+        // New game, get to B7, save, load, and power-ups are no longer paired.
+        
+            var dungeon = new Dungeon(80, 30, 12345);
+            var serialized = Serializer.Serialize(dungeon);
+
+            // Production work-flow, see TitleConsole.cs
+            dungeon = Serializer.Deserialize<Dungeon>(serialized);
+            var b7 = dungeon.Floors[6];
+
+            // Go in and re-pair power-ups which are not paired any more
+            b7.PairPowerUps();
+                
+            var shouldBePaired = b7.PowerUps.Where(p => p.IsBacktrackingPowerUp && !b7.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y));
+            foreach (var powerup in shouldBePaired)
+            {
+                Assert.That(powerup.PairedTo, Is.Not.Null);
+            }
         }
 
         private void AssertBasicPropertiesEqual(AbstractEntity e1, AbstractEntity e2)
