@@ -91,26 +91,33 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void GoToNextFloorDoesntRegeneratePowerUps()
         {
-            var dungeon = new Dungeon(35, 25, gameSeed: 12323);
+            RestrictRuntime(() => {
+                var dungeon = new Dungeon(35, 25, gameSeed: 12323);
 
-            // Start at B2 / floor 1
-            dungeon.GoToNextFloor();
-            dungeon.GoToNextFloor();
-            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+                // Start at B2 / floor 1
+                dungeon.GoToNextFloor();
+                dungeon.GoToNextFloor();
+                Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
 
-            var currentFloor = dungeon.CurrentFloor;
-            Assert.That(currentFloor.PowerUps.Any());
+                var currentFloor = dungeon.CurrentFloor;
+                // 3 power-ups: two paired and a secret-room one. The latter has no
+                // onPickUp event or anything to clear it out on pickup; that logic
+                // lives in Floor.cs itself (process player input).
+                Assert.That(currentFloor.PowerUps.Any());
 
-            while (currentFloor.PowerUps.Any())
-            {
-                currentFloor.PowerUps[0].PickUp();
-            }
-            Assert.That(currentFloor.PowerUps.Count, Is.EqualTo(0));
+                // Pick up all power-ups. Clone to avoid concurrent-modification exception
+                foreach (var powerup in currentFloor.PowerUps.ToArray())
+                {
+                    powerup.PickUp();
+                }
 
-            dungeon.GoToPreviousFloor();
-            dungeon.GoToNextFloor();
-            Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
-            Assert.That(dungeon.CurrentFloor.PowerUps.Count, Is.EqualTo(0));
+                Assert.That(currentFloor.PowerUps.Count, Is.EqualTo(1));
+
+                dungeon.GoToPreviousFloor();
+                dungeon.GoToNextFloor();
+                Assert.That(dungeon.CurrentFloorNum, Is.EqualTo(1));
+                Assert.That(dungeon.CurrentFloor.PowerUps.Count, Is.EqualTo(1));
+            });
         }
     }
 }

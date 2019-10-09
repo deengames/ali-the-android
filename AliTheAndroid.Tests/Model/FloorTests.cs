@@ -348,16 +348,18 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void GenerateMapGeneratesChasmsAfterTeleporterFloor()
         {
-            const int InstaTeleporterFloor = 7; // B8
-            var random = new StandardGenerator(357);
-            var noPowerUps =  new List<PowerUp>();
+            RestrictRuntime(() => {
+                const int InstaTeleporterFloor = 7; // B8
+                var random = new StandardGenerator(357);
+                var noPowerUps =  new List<PowerUp>();
 
-            // Teleporter floor itself should have no chasms; don't want to get stuck!
-            var floor = new Floor(30, 30, InstaTeleporterFloor, random);
-            Assert.That(!floor.Chasms.Any());
+                // Teleporter floor itself should have no chasms; don't want to get stuck!
+                var floor = new Floor(30, 30, InstaTeleporterFloor, random);
+                Assert.That(!floor.Chasms.Any());
 
-            floor = new Floor(30, 30, InstaTeleporterFloor + 1, random);
-            Assert.That(floor.Chasms.Any());
+                floor = new Floor(30, 30, InstaTeleporterFloor + 1, random);
+                Assert.That(floor.Chasms.Any());
+            });
         }
 
         [Test]
@@ -417,19 +419,22 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void GenerateGeneratesFakeWallBetweenStairs()
         {
-            var floor = new Floor(90, 45, 7, new StandardGenerator(777));
-            
-            // We need to use a modified map that doesn't treat fake walls as unwalkable, so that A* can find the right route.
-            // This was broken to fix pocket dimensions: https://trello.com/c/ZcMhxYPo/119-secret-rooms-arent-flooded-with-fake-walls
-            var map = floor.Map;
-            floor.FakeWalls.ForEach(f => map[f.X, f.Y] = true);
+            RestrictRuntime(() => {
 
-            var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
-            var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
-            
-            // Any steps have any fake walls on them. Alternatively, this can be negated as:
-            // For all steps, there are no fake walls.
-            Assert.That(path.Steps.Any(p => floor.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y)));
+                var floor = new Floor(90, 45, 7, new StandardGenerator(777));
+                
+                // We need to use a modified map that doesn't treat fake walls as unwalkable, so that A* can find the right route.
+                // This was broken to fix pocket dimensions: https://trello.com/c/ZcMhxYPo/119-secret-rooms-arent-flooded-with-fake-walls
+                var map = floor.Map;
+                floor.FakeWalls.ForEach(f => map[f.X, f.Y] = true);
+
+                var pathFinder = new AStar(map, GoRogue.Distance.EUCLIDEAN);
+                var path = pathFinder.ShortestPath(floor.StairsUpLocation, floor.StairsDownLocation, true);
+                
+                // Any steps have any fake walls on them. Alternatively, this can be negated as:
+                // For all steps, there are no fake walls.
+                Assert.That(path.Steps.Any(p => floor.FakeWalls.Any(f => f.X == p.X && f.Y == p.Y)));
+            });
         }
 
         // https://trello.com/c/fmynV9Qa/41-test-fails-because-chasm-generates-on-stairs-up
@@ -620,36 +625,42 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [Test]
         public void GenerateDoesntGenerateDataCubeOnStairs()
         {
-            var seed = 1470491287;
-            var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, seed);
-            var b9 = dungeon.Floors[8];
-            var dataCubePosition = new GoRogue.Coord(b9.DataCube.X, b9.DataCube.Y);
-            Assert.That(b9.StairsDownLocation, Is.Not.EqualTo(dataCubePosition));
-            Assert.That(b9.StairsUpLocation, Is.Not.EqualTo(dataCubePosition));
+            RestrictRuntime(() => {
+                var seed = 1470491287;
+                var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, seed);
+                var b9 = dungeon.Floors[8];
+                var dataCubePosition = new GoRogue.Coord(b9.DataCube.X, b9.DataCube.Y);
+                Assert.That(b9.StairsDownLocation, Is.Not.EqualTo(dataCubePosition));
+                Assert.That(b9.StairsUpLocation, Is.Not.EqualTo(dataCubePosition));
+            });
         }
 
         // https://trello.com/c/KtLsagTW/105-doors-generating-next-to-chasms-make-the-game-unbeatable
         [Test]
         public void GenerateDoesntGenerateDoorsNextToChasms()
         {
-            var seed = 1352595784;
-            var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, seed);
-            var b10 = dungeon.Floors.Last();
-            
-            var offendingDoors = b10.Doors.Where(d => b10.Chasms.Any(c => Math.Pow(c.X - d.X, 2) + Math.Pow(c.Y - d.Y, 2) <= 1));
-            Assert.That(!offendingDoors.Any(), $"Expected no doors adjacent to chasms but found {offendingDoors.Count()}!");
+            RestrictRuntime(() => {
+                var seed = 1352595784;
+                var dungeon = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, seed);
+                var b10 = dungeon.Floors.Last();
+                
+                var offendingDoors = b10.Doors.Where(d => b10.Chasms.Any(c => Math.Pow(c.X - d.X, 2) + Math.Pow(c.Y - d.Y, 2) <= 1));
+                Assert.That(!offendingDoors.Any(), $"Expected no doors adjacent to chasms but found {offendingDoors.Count()}!");
+            });
         }
 
         // https://trello.com/c/BYFu7sGD/131-dungeon-generation-crashes
         [Test]
         public void GenerateDoesntGenerateFakeWallsOnTopOfStairs()
         {
-            var seed = 808458114;
-            var dungeon = new Dungeon(80, 28, seed);
-            var b6 = dungeon.Floors.ElementAt(5);
+            RestrictRuntime(() => {
+                var seed = 808458114;
+                var dungeon = new Dungeon(80, 28, seed);
+                var b6 = dungeon.Floors.ElementAt(5);
 
-            Assert.That(!b6.FakeWalls.Any(f => f.X == b6.StairsUpLocation.X && f.Y == b6.StairsUpLocation.Y));
-            Assert.That(!b6.FakeWalls.Any(f => f.X == b6.StairsDownLocation.X && f.Y == b6.StairsDownLocation.Y));
+                Assert.That(!b6.FakeWalls.Any(f => f.X == b6.StairsUpLocation.X && f.Y == b6.StairsUpLocation.Y));
+                Assert.That(!b6.FakeWalls.Any(f => f.X == b6.StairsDownLocation.X && f.Y == b6.StairsDownLocation.Y));
+            });
         }
     }
 }
