@@ -108,6 +108,8 @@ namespace DeenGames.AliTheAndroid.Consoles
                     }
                     dungeon.CurrentFloor.RecalculatePlayerFov();
                     Dungeon.Instance = dungeon;
+
+                    Console.WriteLine($"Loaded game {dungeon.GameSeed}.");
                     LastGameLogger.Instance.Log($"Loaded game {dungeon.GameSeed}.");
 
                     if (dungeon.CurrentFloorNum == 9) // B10

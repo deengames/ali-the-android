@@ -37,7 +37,6 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             this.ScreenTilesWidth = (int)Math.Floor(1.0f * ScreenWidth / normalSizedFont.Size.X);
             this.ScreenTilesHeight = (int)Math.Floor(1.0f * ScreenHeight / normalSizedFont.Size.Y);
-            Console.WriteLine($"{this.ScreenTilesWidth}x{this.ScreenTilesHeight}");
 
             this.backBuffer = new SadConsole.Console(width, height);
             this.dungeon = dungeon;
