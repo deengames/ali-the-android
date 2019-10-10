@@ -223,8 +223,6 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             var serialized = Serializer.Serialize(expected);
             var actual = Serializer.Deserialize<PowerUp[]>(serialized);
 
-            System.IO.File.WriteAllText("debug.txt", serialized);
-
             for (var i = 0; i < 2; i++)
             {
                 var expectedEntity = expected[i];
@@ -243,16 +241,11 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
                 // We work around this by repairing things after deserializing the entire dungeon.
                 // See: https://github.com/JamesNK/Newtonsoft.Json/issues/715
                 // See: https://github.com/JamesNK/Newtonsoft.Json/pull/1567
-
-                // TitleConsole calls PairPowerUps() post-serialization to get around this
-                if (i == 0)
-                {
-                    Assert.That(deserializedEntity.PairedTo, Is.Not.Null);
-                }
-                else
-                {
-                    Assert.That(deserializedEntity.PairedTo, Is.Null);
-                }
+                
+                // UPDATE: this work-around didn't work; see: https://trello.com/c/XU4p02Lk/135-in-some-cases-power-ups-behind-a-chasm-arent-paired-if-you-load-game
+                // Instead, we now manually bi-directionally pair power-ups. So this is no longer an issue.
+                // TitleConsole calls PairPowerUps() post-serialization to get around this, which calls PowerUp.Pair, which is symmetric.
+                Assert.That(deserializedEntity.PairedTo, Is.Not.Null);
             }
         }
 
@@ -265,8 +258,8 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             var deserialized = Serializer.Deserialize<Floor>(serialized);
 
             // Sanity
-            Assert.That(deserialized.PowerUps[0].PairedTo, Is.Not.Null); // JSON.NET at least gets this right
-            Assert.That(deserialized.PowerUps[1].PairedTo, Is.Null);
+            Assert.That(deserialized.PowerUps[0].PairedTo, Is.EqualTo(deserialized.PowerUps[1]));
+            Assert.That(deserialized.PowerUps[1].PairedTo, Is.EqualTo(deserialized.PowerUps[0]));
 
             // Act
             deserialized.PairPowerUps();
