@@ -847,9 +847,10 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void FillWithGravity(GoRogue.Rectangle room, bool isBacktrackingWave = false)
         {
-            for (var y = room.MinExtentY; y <= room.MaxExtentY; y++)
+            // Use +1 and < to NOT cover the walls/doors with gravity waves.
+            for (var y = room.MinExtentY + 1; y < room.MaxExtentY; y++)
             {
-                for (var x = room.MinExtentX; x <= room.MaxExtentX; x++)
+                for (var x = room.MinExtentX + 1; x < room.MaxExtentX; x++)
                 {
                     this.GravityWaves.Add(new GravityWave(x, y, isBacktrackingWave, this.FloorNum));
                 }
