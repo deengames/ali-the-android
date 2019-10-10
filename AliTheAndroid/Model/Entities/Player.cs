@@ -13,7 +13,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private static Color NormalColor = Palette.White;
 
         internal static readonly Dictionary<Weapon, string> WeaponPickupMessages = new Dictionary<Weapon, string>() {
-            { Weapon.MiniMissile,       "Fire missiles to destroy weak walls and debris." },
+            { Weapon.MiniMissile,       "Fire missiles to destroy cracked walls and debris." },
             { Weapon.Zapper,            "Unjam sealed doors with a jolt of energy." },
             { Weapon.GravityCannon,     "Knock back monsters and disperse gravity waves." },
             { Weapon.InstaTeleporter,   "Teleport across insurmountable chasms." },
