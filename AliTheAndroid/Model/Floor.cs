@@ -1139,7 +1139,13 @@ namespace DeenGames.AliTheAndroid.Model
                     this.Map[x, y] = true;
                 }
             }
-
+            
+            // https://trello.com/c/MDHAEkAz/139-backtracking-plasma-rooms-should-be-full-to-the-edges
+            // For GoRogue-generated rooms, the coordinates of the rectangle include a 1-tile border.
+            // For ours, we (used to) look at only internal walls, ignoring the border; this lead to
+            // a bug where backtracking plasma rooms aren't plasma-filled to the edges.
+            // Fix: return the same thing GoRogue would: one-tile border.
+            toReturn = new GoRogue.Rectangle(toReturn.X - 1, toReturn.Y - 1, width + 2, height + 2);
             return toReturn;
         }
 

@@ -662,5 +662,32 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 Assert.That(!b6.FakeWalls.Any(f => f.X == b6.StairsDownLocation.X && f.Y == b6.StairsDownLocation.Y));
             });
         }
+
+        [Test]
+        public void CreateIsolatedRoomReturnsRoomSizeIncludingOneTileBorder()
+        {
+            // https://trello.com/c/MDHAEkAz/139-backtracking-plasma-rooms-should-be-full-to-the-edges
+            // Look for a room filled with plasma (some plasma tiles touch walls)
+            var floor = new Floor(80, 28, 4, new StandardGenerator(29482014));
+            var backtrackPowerUps = floor.PowerUps.Where(p => p.IsBacktrackingPowerUp && floor.GravityWaves.Any(g => p.X == g.X && p.Y == g.Y));
+            // Backtracking rooms are always 5x5 (interior) and power-ups are always paired
+            var leftX = backtrackPowerUps.Min(p => p.X);
+            var powerUp = backtrackPowerUps.Single(p => p.X == leftX);
+
+            var roomStartX = powerUp.X - 1;
+            var roomStopX = roomStartX + 5;
+            var roomStartY = powerUp.Y - 2;
+            var roomStopY = roomStartY + 5;
+
+            // Make sure every interior tile is filled with gravity waves
+            for (var y = roomStartY; y < roomStopY; y++)
+            {
+                for (var x = roomStartX; x < roomStopX; x++)
+                {
+                    // Throws if there's no gravity wave where there should be one.
+                    floor.GravityWaves.Single(g => g.X == x && g.Y == y);
+                }
+            }
+        }
     }
 }
