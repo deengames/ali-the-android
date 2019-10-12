@@ -32,7 +32,7 @@ namespace DeenGames.AliTheAndroid.Consoles
         public CoreGameConsole(int width, int height, Dungeon dungeon) : base(width, height)
         {
             var fontMaster = SadConsole.Global.LoadFont("Fonts/AliTheAndroid.font");
-            var normalSizedFont = fontMaster.GetFont(SadConsole.Font.FontSizes.One);
+            var normalSizedFont = fontMaster.GetFont(SadConsole.Font.FontSizes.Two);
             this.Font = normalSizedFont;
 
             this.ScreenTilesWidth = (int)Math.Floor(1.0f * ScreenWidth / normalSizedFont.Size.X);
