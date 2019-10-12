@@ -1034,7 +1034,16 @@ namespace DeenGames.AliTheAndroid.Model
                 // Well, anyway, let them if they choose to. Some maps don't have a patch
                 // of 9x9 walls (eg. seed 1234, B4).
                 var nonCriticalRoom = this.CreateIsolatedRoom();
-                this.FillWithGravity(nonCriticalRoom, true);
+                // https://trello.com/c/MDHAEkAz/139-backtracking-plasma-rooms-should-be-full-to-the-edges
+                // FillRoomWith doesn't fill up to the edges, because isolated rooms are returned as just
+                // interior values. The rest of these cases work fine, so just cludge-fix this.
+                for (var y = nonCriticalRoom.MinExtentY; y <= nonCriticalRoom.MaxExtentY; y++)
+                {
+                    for (var x = nonCriticalRoom.MinExtentX; x <= nonCriticalRoom.MaxExtentX; x++)
+                    {
+                        this.GravityWaves.Add(new GravityWave(x, y, true, this.FloorNum));
+                    }
+                }
                 this.GeneratePowerUpsInRoom(nonCriticalRoom);
             }
             else if (actualFloorNumber == weaponPickUpFloors[Weapon.InstaTeleporter] - 1)
@@ -1140,12 +1149,7 @@ namespace DeenGames.AliTheAndroid.Model
                 }
             }
             
-            // https://trello.com/c/MDHAEkAz/139-backtracking-plasma-rooms-should-be-full-to-the-edges
-            // For GoRogue-generated rooms, the coordinates of the rectangle include a 1-tile border.
-            // For ours, we (used to) look at only internal walls, ignoring the border; this lead to
-            // a bug where backtracking plasma rooms aren't plasma-filled to the edges.
-            // Fix: return the same thing GoRogue would: one-tile border.
-            toReturn = new GoRogue.Rectangle(toReturn.X - 1, toReturn.Y - 1, width + 2, height + 2);
+            toReturn = new GoRogue.Rectangle(toReturn.X, toReturn.Y, width, height);
             return toReturn;
         }
 

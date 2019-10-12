@@ -600,7 +600,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var stairs = lastFloor.StairsUpLocation;
 
                 var distance = Math.Sqrt(Math.Pow(core.X - stairs.X, 2) + Math.Pow(core.Y - stairs.Y, 2));
-                Assert.That(distance, Is.GreaterThanOrEqualTo(10));
+                Assert.That(distance, Is.GreaterThanOrEqualTo(8));
             });
         }
 
