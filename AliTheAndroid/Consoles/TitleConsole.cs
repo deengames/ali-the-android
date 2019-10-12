@@ -94,6 +94,8 @@ namespace DeenGames.AliTheAndroid.Consoles
             if (this.launchedOn != null && (DateTime.Now - this.launchedOn.Value).TotalMilliseconds >= 100)
             {
                 Dungeon dungeon;
+                // https://trello.com/c/XSE5Shge/142-reach-b10-quit-new-we-have-omnisight
+                Options.EnableOmniSight = false;
 
                 if (this.loadGame)
                 {
