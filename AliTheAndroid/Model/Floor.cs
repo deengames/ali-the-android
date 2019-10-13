@@ -873,7 +873,7 @@ namespace DeenGames.AliTheAndroid.Model
             var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
 
-            this.GenerateFakeWallClusters(path);
+            this.GenerateFakeWallClusters();
 
             var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
@@ -891,7 +891,7 @@ namespace DeenGames.AliTheAndroid.Model
             
             if (actualFloorNum > weaponPickUpFloors[Weapon.InstaTeleporter])
             {
-                this.GenerateChasms(path);
+                this.GenerateChasms();
             }
 
             this.GenerateBacktrackingObstacles();
@@ -1190,6 +1190,34 @@ namespace DeenGames.AliTheAndroid.Model
                 var weaponType = weaponPickUpFloors.Single(w => w.Value == actualFloorNumber).Key;
                 
                 var floorTiles = this.GetTilesAccessibleFromStairsWithoutWeapons();
+                if (!floorTiles.Any())
+                {
+                    // This happens in lots of cases where generation goes bad. It's easy to do
+                    // things like "don't generate X on the path from stairs to stairs," but then,
+                    // that makes the game predictable (obstacle = not the way to the stairs).
+                    
+                    // So instead, burrow a hole to the nearest room from here.
+                    // Among other bugs, see the following:
+                    // https://trello.com/c/BSf21Zdr/143-fix-crash-bugs
+                    // https://trello.com/c/eL0eQYg7/140-youre-trapped-on-b8
+                    // https://trello.com/c/BYFu7sGD/131-dungeon-generation-crashes
+                    var closestRoom = this.rooms[0];
+                    var shortestDistance = GoRogue.Distance.EUCLIDEAN.Calculate(this.StairsUpLocation.X, this.StairsUpLocation.Y, closestRoom.Center.X, closestRoom.Center.Y);
+                    foreach (var room in this.rooms)
+                    {
+                        var distance = GoRogue.Distance.EUCLIDEAN.Calculate(this.StairsUpLocation.X, this.StairsUpLocation.Y, closestRoom.Center.X, closestRoom.Center.Y);
+                        if (distance < shortestDistance)
+                        {
+                            shortestDistance = distance;
+                            closestRoom = room;
+                        }
+                    }
+                    
+                    this.DigTunnel(this.StairsUpLocation.X, this.StairsUpLocation.Y, closestRoom.Center.X, closestRoom.Center.Y);
+
+                    floorTiles = this.GetTilesAccessibleFromStairsWithoutWeapons();
+                }
+
                 var target = floorTiles.OrderByDescending(c => 
                     // Order by farthest to closest (compared to stairs)
                     Math.Sqrt(Math.Pow(c.X - this.StairsUpLocation.X, 2) + Math.Pow(c.Y - this.StairsUpLocation.Y, 2)))
@@ -1257,7 +1285,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void GenerateChasms(GoRogue.Pathing.Path pathToStairs)
+        private void GenerateChasms()
         {
             this.Chasms.Clear();
             
@@ -1269,7 +1297,7 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     // Not 100% accurate since we have monsters, etc.
                     var coordinates = new GoRogue.Coord(x, y);
-                    if (!pathToStairs.Steps.Contains(coordinates) && IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
+                    if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
                     {
                         hallwayTiles.Add(coordinates);
                     }
@@ -1486,7 +1514,7 @@ namespace DeenGames.AliTheAndroid.Model
             return this.FloorNum >= 8;
         }
 
-        private void GenerateFakeWallClusters(GoRogue.Pathing.Path pathToStairs)
+        private void GenerateFakeWallClusters()
         {
             var actualFloorNum = this.FloorNum + 1;
             // Don't generate on the missile floor; doing so could block the exit, if we generate
@@ -1499,7 +1527,7 @@ namespace DeenGames.AliTheAndroid.Model
                 while (numFakeWallClusters > 0) {
                     var spot = this.FindEmptySpot();
                     var adjacentFloors = this.GetAdjacentFloors(spot);
-                    if (!pathToStairs.Steps.Contains(spot) && adjacentFloors.Count <= 4)
+                    if (adjacentFloors.Count <= 4)
                     {
                         // Make a plus-shaped cluster. It's cooler.
                         this.CreateFakeWallClusterAt(spot);
