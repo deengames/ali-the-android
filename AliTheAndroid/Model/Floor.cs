@@ -873,7 +873,7 @@ namespace DeenGames.AliTheAndroid.Model
             var pathFinder = new AStar(Map, GoRogue.Distance.EUCLIDEAN);
             var path = pathFinder.ShortestPath(StairsUpLocation, StairsDownLocation, true);
 
-            this.GenerateFakeWallClusters();
+            this.GenerateFakeWallClusters(path);
 
             var actualFloorNum = this.FloorNum + 1;
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
@@ -891,7 +891,7 @@ namespace DeenGames.AliTheAndroid.Model
             
             if (actualFloorNum > weaponPickUpFloors[Weapon.InstaTeleporter])
             {
-                this.GenerateChasms();
+                this.GenerateChasms(path);
             }
 
             this.GenerateBacktrackingObstacles();
@@ -1257,7 +1257,7 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private void GenerateChasms()
+        private void GenerateChasms(GoRogue.Pathing.Path pathToStairs)
         {
             this.Chasms.Clear();
             
@@ -1269,7 +1269,7 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     // Not 100% accurate since we have monsters, etc.
                     var coordinates = new GoRogue.Coord(x, y);
-                    if (IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
+                    if (!pathToStairs.Steps.Contains(coordinates) && IsWalkable(x, y) && !this.rooms.Any(r => r.Contains(coordinates)))
                     {
                         hallwayTiles.Add(coordinates);
                     }
@@ -1486,7 +1486,7 @@ namespace DeenGames.AliTheAndroid.Model
             return this.FloorNum >= 8;
         }
 
-        private void GenerateFakeWallClusters()
+        private void GenerateFakeWallClusters(GoRogue.Pathing.Path pathToStairs)
         {
             var actualFloorNum = this.FloorNum + 1;
             // Don't generate on the missile floor; doing so could block the exit, if we generate
@@ -1499,7 +1499,7 @@ namespace DeenGames.AliTheAndroid.Model
                 while (numFakeWallClusters > 0) {
                     var spot = this.FindEmptySpot();
                     var adjacentFloors = this.GetAdjacentFloors(spot);
-                    if (adjacentFloors.Count <= 4)
+                    if (!pathToStairs.Steps.Contains(spot) && adjacentFloors.Count <= 4)
                     {
                         // Make a plus-shaped cluster. It's cooler.
                         this.CreateFakeWallClusterAt(spot);
