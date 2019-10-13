@@ -28,7 +28,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         [Test]
         public void SerializeAndDeserializeDungeon()
         {
-            var expected = new Dungeon(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 2340234);
+            var expected = new Dungeon(80, 28, 2340234);
             expected.GoToNextFloor();
 
             var serialized = Serializer.Serialize(expected);
@@ -94,7 +94,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         public void SerializeAndDeserializeFloor(int floorNum)
         {
             var random = new StandardGenerator(floorNum);
-            var expected = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, floorNum, random);
+            var expected = new Floor(80, 28, floorNum, random);
             expected.Player = new Player();
 
             var serialized = Serializer.Serialize(expected);
@@ -158,7 +158,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         [Test]
         public void SerializeAndDeserializeGravityWave()
         {
-            var expected = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 4, new StandardGenerator(846453));
+            var expected = new Floor(80, 28, 4, new StandardGenerator(846453));
             var serialized = Serializer.Serialize(expected);
             var actual = Serializer.Deserialize<Floor>(serialized);
 
@@ -192,7 +192,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         [Test]
         public void SerializeAndDeserializeMonster()
         {
-            var expected = new Floor(GenerateAllDungeonsTests.RealGameWidth, GenerateAllDungeonsTests.RealGameHeight, 9, new StandardGenerator(1111111211));
+            var expected = new Floor(80, 28, 9, new StandardGenerator(1111111211));
             var serialized = Serializer.Serialize(expected);
             var actual = Serializer.Deserialize<Floor>(serialized);
 

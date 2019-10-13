@@ -10,11 +10,6 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
     [TestFixture]
     public class GenerateAllDungeonsTests
     {
-        internal const int RealGameWidth = 80;
-        // Misnomer. I thought this was 30, and tested throughout with that value, reproducing bugs.
-        // Turns out it's actually 28. So, leave this as 30, because it verifies known defects.
-        internal const int RealGameHeight = 30;
-
         [OneTimeSetUp]
         public void SetupKeyboard()
         {
@@ -29,7 +24,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         [TestCase(924473797)]
         public void GenerateDungeonDoesntFreezeForKnownFreezingSeeds(int seed)
         {
-            var dungeon = new Dungeon(RealGameWidth, RealGameHeight, seed);
+            var dungeon = new Dungeon(80, 28, seed);
         }
 
         [Test]
