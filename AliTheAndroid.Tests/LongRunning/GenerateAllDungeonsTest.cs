@@ -1,3 +1,4 @@
+using System;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Tests.Helpers;
@@ -29,6 +30,29 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         public void GenerateDungeonDoesntFreezeForKnownFreezingSeeds(int seed)
         {
             var dungeon = new Dungeon(RealGameWidth, RealGameHeight, seed);
+        }
+
+        [Test]
+        [Ignore("This test should only ever be run by hand.")]
+        public void FindDungeonsThatCrashOnGeneration()
+        {
+            Console.WriteLine($"{DateTime.Now} starting ...");
+            var start = DateTime.Now;
+            var random = new Random();
+            var numGenerated = 0;
+
+            while (true)
+            {
+                var seed = random.Next();
+                try {
+                    new Dungeon(80, 28, seed);
+                    numGenerated++;
+                } catch (Exception e)
+                {
+                    var elapsed = (DateTime.Now - start).TotalMinutes;
+                    Assert.Fail($"Crashed after {numGenerated} dungeons ({elapsed} minutes) on dungeon {seed}: {e}");
+                }
+            }
         }
     }
 }
