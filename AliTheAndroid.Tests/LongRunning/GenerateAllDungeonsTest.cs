@@ -33,7 +33,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         {
             System.IO.File.Delete("DUNGEON_FAILURES.txt");
 
-            LogToFile($"{DateTime.Now} starting ...");
+            LogToFile("Starting ...");
             var start = DateTime.Now;
             var random = new Random();
             var numGenerated = 0;
@@ -60,7 +60,7 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
 
         private void LogToFile(string message)
         {
-            System.IO.File.AppendAllText("DUNGEON_FAILURES.txt", $"{DateTime.Now} | {message}");
+            System.IO.File.AppendAllText("DUNGEON_FAILURES.txt", $"{DateTime.Now} | {message}\n");
         }
     }
 }
