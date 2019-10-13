@@ -36,7 +36,9 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
         [Ignore("This test should only ever be run by hand.")]
         public void FindDungeonsThatCrashOnGeneration()
         {
-            Console.WriteLine($"{DateTime.Now} starting ...");
+            System.IO.File.Delete("DUNGEON_FAILURES.txt");
+
+            LogToFile($"{DateTime.Now} starting ...");
             var start = DateTime.Now;
             var random = new Random();
             var numGenerated = 0;
@@ -47,12 +49,23 @@ namespace DeenGames.AliTheAndroid.Tests.LongRunning
                 try {
                     new Dungeon(80, 28, seed);
                     numGenerated++;
+
+                    if (numGenerated % 100 == 0)
+                    {
+                        LogToFile($"{numGenerated} generated");
+                    }
                 } catch (Exception e)
                 {
                     var elapsed = (DateTime.Now - start).TotalMinutes;
-                    Assert.Fail($"Crashed after {numGenerated} dungeons ({elapsed} minutes) on dungeon {seed}: {e}");
+                    LogToFile($"Failed on seed {seed}: {e}");
+                    LogToFile(e.StackTrace);
                 }
             }
+        }
+
+        private void LogToFile(string message)
+        {
+            System.IO.File.AppendAllText("DUNGEON_FAILURES.txt", $"{DateTime.Now} | {message}");
         }
     }
 }
