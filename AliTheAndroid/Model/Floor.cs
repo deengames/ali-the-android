@@ -1153,7 +1153,7 @@ namespace DeenGames.AliTheAndroid.Model
             return toReturn;
         }
 
-        private void DigTunnel(int startX, int startY, int stopX, int stopY)
+        private void DigTunnel(int startX, int startY, int stopX, int stopY, bool destroyObstacles = false)
         {
             var minX = Math.Min(startX, stopX);
             var maxX = minX == startX ? stopX : startX;
@@ -1171,10 +1171,27 @@ namespace DeenGames.AliTheAndroid.Model
                         this.Walls.Remove(wall);
                     }
 
-                    var fakeWall = this.FakeWalls.SingleOrDefault(f => f.X == x && f.Y == y);
-                    if (fakeWall != null)
+                    // We're fixing broken level generation by tunneling from the stairs to the nearest
+                    // room, thus clearing space for a weapon drop. DESTROY ANYTHING IN OUR WAY.
+                    if (destroyObstacles)
                     {
-                        this.FakeWalls.Remove(fakeWall);
+                        var fakeWall = this.FakeWalls.SingleOrDefault(f => f.X == x && f.Y == y);
+                        if (fakeWall != null)
+                        {
+                            this.FakeWalls.Remove(fakeWall);
+                        }
+
+                        var lockedDoor = this.Doors.SingleOrDefault(d => d.X == x && d.Y == y && d.IsLocked);
+                        if (lockedDoor != null)
+                        {
+                            this.Doors.Remove(lockedDoor);
+                        }
+
+                        var chasm = this.Chasms.SingleOrDefault(c => c.X == x && c.Y == y);
+                        if (chasm != null)
+                        {
+                            this.Chasms.Remove(chasm);
+                        }
                     }
                 }
             }
@@ -1219,9 +1236,15 @@ namespace DeenGames.AliTheAndroid.Model
                         }
                     }
                     
-                    this.DigTunnel(this.StairsUpLocation.X, this.StairsUpLocation.Y, closestRoom.Center.X, closestRoom.Center.Y);
+                    // When digging, show no mercy; destroy ALL obstacles in our way.
+                    this.DigTunnel(this.StairsUpLocation.X, this.StairsUpLocation.Y, closestRoom.Center.X, closestRoom.Center.Y, true);
 
                     floorTiles = this.GetTilesAccessibleFromStairsWithoutWeapons();
+                }
+
+                if (!floorTiles.Any())
+                {
+                    return;
                 }
 
                 var target = floorTiles.OrderByDescending(c => 
