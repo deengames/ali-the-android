@@ -1212,7 +1212,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 var weaponType = weaponPickUpFloors.Single(w => w.Value == actualFloorNumber).Key;
                 
-                var floorTiles = this.GetTilesAccessibleFromStairsWithoutWeapons();
+                var floorTiles = this.GetTilesAccessibleFromStairsIfCollectedAllWeaponsSoFar();
                 if (!floorTiles.Any())
                 {
                     // This happens in lots of cases where generation goes bad. It's easy to do
@@ -1239,7 +1239,7 @@ namespace DeenGames.AliTheAndroid.Model
                     // When digging, show no mercy; destroy ALL obstacles in our way.
                     this.DigTunnel(this.StairsUpLocation.X, this.StairsUpLocation.Y, closestRoom.Center.X, closestRoom.Center.Y, true);
 
-                    floorTiles = this.GetTilesAccessibleFromStairsWithoutWeapons();
+                    floorTiles = this.GetTilesAccessibleFromStairsIfCollectedAllWeaponsSoFar();
                 }
 
                 if (!floorTiles.Any())
@@ -1248,8 +1248,10 @@ namespace DeenGames.AliTheAndroid.Model
                 }
 
                 var target = floorTiles.OrderByDescending(c => 
-                    // Order by farthest to closest (compared to stairs)
+                    // Order by farthest to closest (distance to stairs)
                     Math.Sqrt(Math.Pow(c.X - this.StairsUpLocation.X, 2) + Math.Pow(c.Y - this.StairsUpLocation.Y, 2)))
+                    // Make sure it's not covered
+                    .Where(t => !this.FakeWalls.Any(f => t.X == f.X && t.Y == f.Y))
                     // Pick randomly from the first 10
                     .Take(10).OrderBy(c => globalRandom.Next()).First();
 
@@ -1260,8 +1262,10 @@ namespace DeenGames.AliTheAndroid.Model
         // Start at the stairs-up. Flood fill floor tiles. Return the floor tiles that you can reach, without
         // wandering through locked doors, gravity waves, fake walls, or across chasms.
         // Excludes the stairs themselves. We don't want to spawn things there.
-        private List<GoRogue.Coord> GetTilesAccessibleFromStairsWithoutWeapons()
+        private List<GoRogue.Coord> GetTilesAccessibleFromStairsIfCollectedAllWeaponsSoFar()
         {
+            var actualFloorNum = this.FloorNum + 1;
+
             var toExplore = new List<GoRogue.Coord>();
             var explored = new List<GoRogue.Coord>();
             var reachable = new List<GoRogue.Coord>();
@@ -1274,14 +1278,32 @@ namespace DeenGames.AliTheAndroid.Model
                 toExplore.Remove(check);
                 explored.Add(check);
 
-                // Explores, stopping when it sees walls, locked doors, chasms, and gravity
-                if (
-                    check.X >= 0 && check.X < this.Width && check.Y >= 0 && check.Y < this.Height &&
-                    !Walls.Any(w => w.X == check.X && w.Y == check.Y) &&
-                    !FakeWalls.Any(w => w.X == check.X && w.Y == check.Y) &&
-                    !Doors.Any(d => d.IsLocked && d.X == check.X && d.Y == check.Y) &&
-                    !Chasms.Any(c => c.X == check.X && c.Y == check.Y) &&
-                    !GravityWaves.Any(g => g.X == check.X && g.Y == check.Y))
+                // Explores, stopping when it sees walls, locked doors, chasms, and gravity.
+                // That is, assuming you're on that floor and the weapon is on that or a future floor.
+                var isReachable = check.X >= 0 && check.X < this.Width && check.Y >= 0 && check.Y < this.Height
+                    && !Walls.Any(w => w.X == check.X && w.Y == check.Y);
+
+                if (actualFloorNum <= weaponPickUpFloors[Weapon.MiniMissile])
+                {
+                    isReachable &= !FakeWalls.Any(w => w.X == check.X && w.Y == check.Y);
+                }
+                    
+                if (actualFloorNum <= weaponPickUpFloors[Weapon.Zapper])
+                {
+                    isReachable &= !Doors.Any(d => d.IsLocked && d.X == check.X && d.Y == check.Y);
+                }
+
+                if (actualFloorNum <= weaponPickUpFloors[Weapon.GravityCannon])
+                {
+                    isReachable &= !GravityWaves.Any(g => g.X == check.X && g.Y == check.Y);
+                }
+
+                if (actualFloorNum <= weaponPickUpFloors[Weapon.InstaTeleporter])
+                {
+                    isReachable &= !Chasms.Any(c => c.X == check.X && c.Y == check.Y);
+                }
+
+                if (isReachable)
                 {
                     reachable.Add(check);
 
