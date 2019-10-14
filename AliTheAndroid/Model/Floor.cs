@@ -1476,7 +1476,6 @@ namespace DeenGames.AliTheAndroid.Model
             var actualFloorNum = this.FloorNum + 1;
 
             this.rooms = this.GenerateWalls();
-            this.HighlightWalls();
 
             if (actualFloorNum >= weaponPickUpFloors[Weapon.MiniMissile])
             {
@@ -1760,18 +1759,6 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
             return true;
-        }
-
-        private void HighlightWalls()
-        {
-            foreach (var wall in this.Walls)
-            {
-                if (this.AreAdjacentFloors(new GoRogue.Coord(wall.X, wall.Y)))
-                {
-                    // Last two floors use alternate colours
-                    wall.Color = this.AreLastTwoFloors() ? Palette.DarkSkinBrown : Palette.LightGrey;
-                }
-            }
         }
 
         private bool AreAdjacentFloors(GoRogue.Coord coord)
