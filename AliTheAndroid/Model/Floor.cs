@@ -1170,6 +1170,12 @@ namespace DeenGames.AliTheAndroid.Model
                     {
                         this.Walls.Remove(wall);
                     }
+
+                    var fakeWall = this.FakeWalls.SingleOrDefault(f => f.X == x && f.Y == y);
+                    if (fakeWall != null)
+                    {
+                        this.FakeWalls.Remove(fakeWall);
+                    }
                 }
             }
         }
