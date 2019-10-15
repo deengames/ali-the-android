@@ -2417,7 +2417,8 @@ namespace DeenGames.AliTheAndroid.Model
             do 
             {
                 target = new GoRogue.Coord(this.globalRandom.Next(0, this.Width), this.globalRandom.Next(0, this.Height));
-            } while (!this.IsWalkable(target.X, target.Y) || target == this.StairsDownLocation || target == this.StairsUpLocation );
+            } while (!this.IsWalkable(target.X, target.Y) || target == this.StairsDownLocation || target == this.StairsUpLocation
+                || PowerUps.Any(p => p.X == target.X && p.Y == target.Y));
 
             return target;
         }

@@ -119,5 +119,15 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 Assert.That(dungeon.CurrentFloor.PowerUps.Count, Is.EqualTo(1));
             });
         }
+
+        [Test]
+        public void DataCubeDoesntGenerateOnPowerUp()
+        {
+            // https://trello.com/c/TDqordPQ/146-data-cube-generates-on-power-up
+            // 1559243382 / 2B
+            var dungeon = new Dungeon(80, 28, 1559243382);
+            var b2 = dungeon.Floors[1];
+            Assert.That(!b2.PowerUps.Any(p => p.X == b2.DataCube.X && p.Y == b2.DataCube.Y));
+        }
     }
 }
