@@ -272,6 +272,10 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             var p2 = deserialized.PairedPowerUps[1];
             Assert.That(p1.PairedTo, Is.EqualTo(p2));
             Assert.That(p2.PairedTo, Is.EqualTo(p1));
+
+            // https://trello.com/c/zT3IX8nh/147-unpaired-power-ups-again
+            // Make sure paired power-ups have PickUpCallback specified
+            Assert.That(deserialized.PowerUps.Where(p => p.PairedTo != null).All(p => p.PickUpCallback != null));
         }
 
         [Test]

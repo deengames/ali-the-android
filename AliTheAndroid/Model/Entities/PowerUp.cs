@@ -37,7 +37,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public PowerUp PairedTo { get; private set; }
         public bool IsBacktrackingPowerUp { get; private set; }
 
-        private Action onPickUp { get; set; }
+        internal Action PickUpCallback { get; set; }
 
         public static PowerUp Generate(IGenerator generator)
         {
@@ -119,16 +119,16 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         public void OnPickUp(Action callback)
         {
-            this.onPickUp = callback;
+            this.PickUpCallback = callback;
         }
 
         public void PickUp()
         {
             LastGameLogger.Instance.Log($"Picked up a {(this.IsBacktrackingPowerUp ? "Backtracking" : "")} power-up: {this.Message}");
             
-            if (this.onPickUp != null)
+            if (this.PickUpCallback != null)
             {
-                this.onPickUp.Invoke();
+                this.PickUpCallback.Invoke();
             }
         }
     }

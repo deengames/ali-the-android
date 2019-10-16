@@ -527,9 +527,25 @@ namespace DeenGames.AliTheAndroid.Model
                 });
             }
 
+            // https://trello.com/c/zT3IX8nh/147-unpaired-power-ups-again
+            // This seems like a new bug: power-ups are paired but OnPickUp is null.
+            // I probably broke something and didn't realize it. Delete this kludge.
+            foreach (var powerUp in this.PowerUps)
+            {
+                if (powerUp.PairedTo != null && powerUp.PickUpCallback == null)
+                {
+                    Action removeBoth = () => {
+                        this.PowerUps.Remove(powerUp);
+                        this.PowerUps.Remove(powerUp.PairedTo);
+                    };
+
+                    powerUp.OnPickUp(removeBoth);
+                    powerUp.PairedTo.OnPickUp(removeBoth);
+                }
+            }
+
             // Then, if there are two in close proximity (eg. backtracking room),
             // pair those, too. Make sure they're not already paired (during load game).
-
             var unpaired = this.PowerUps.Where(p => p.PairedTo == null);
 
             foreach (var p1 in unpaired)
