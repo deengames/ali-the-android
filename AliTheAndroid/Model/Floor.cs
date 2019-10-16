@@ -1571,7 +1571,7 @@ namespace DeenGames.AliTheAndroid.Model
                         // B9/B10 use alternate colour scheme for walls
                         if (AreLastTwoFloors())
                         {
-                            wall.Color = Palette.DarkMutedBrown;
+                            wall.Color = Palette.DarkSkinBrown;
                         }
 
                         this.Walls.Add(wall);
