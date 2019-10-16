@@ -445,7 +445,14 @@ namespace DeenGames.AliTheAndroid.Model
                 this.EffectEntities.RemoveAll(e => destroyedEffects.Contains(e));
             }
             
-            if (!this.Player.CanMove && !this.EffectEntities.Any()) {
+            if (!this.Player.CanMove && !this.EffectEntities.Any())
+            {
+                // https://trello.com/c/kMPvlMoB/128-destroying-clusters-leaves-behind-a-black-square
+                // After unfreeze, mark all FOV tiles as seen. If we just destroyed some fake walls,
+                // not doing this could leave them as unseen even though they're not in the FOV.
+                // And since we only operate on newly-seen, it'll leave that black hole in our FOV.
+                this.MarkCurrentFovAsSeen();
+
                 this.Player.Unfreeze();
                 EventBus.Instance.Broadcast(GameEvent.PlayerTookTurn, new PlayerTookTurnData(Player, this.Monsters));
             }
