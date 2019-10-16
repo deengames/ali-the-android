@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using DeenGames.AliTheAndroid.Model.Entities;
 using Troschuetz.Random;
 using Troschuetz.Random.Generators;
