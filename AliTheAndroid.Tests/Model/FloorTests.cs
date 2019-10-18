@@ -711,7 +711,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 Assert.That(floor.Doors.Single(w => w.X == expected.X && w.Y == expected.Y).IsLocked);
             }
 
-            // Gravity waves on B6
+            // Gravity waves on B6 fill the room.
             floor = dungeon.Floors[5];
             expectedSpots = getSurroundingTiles(floor.StairsDownLocation);
             foreach (var expected in expectedSpots)

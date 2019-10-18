@@ -875,7 +875,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 for (var x = room.MinExtentX + 1; x < room.MaxExtentX; x++)
                 {
-                    this.GravityWaves.Add(new GravityWave(x, y, isBacktrackingWave, this.FloorNum));
+                    AddNonDupeEntity(new GravityWave(x, y, isBacktrackingWave, this.FloorNum), this.GravityWaves);
                 }
             }
         }
