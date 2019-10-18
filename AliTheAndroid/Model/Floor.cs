@@ -955,6 +955,14 @@ namespace DeenGames.AliTheAndroid.Model
             var data = weaponPickUpFloors.Single(kvp => kvp.Value == actualFloorNum);
             var weapon = data.Key;
 
+            if (weapon == Weapon.GravityCannon)
+            {
+                // Special case: just flood the room with gravity
+                var room = this.rooms.Single(r => r.Contains(this.StairsDownLocation));
+                this.FillWithGravity(room);
+                return;
+            }
+
             Action<int, int> obstacleCreator;
             switch (weapon) {
                 case Weapon.MiniMissile: obstacleCreator = (x, y) =>  
@@ -967,13 +975,6 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     var door = new Door(x, y, true);
                     Doors.Add(door);
-                };
-                break;
-                case Weapon.GravityCannon: obstacleCreator = (x, y) =>
-                {
-                    var wave = new GravityWave(x, y, false, this.FloorNum);
-                    // Could already be gravity waves there if the room is gravity-filled
-                    AddNonDupeEntity(new GravityWave(x, y, false, this.FloorNum), this.GravityWaves);
                 };
                 break;
                 case Weapon.InstaTeleporter: obstacleCreator = (x, y) => 
