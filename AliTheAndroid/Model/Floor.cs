@@ -930,6 +930,12 @@ namespace DeenGames.AliTheAndroid.Model
                 this.StairsDownLocation = GoRogue.Coord.NONE;
             }
 
+            // If we're on a weapon floor, lock the stairs with that weapon.
+            if (weaponPickUpFloors.Values.Contains(actualFloorNum) && actualFloorNum != weaponPickUpFloors[Weapon.PlasmaCannon])
+            {
+                this.SurroundStairsWithRelevantObstacle();
+            }
+
             this.GeneratePowerUps();
             this.GenerateWeaponPickUp();
             this.GenerateDataCube();
@@ -943,6 +949,55 @@ namespace DeenGames.AliTheAndroid.Model
             this.InitializeMapAndFov();
         }
         
+        private void SurroundStairsWithRelevantObstacle()
+        {
+            int actualFloorNum = this.FloorNum + 1;
+            var data = weaponPickUpFloors.Single(kvp => kvp.Value == actualFloorNum);
+            var weapon = data.Key;
+
+            Action<int, int> obstacleCreator;
+            switch (weapon) {
+                case Weapon.MiniMissile: obstacleCreator = (x, y) =>  
+                {
+                    var fakeWall = new FakeWall(x, y);
+                    FakeWalls.Add(fakeWall);
+                };                
+                break;
+                case Weapon.Zapper: obstacleCreator = (x, y) =>
+                {
+                    var door = new Door(x, y, true);
+                    Doors.Add(door);
+                };
+                break;
+                case Weapon.GravityCannon: obstacleCreator = (x, y) =>
+                {
+                    var wave = new GravityWave(x, y, false, this.FloorNum);
+                    // Could already be gravity waves there if the room is gravity-filled
+                    AddNonDupeEntity(new GravityWave(x, y, false, this.FloorNum), this.GravityWaves);
+                };
+                break;
+                case Weapon.InstaTeleporter: obstacleCreator = (x, y) => 
+                {
+                    var chasm = Entity.Create(SimpleEntity.Chasm, x, y);
+                    Chasms.Add(chasm);
+                };
+                break;
+                default:
+                    throw new InvalidOperationException($"Tried to generate obstacle for {weapon}!");
+            }
+
+            for (var y = this.StairsDownLocation.Y - 1; y <= this.StairsDownLocation.Y + 1; y++)
+            {
+                for (var x = this.StairsDownLocation.X - 1; x <= this.StairsDownLocation.X + 1; x++)
+                {
+                    if (x >= 0 && x < this.Width && y >= 0 && y < this.Height && new GoRogue.Coord(x, y) != StairsDownLocation)
+                    {
+                        obstacleCreator.Invoke(x, y);
+                    }
+                }
+            }
+        }
+
         private void GenerateShipCore()
         {
             var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9

@@ -689,5 +689,59 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 }
             }
         }
+
+        [Test]
+        public void StairsDownAreSurroundedByRelevantObstaclesOnWeaponFloors()
+        {
+            var dungeon = new Dungeon(80, 28, 84684965);
+
+            // Fake walls on B2
+            var floor = dungeon.Floors[1];
+            var expectedSpots = getSurroundingTiles(floor.StairsDownLocation);
+            foreach (var expected in expectedSpots)
+            {
+                Assert.That(floor.FakeWalls.SingleOrDefault(w => w.X == expected.X && w.Y == expected.Y), Is.Not.Null);
+            }
+
+            // Locked doors on B4
+            floor = dungeon.Floors[3];
+            expectedSpots = getSurroundingTiles(floor.StairsDownLocation);
+            foreach (var expected in expectedSpots)
+            {
+                Assert.That(floor.Doors.Single(w => w.X == expected.X && w.Y == expected.Y).IsLocked);
+            }
+
+            // Gravity waves on B6
+            floor = dungeon.Floors[5];
+            expectedSpots = getSurroundingTiles(floor.StairsDownLocation);
+            foreach (var expected in expectedSpots)
+            {
+                Assert.That(floor.GravityWaves.SingleOrDefault(w => w.X == expected.X && w.Y == expected.Y), Is.Not.Null);
+            }
+
+            // Chasms on B8. They're just AbstractEntity instances.
+            floor = dungeon.Floors[7];
+            expectedSpots = getSurroundingTiles(floor.StairsDownLocation);
+            foreach (var expected in expectedSpots)
+            {
+                Assert.That(floor.Chasms.SingleOrDefault(w => w.X == expected.X && w.Y == expected.Y), Is.Not.Null);
+            }
+        }
+
+        private List<GoRogue.Coord> getSurroundingTiles(GoRogue.Coord location)
+        {
+            var x = location.X;
+            var y = location.Y;
+            return new List<GoRogue.Coord>() {
+                new GoRogue.Coord(x - 1, y - 1),
+                new GoRogue.Coord(x - 1, y),
+                new GoRogue.Coord(x - 1, y + 1),
+                new GoRogue.Coord(x, y - 1),
+                new GoRogue.Coord(x, y + 1),
+                new GoRogue.Coord(x + 1, y - 1),
+                new GoRogue.Coord(x + 1, y),
+                new GoRogue.Coord(x + 1, y + 1),
+            };
+        }
     }
 }
