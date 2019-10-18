@@ -2379,8 +2379,11 @@ namespace DeenGames.AliTheAndroid.Model
             numTenLegs += (int)Math.Floor((this.FloorNum - monsterFloors["tenlegs"]) / 3f); // +1 tenlegs every third floor (B4, B7, B10)
             numZugs += this.AreLastTwoFloors() ? 1 : 0; // +1 zug on floors B9+
 
+            int iterationsLeft = 100;
+
             while (numFuselings > 0)
             {
+                iterationsLeft--;
                 var spot = this.FindEmptySpot();
 
                 // https://trello.com/c/DNXtSLW5/33-monsters-generate-next-to-player-when-descends-stairs
@@ -2388,7 +2391,7 @@ namespace DeenGames.AliTheAndroid.Model
                 var distanceToStairsUp = Math.Sqrt(Math.Pow(spot.X - StairsUpLocation.X, 2) + Math.Pow(spot.Y - StairsUpLocation.Y, 2));
                 var distanceToStairsDown = Math.Sqrt(Math.Pow(spot.X - StairsDownLocation.X, 2) + Math.Pow(spot.Y - StairsDownLocation.Y, 2));
 
-                if (distanceToStairsUp >= MinimumDistanceFromMonsterToStairs && distanceToStairsDown >= MinimumDistanceFromMonsterToStairs)
+                if (iterationsLeft == 0 || (distanceToStairsUp >= MinimumDistanceFromMonsterToStairs && distanceToStairsDown >= MinimumDistanceFromMonsterToStairs))
                 {
                     var template = "";
                     if (numZugs > 0) {
