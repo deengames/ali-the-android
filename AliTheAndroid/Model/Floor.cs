@@ -1384,7 +1384,8 @@ namespace DeenGames.AliTheAndroid.Model
 
             // Make sure we don't generate chasms too close to each other. This can make hallways impossible to traverse.
             // https://trello.com/c/HxpLSDMt/3-map-generates-a-stuck-map-seed-740970391
-            while (iterations++ < 10000 && this.Chasms.Count < NumChasms) {
+            while (iterations++ < 10000 && this.Chasms.Count < NumChasms)
+            {
                 var candidate = candidates.FirstOrDefault();
                 candidates.Remove(candidate);
                 // Coord is a struct, so we get (0, 0) (not Coord.NONE, strangely) sometimes...
@@ -1469,28 +1470,36 @@ namespace DeenGames.AliTheAndroid.Model
 
             foreach (var adjacency in this.GetAdjacentFloors(location))
             {
-                if (adjacency != StairsUpLocation && adjacency != StairsDownLocation)
+                var closestDoorDistance = this.Doors.Min(d => GoRogue.Distance.EUCLIDEAN.Calculate(adjacency.X, adjacency.Y, d.X, d.Y));
+                if (adjacency != StairsUpLocation && adjacency != StairsDownLocation && closestDoorDistance > 1)
                 {
                     this.Chasms.Add(AbstractEntity.Create(SimpleEntity.Chasm, adjacency.X, adjacency.Y));
                 }
             }
         }
 
+        private GoRogue.Rectangle PickRandomRoom()
+        {
+            return this.rooms.OrderBy(r => globalRandom.Next()).First();
+        }
+
         private void GenerateStairs()
         {
             // Stairs up generate under the player. Available on all floors (start location), but only usable/visible on floor > 0.
-            this.StairsUpLocation = this.FindEmptySpot();
+            var stairsUpRoom = this.PickRandomRoom();
+            this.StairsUpLocation = stairsUpRoom.Center;
 
             // Stairs down generate far from the player.
-            var spot = new GoRogue.Coord(StairsUpLocation.X, StairsUpLocation.Y);
+            var room = stairsUpRoom;
             var distance = 0d;
 
             do {
-                spot = this.FindEmptySpot();
+                room = this.PickRandomRoom();
+                var spot = room.Center;
                 distance = Math.Sqrt(Math.Pow(spot.X - StairsUpLocation.X, 2)  + Math.Pow(spot.Y - StairsUpLocation.Y, 2));
             } while (distance <= MinimumDistanceFromPlayerToStairs);
 
-            this.StairsDownLocation = spot;
+            this.StairsDownLocation = room.Center;
         }
 
 
