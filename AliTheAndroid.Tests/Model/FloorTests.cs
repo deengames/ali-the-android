@@ -353,9 +353,9 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                 var random = new StandardGenerator(357);
                 var noPowerUps =  new List<PowerUp>();
 
-                // Teleporter floor itself should have no chasms; don't want to get stuck!
+                // Teleporter floor itself should have chasms surrounding the door
                 var floor = new Floor(30, 30, InstaTeleporterFloor, random);
-                Assert.That(!floor.Chasms.Any());
+                Assert.That(floor.Chasms.All(c => GoRogue.Distance.EUCLIDEAN.Calculate(c.X, c.Y, floor.StairsDownLocation.X, floor.StairsDownLocation.Y) <= 1.5));
 
                 floor = new Floor(30, 30, InstaTeleporterFloor + 1, random);
                 Assert.That(floor.Chasms.Any());
