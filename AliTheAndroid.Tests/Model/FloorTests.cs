@@ -406,11 +406,11 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         {
             RestrictRuntime(() => {
                 const int ExpectedChasmCount = 5;
-                var seed = 358;
+                var seed = 359;
                 var noPowerUps =  new List<PowerUp>();
                 for (var i = 0; i < 100; i++) {
                     var random = new StandardGenerator(seed + i);
-                    var floor = new Floor(30, 30, 10, random);
+                    var floor = new Floor(80, 28, 10, random);
                     Assert.That(floor.Chasms.Count, Is.GreaterThanOrEqualTo(ExpectedChasmCount));
                 }
             });
