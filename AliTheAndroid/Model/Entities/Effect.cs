@@ -122,13 +122,16 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int Life = 4; // Moves three squares
 
         public GoRogue.Coord TeleportTo { get; private set; }
+        private GoRogue.Coord stairsDownLocation;
 
         private Func<int, int, bool> realIsMovable;
+        
 
-        public TeleporterShot(int x, int y, Direction direction, Func<int, int, bool> isMovable) : base(x, y, '?', Palette.Cyan, direction, AlwaysMovable)
+        public TeleporterShot(int x, int y, Direction direction, Func<int, int, bool> isMovable, GoRogue.Coord stairsDownLocation) : base(x, y, '?', Palette.Cyan, direction, AlwaysMovable)
         {
             this.TeleportTo = new GoRogue.Coord(x, y);
             this.realIsMovable = isMovable;
+            this.stairsDownLocation = stairsDownLocation;
         }
 
         private static bool AlwaysMovable(int x, int y)
@@ -141,11 +144,21 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             base.OnAction();
 
             // We only want to track the previous spot if it was walkable. This way, we teleport to the last walkable spot we saw.
-            if (this.realIsMovable(this.X, this.Y)) {
+            if (this.realIsMovable(this.X, this.Y))
+            {
                 this.TeleportTo = new GoRogue.Coord(this.X, this.Y);
+                if (this.TeleportTo == this.stairsDownLocation)
+                {
+                    // teleport immediately to avoid getting stuck on floors where the stairs are surrounded
+                    // by a chasm, and teleporting takes you over the chasm, not down into the middle (stairs).
+                    // https://twitter.com/nightblade99/status/1185686524802879488
+                    this.IsAlive = false; 
+                }
             }
-            Life -= 1;
-            if (Life == 0) {
+
+            this.Life -= 1;
+            if (this.Life == 0)
+            {
                 this.IsAlive = false;
             }
         }
