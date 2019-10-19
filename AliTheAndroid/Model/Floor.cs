@@ -2366,7 +2366,7 @@ namespace DeenGames.AliTheAndroid.Model
 
                 Shot shot;
                 if (Player.CurrentWeapon == Weapon.InstaTeleporter) {
-                    shot = new TeleporterShot(Player.X, Player.Y, Player.DirectionFacing, this.IsFlyable);
+                    shot = new TeleporterShot(Player.X, Player.Y, Player.DirectionFacing, this.IsWalkable, this.StairsDownLocation);
                 } else {
                     shot = new Shot(Player.X + dx, Player.Y + dy, character, Palette.Red, Player.DirectionFacing, this.IsFlyable);
                 }
