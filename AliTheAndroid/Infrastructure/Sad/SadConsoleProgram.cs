@@ -1,10 +1,7 @@
 ﻿using DeenGames.AliTheAndroid.Consoles;
 using DeenGames.AliTheAndroid.Infrastructure.Common;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Ninject;
 using SadConsole;
-using System;
 using System.Reflection;
 
 namespace DeenGames.AliTheAndroid.Infrastructure.Sad
@@ -67,7 +64,7 @@ namespace DeenGames.AliTheAndroid.Infrastructure.Sad
 
             //Global.MouseState.ProcessMouseWhenOffScreen = true;
 
-            Global.CurrentScreen = new TitleConsole(widthInTiles, heightInTiles);
+            Global.CurrentScreen = new SplashConsole(widthInTiles, heightInTiles);
         }
 
         private void Update(GameTime time)
