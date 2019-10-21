@@ -420,7 +420,6 @@ namespace DeenGames.AliTheAndroid.Model
                     if (wave != null)
                     {
                         var waves = GravityWaveFinder.FloodFillFind(wave, this.GravityWaves);
-                        waves.ToList().ForEach(w => w.StopReactingToPlayer());
                         this.GravityWaves.RemoveAll(w => waves.Contains(w));
                         AudioManager.Instance.Play("DisperseGravity");
                     }
@@ -2543,6 +2542,11 @@ namespace DeenGames.AliTheAndroid.Model
             }
 
              if (this.Doors.Any(d => d.X == x && d.Y == y && d.IsOpened == false)) {
+                return false;
+            }
+
+            if (this.GravityWaves.Any(g => g.X == x && g.Y == y))
+            {
                 return false;
             }
 
