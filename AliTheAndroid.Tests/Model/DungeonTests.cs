@@ -42,10 +42,10 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void ConstructorSetsPlayerAndWidthAndHeight()
         {
             RestrictRuntime(() => {
-                var dungeon = new Dungeon(24, 31, gameSeed: 1234);
+                var dungeon = new Dungeon(80, 28, gameSeed: 1234);
                 Assert.That(dungeon.Player, Is.Not.Null);
-                Assert.That(dungeon.Width, Is.EqualTo(24));
-                Assert.That(dungeon.Height, Is.EqualTo(31));
+                Assert.That(dungeon.Width, Is.EqualTo(80));
+                Assert.That(dungeon.Height, Is.EqualTo(28));
             });
         }
 

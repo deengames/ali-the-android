@@ -534,7 +534,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         public void ShipCoreOnlyGeneratesOnFinalFloor()
         {
             RestrictRuntime(() => {
-                var generator = new StandardGenerator(562365845);
+                var generator = new StandardGenerator(562365745);
                 for (var i = 0; i < 10; i++)
                 {
                     var floor = new Floor(80, 28, i, generator);
@@ -545,11 +545,11 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                         Assert.That(floor.ShipCore, Is.Not.Null);
                         for (var x = floor.ShipCore.X - 1; x <= floor.ShipCore.X + 1; x++)
                         {
-                            for (var y = floor.ShipCore.Y; y <= floor.ShipCore.Y + 1; y++)
+                            for (var y = floor.ShipCore.Y - 1; y <= floor.ShipCore.Y + 1; y++)
                             {
                                 if (x != floor.ShipCore.X && y != floor.ShipCore.Y)
                                 {
-                                    Assert.That(floor.FakeWalls.Any(f => f.X == x && f.Y == y));
+                                    Assert.That(floor.FakeWalls.Any(f => f.X == x && f.Y == y), $"Core is at {floor.ShipCore.X}, {floor.ShipCore.Y}. Expected fake wall at {x}, {y} but there wasn't one.");
                                 }
                             }
                         }
