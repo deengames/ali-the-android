@@ -759,7 +759,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GeneratePowerUps()
         {
-            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y) || this.GravityWaves.Any(g => g.X == f.X && g.Y == f.Y)).ToList();
             if (floorsNearStairs.Count < 2)
             {
                 // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
@@ -1064,7 +1064,7 @@ namespace DeenGames.AliTheAndroid.Model
             var actualFloorNumber = this.FloorNum + 1; // 0 => B1, 8 => B9
             if (actualFloorNumber >= 2 && actualFloorNumber <= 9)
             {
-                var spot = this.FindEmptySpot();
+                var spot = this.FindEmptySpot(true);
                 this.DataCube = DataCube.GetCube(actualFloorNumber, spot);
             }
         }
@@ -2439,7 +2439,7 @@ namespace DeenGames.AliTheAndroid.Model
             while (numFuselings > 0)
             {
                 iterationsLeft--;
-                var spot = this.FindEmptySpot();
+                var spot = this.FindEmptySpot(true);
 
                 // https://trello.com/c/DNXtSLW5/33-monsters-generate-next-to-player-when-descends-stairs
                 // Make sure monsters don't generate right next to the player
@@ -2500,15 +2500,24 @@ namespace DeenGames.AliTheAndroid.Model
             }
         }
 
-        private GoRogue.Coord FindEmptySpot()
+        private GoRogue.Coord FindEmptySpot(bool considerGravityWalkable = false)
         {
             var target = new GoRogue.Coord(0, 0);
 
-            do 
+            while (true)
             {
                 target = new GoRogue.Coord(this.globalRandom.Next(0, this.Width), this.globalRandom.Next(0, this.Height));
-            } while (!this.IsWalkable(target.X, target.Y) || target == this.StairsDownLocation || target == this.StairsUpLocation
-                || PowerUps.Any(p => p.X == target.X && p.Y == target.Y));
+
+                if (
+                    // Walkable, or we consider gravity walkable and there's one on that very spot
+                    this.IsWalkable(target.X, target.Y) || (considerGravityWalkable && this.GravityWaves.Any(g => g.X == target.X && g.Y == target.Y)) &&
+                    target != this.StairsDownLocation && target != this.StairsUpLocation && // no stairs here
+                    PowerUps.All(p => p.X != target.X || p.Y != target.Y)
+                )
+                {
+                    break;
+                }
+            }
 
             return target;
         }
