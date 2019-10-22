@@ -567,6 +567,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
                             {
                                 if (x != floor.ShipCore.X && y != floor.ShipCore.Y)
                                 {
+                                    // There should be a fake wall there. If not, it's because there's a real wall there (stairs is next to a wall).
                                     Assert.That(floor.FakeWalls.Any(f => f.X == x && f.Y == y), $"Core is at {floor.ShipCore.X}, {floor.ShipCore.Y}. Expected fake wall at {x}, {y} but there wasn't one.");
                                 }
                             }

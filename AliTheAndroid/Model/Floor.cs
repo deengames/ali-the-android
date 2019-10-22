@@ -1028,7 +1028,7 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     for (var x = location.X - 1; x <= location.X + 1; x++)
                     {
-                        if (x != location.X && y != location.Y && IsWalkable(x, y))
+                        if (x != location.X && y != location.Y && IsWalkable(x, y, true))
                         {
                             this.FakeWalls.Add(new FakeWall(x, y));
                         }
