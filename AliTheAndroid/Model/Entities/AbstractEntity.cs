@@ -8,6 +8,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     /// <summary>
     /// The most basic form of an entity: coordinates, and a visual representation (character/colour).
     /// </summary>
+    [System.Diagnostics.DebuggerDisplay("Entity at ({X}, {Y})")]
     public class AbstractEntity
     {
         // TODO: character/colour should NOT be part of the model!!!!

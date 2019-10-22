@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
+    [System.Diagnostics.DebuggerDisplay("Door at ({X}, {Y}) L={IsLocked}")]
     public class Door : AbstractEntity
     {
         public bool IsBacktrackingDoor {get; private set;}

@@ -454,7 +454,24 @@ namespace DeenGames.AliTheAndroid.Tests.Model
 
                     if (dungeon.CurrentFloorNum < 9)
                     {
-                        Assert.That(floor.IsWalkable(floor.StairsDownLocation.X, floor.StairsDownLocation.Y), $"Stairs down on B{dungeon.CurrentFloorNum + 1} is not walkable!");
+                        if (dungeon.CurrentFloorNum == 5)
+                        {
+                            // B6 is not walkable because we flood the stairs room with (now non-walkable) plasma.
+                            Assert.That(!floor.IsWalkable(floor.StairsDownLocation.X, floor.StairsDownLocation.Y));
+                            Assert.That(floor.GravityWaves.Any(g => g.X == floor.StairsDownLocation.X && g.Y == floor.StairsDownLocation.Y));
+                        }
+                        else
+                        {
+                            // It should be walkable. If it's not, it should be just covered with a gravity wave. (They fill random rooms.)
+                            // Ergo, removing the gravity wave should make it walkable.
+                            var gravity = floor.GravityWaves.SingleOrDefault(g => g.X == floor.StairsDownLocation.X && g.Y == floor.StairsDownLocation.Y);
+                            if (gravity != null)
+                            {
+                                floor.GravityWaves.Remove(gravity);
+                            }
+
+                            Assert.That(floor.IsWalkable(floor.StairsDownLocation.X, floor.StairsDownLocation.Y), $"Stairs down on B{dungeon.CurrentFloorNum + 1} is not walkable!");
+                        }
                     }
 
                     if (dungeon.CurrentFloorNum >= 1)

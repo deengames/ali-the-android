@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
+    [System.Diagnostics.DebuggerDisplay("FakeWall at ({X}, {Y})")]
     public class FakeWall : AbstractEntity
     {
         public static readonly Color Colour = Palette.Brown;
