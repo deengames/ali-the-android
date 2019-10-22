@@ -129,5 +129,19 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var b2 = dungeon.Floors[1];
             Assert.That(!b2.PowerUps.Any(p => p.X == b2.DataCube.X && p.Y == b2.DataCube.Y));
         }
+
+        [Test]
+        public void ConstructorCreatesTutorialMessage()
+        {
+            var dungeon = new Dungeon(80, 28, 1209231093);
+            var b1 = dungeon.Floors[0];
+            var tutorialMessage = b1.LatestMessage;
+
+            // Some sensible checks
+            Assert.That(tutorialMessage.Contains("You beam to"));
+            Assert.That(tutorialMessage.Contains("Use WASD to move"));
+            Assert.That(tutorialMessage.Contains("F to fire"));
+            Assert.That(tutorialMessage.Contains("Q and E to turn"));
+        }
     }
 }
