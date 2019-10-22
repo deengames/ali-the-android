@@ -33,7 +33,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model
         [TestCase(3, 87)]
         public void IsInPlayerFovReturnsFalseWhenOutOfBounds(int x, int y)
         {
-            var floor = new Floor(30, 20, 1, new StandardGenerator());
+            var floor = new Floor(30, 20, 1, new StandardGenerator(879465));
             Assert.That(floor.IsInPlayerFov(x, y), Is.False);
         }
 
