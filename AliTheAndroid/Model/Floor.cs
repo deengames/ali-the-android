@@ -480,14 +480,14 @@ namespace DeenGames.AliTheAndroid.Model
             return isTileDiscovered.ContainsKey(key);
         }
 
-        public bool IsWalkable(int x, int y)
+        public bool IsWalkable(int x, int y, bool considerGravityWalkable = false)
         {
             if (this.Chasms.Any(c => c.X == x && c.Y == y))
             {
                 return false;
             }
 
-            return this.IsFlyable(x, y);
+            return this.IsFlyable(x, y, considerGravityWalkable);
         }
 
         public void RecalculatePlayerFov()
@@ -2503,20 +2503,16 @@ namespace DeenGames.AliTheAndroid.Model
         private GoRogue.Coord FindEmptySpot(bool considerGravityWalkable = false)
         {
             var target = new GoRogue.Coord(0, 0);
+            var found = false;
 
-            while (true)
+            while (!found)
             {
                 target = new GoRogue.Coord(this.globalRandom.Next(0, this.Width), this.globalRandom.Next(0, this.Height));
 
-                if (
-                    // Walkable, or we consider gravity walkable and there's one on that very spot
-                    this.IsWalkable(target.X, target.Y) || (considerGravityWalkable && this.GravityWaves.Any(g => g.X == target.X && g.Y == target.Y)) &&
+                found =
+                    this.IsWalkable(target.X, target.Y, considerGravityWalkable) &&
                     target != this.StairsDownLocation && target != this.StairsUpLocation && // no stairs here
-                    PowerUps.All(p => p.X != target.X || p.Y != target.Y)
-                )
-                {
-                    break;
-                }
+                    PowerUps.All(p => p.X != target.X || p.Y != target.Y);
             }
 
             return target;
@@ -2530,7 +2526,8 @@ namespace DeenGames.AliTheAndroid.Model
 
         // Can a projectile "fly" over a spot? True if empty or a chasm; false if occupied by anything
         // (walls, fake walls, doors, monsters, player, etc.)
-        private bool IsFlyable(int x, int y) {
+        private bool IsFlyable(int x, int y, bool considerGravityWalkable = false)
+        {
             if (x < 0 || y < 0 || x >= this.Width || y >= this.Height) {
                 return false;
             }
@@ -2554,7 +2551,7 @@ namespace DeenGames.AliTheAndroid.Model
                 return false;
             }
 
-            if (this.GravityWaves.Any(g => g.X == x && g.Y == y))
+            if (!considerGravityWalkable && this.GravityWaves.Any(g => g.X == x && g.Y == y))
             {
                 return false;
             }

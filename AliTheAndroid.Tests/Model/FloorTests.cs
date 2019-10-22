@@ -192,7 +192,8 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             RestrictRuntime(() => {
                 // Number of monsters is quasi-random. Pick the first floor with all monsters (B6) and the last; every monster should be more in number.
                 // This won't pass with all seeds; only a carefully-selected seed. You may get a low number of zugs (1-3 => 1) then a +1 on the next floor.
-                var random = new StandardGenerator(999);
+                // Ditto for slinks, which spawn in random-sized groups.
+                var random = new StandardGenerator(9999);
 
                 var b6 = new Floor(40, 40, 5, random);
                 var b10 = new Floor(40, 40, 9, random);

@@ -198,7 +198,9 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
 
             foreach (var expectedEntity in expected.Monsters)
             {
-                var deserializedEntity = actual.Monsters.Single(e => e.X == expectedEntity.X && e.Y == expectedEntity.Y);
+                var monsters = actual.Monsters.Where(e => e.X == expectedEntity.X && e.Y == expectedEntity.Y);
+                Assert.That(monsters.Count(), Is.EqualTo(1), $"Expected one monster at {expectedEntity.X}, {expectedEntity.Y} but got {monsters.Count()}");
+                var deserializedEntity = monsters.Single();
                 Assert.That(deserializedEntity.CanMove, Is.EqualTo(expectedEntity.CanMove));
                 Assert.That(deserializedEntity.CurrentHealth, Is.EqualTo(expectedEntity.CurrentHealth));
                 Assert.That(deserializedEntity.Defense, Is.EqualTo(expectedEntity.Defense));
