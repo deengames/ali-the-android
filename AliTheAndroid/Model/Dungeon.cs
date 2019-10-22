@@ -84,7 +84,7 @@ namespace DeenGames.AliTheAndroid.Model
             // Intro events/message
             var arrowKeys = $"{Options.KeyBindings[GameAction.MoveUp]}{Options.KeyBindings[GameAction.MoveLeft]}{Options.KeyBindings[GameAction.MoveDown]}{Options.KeyBindings[GameAction.MoveRight]}";
             var rotateKeys = $"{Options.KeyBindings[GameAction.TurnCounterClockWise]} and {Options.KeyBindings[GameAction.TurnClockWise]}";
-            this.Floors[0].LatestMessage = $"You beam onto the deep-space research station. No lights or life-support.    Use {arrowKeys} to move. Press {Options.KeyBindings[GameAction.Fire]} to fire, {rotateKeys} to turn.";
+            this.Floors[0].LatestMessage = $"You beam to the deep-space research station. No lights or life-support. Use {arrowKeys} to move. Press {Options.KeyBindings[GameAction.Fire]} to fire, {rotateKeys} to turn.";
 
             stopwatch.Stop();
             LastGameLogger.Instance.Log($"Generated in {stopwatch.Elapsed.TotalSeconds}s");
@@ -100,7 +100,6 @@ namespace DeenGames.AliTheAndroid.Model
             this.CurrentFloorNum++;
             this.CurrentFloor = this.Floors[this.CurrentFloorNum];
             LastGameLogger.Instance.Log($"Descended to B{this.CurrentFloorNum + 1}");
-            this.CurrentFloor.LatestMessage = "Game saved.";
 
             // End game floor
             if (this.CurrentFloorNum == 9)
@@ -114,7 +113,13 @@ namespace DeenGames.AliTheAndroid.Model
             this.Player.Y = this.CurrentFloor.StairsUpLocation.Y;
             this.CurrentFloor.RecalculatePlayerFov();
             this.CurrentFloor.MarkCurrentFovAsSeen();
+
             SaveManager.SaveGame();
+            // Don't show on B1 and obliterate our tutorial!
+            if (this.CurrentFloorNum > 0)
+            {
+                this.CurrentFloor.LatestMessage = "Game saved.";
+            }
         }
 
         public void GoToPreviousFloor()
