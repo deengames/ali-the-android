@@ -23,11 +23,11 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public Direction DirectionFacing { get; private set; }
         public Weapon CurrentWeapon = Weapon.Blaster;
         public bool HasEnvironmentSuit = false;
-        private const int ShieldRegenPerMove = 1;
 
         public bool CanFireGravityCannon { get; set; } = true;
-        public int CurrentShield { get; private set; }
-        public const int MaxShield = 100;
+        
+        // Not readonly for JSON.NET to set on load/deserialize.
+        public Shield Shield = new Shield();
 
         [JsonProperty]
         internal List<DataCube> DataCubes { get; set; } = new List<DataCube>();
@@ -43,9 +43,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
                 // Deserializing. Work around a bug where we end up with two copies of the Blaster.
                 this.Weapons = weapons;
             }
-            
+
             this.DirectionFacing = Direction.Up;
-            this.CurrentShield = Player.MaxShield;
 
             if (Options.PlayerStartsWithAllDataCubes)
             {
@@ -125,18 +124,17 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         override public void Damage(int damage, Weapon source)
         {
-            var shieldDamage = Math.Min(this.CurrentShield, damage);
+            var shieldDamage = this.Shield.Damage(damage);
             var leftoverDamage = damage - shieldDamage;
-            this.CurrentShield -= shieldDamage;
             base.Damage(leftoverDamage, source);
 
-            if (this.CurrentShield == 0)
+            if (this.Shield.IsDown())
             {
                 this.Color = NormalColor;
-            }
-            if (this.CurrentHealth <= 0)
-            {
-                this.Color = Palette.Grey;
+                if (this.CurrentHealth <= 0)
+                {
+                    this.Color = Palette.Grey;
+                }
             }
         }
 
@@ -178,8 +176,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         internal void RegenerateShield()
         {
-            this.CurrentShield += Player.ShieldRegenPerMove;
-            this.CurrentShield = Math.Min(this.CurrentShield, Player.MaxShield);
+            this.Shield.OnMove();
             this.ChangeToShieldColor();
         }
 

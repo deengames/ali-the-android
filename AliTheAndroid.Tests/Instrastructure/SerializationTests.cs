@@ -6,7 +6,6 @@ using DeenGames.AliTheAndroid.Infrastructure.Common;
 using DeenGames.AliTheAndroid.Model;
 using DeenGames.AliTheAndroid.Model.Entities;
 using DeenGames.AliTheAndroid.Tests.Helpers;
-using DeenGames.AliTheAndroid.Tests.LongRunning;
 using NUnit.Framework;
 using Troschuetz.Random.Generators;
 
@@ -51,10 +50,12 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         {
             var expected = new Player();
 
+            var shieldDamage = 90;
             expected.Acquire(Weapon.GravityCannon);
             expected.Acquire(Weapon.InstaTeleporter);
             expected.CurrentWeapon = Weapon.GravityCannon;
             expected.GotDataCube(DataCube.GetCube(3, new GoRogue.Coord(0, 0)));
+            expected.Shield.Damage(shieldDamage);
 
             var serialized = Serializer.Serialize(expected);
             var actual = Serializer.Deserialize<Player>(serialized);
@@ -72,6 +73,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(actual.Strength, Is.EqualTo(expected.Strength));
             Assert.That(actual.TotalHealth, Is.EqualTo(expected.TotalHealth));
             Assert.That(actual.VisionRange, Is.EqualTo(expected.VisionRange));
+            Assert.That(actual.Shield.CurrentShield, Is.EqualTo(Shield.MaxShield - shieldDamage));
             
             Assert.That(actual.Weapons.Count, Is.EqualTo(expected.Weapons.Count));
             foreach (var weapon in expected.Weapons)

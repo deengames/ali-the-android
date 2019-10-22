@@ -30,10 +30,11 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         }
 
         [Test]
-        public void PlayerStartsWithBlaster()
+        public void PlayerStartsWithBlasterAndFullShields()
         {
             var player = new Player();
             Assert.That(player.Has(Weapon.Blaster), Is.True);
+            Assert.That(player.Shield.CurrentShield, Is.EqualTo(Shield.MaxShield));
         }
 
         [Test]
