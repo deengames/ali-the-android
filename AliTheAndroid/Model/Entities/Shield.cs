@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
@@ -9,7 +10,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private const int ShieldRegenPerMove = 1;
         
         [JsonProperty]
-        internal int CurrentShield { get; protected set; }
+        internal int CurrentShield { get; set; }
 
         public Shield()
         {
@@ -22,7 +23,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.CurrentShield = currentShield;
         }
 
-        public virtual void OnMove()
+        public virtual void OnMove(GoRogue.FOV playerFov, IList<Entity> monsters)
         {
             this.CurrentShield += Shield.ShieldRegenPerMove;
             this.CurrentShield = Math.Min(this.CurrentShield, Shield.MaxShield);

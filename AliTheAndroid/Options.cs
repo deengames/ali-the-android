@@ -43,7 +43,7 @@ namespace DeenGames.AliTheAndroid
             { GameAction.SkipTurn, Key.Space },
         };
 
-        // Constants
+        // Constants. "Retired" feature toggles, if you will.
         public const bool ShowFakeWalls = true; // Should always be true
 
         // Manual testing stuff

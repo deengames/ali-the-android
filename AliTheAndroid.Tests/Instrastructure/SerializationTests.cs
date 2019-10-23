@@ -74,7 +74,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(actual.TotalHealth, Is.EqualTo(expected.TotalHealth));
             Assert.That(actual.VisionRange, Is.EqualTo(expected.VisionRange));
             Assert.That(actual.Shield.CurrentShield, Is.EqualTo(Shield.MaxShield - shieldDamage));
-            
+
             Assert.That(actual.Weapons.Count, Is.EqualTo(expected.Weapons.Count));
             foreach (var weapon in expected.Weapons)
             {

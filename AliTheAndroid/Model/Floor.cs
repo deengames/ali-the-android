@@ -669,12 +669,13 @@ namespace DeenGames.AliTheAndroid.Model
         internal void OnPlayerMoved()
         {
             this.RecalculatePlayerFov();
-            this.Player.RegenerateShield();
 
             foreach (var newlySeen in this.PlayerFieldOfView.NewlySeen)
             {
                 this.MarkAsSeen(newlySeen.X, newlySeen.Y);
             }
+
+            this.Player.RegenerateShield(this.PlayerFieldOfView, this.Monsters);
 
             this.LatestMessage = "";
 

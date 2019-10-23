@@ -1,3 +1,4 @@
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
@@ -8,43 +9,12 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     // fire, or get hit for three consecutive turns.)
     public class KlogborgShield : Shield
     {
-        private const int OutOfCombatTurns = 3;
-
-        [JsonProperty]
-        internal int MovesWithoutAttacking = 0;
-
-        [JsonProperty]
-        internal int MovesWithoutDamage = 0;
-
-        [JsonConstructor]
-        public KlogborgShield(int currentShield, int movesWithoutAttacking, int movesWithoutDamage)
-        : base(currentShield)
+        override public void OnMove(GoRogue.FOV playerFov, System.Collections.Generic.IList<Entity> monsters)
         {
-            this.MovesWithoutAttacking = movesWithoutAttacking;
-            this.MovesWithoutDamage = movesWithoutDamage;
-        }
-
-        override public void OnMove()
-        {
-            this.MovesWithoutAttacking++;
-            this.MovesWithoutDamage++;
-
-            if (this.IsDown() && MovesWithoutAttacking >= OutOfCombatTurns && this.MovesWithoutDamage >= OutOfCombatTurns)
+            if (this.CurrentShield < Shield.MaxShield && !monsters.Any(m => playerFov.BooleanFOV[m.X, m.Y] == true))
             {
                 this.CurrentShield = Shield.MaxShield;
             }
-        }
-
-        override internal int Damage(int damage)
-        {
-            ////// TODO: consider this further
-            // When regularly walking around, don't care to track moves without attacking until damaged.
-            // Because, if we recharge now, you could take damage and regen from "3+ non-attacking" immediately.
-            
-            // But, say you're in mid-combat, got 2 turns without attacking, then take damage; we don't
-            // want to reset MovesWithoutAttacking, because you're in combat and legit got 2 turns done.
-            this.MovesWithoutDamage = 0;
-            return base.Damage(damage);
         }
     }
 }

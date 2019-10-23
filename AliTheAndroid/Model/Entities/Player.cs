@@ -27,7 +27,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public bool CanFireGravityCannon { get; set; } = true;
         
         // Not readonly for JSON.NET to set on load/deserialize.
-        public Shield Shield = new Shield();
+        public KlogborgShield Shield = new KlogborgShield();
 
         [JsonProperty]
         internal List<DataCube> DataCubes { get; set; } = new List<DataCube>();
@@ -174,10 +174,13 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
         }
 
-        internal void RegenerateShield()
+        internal void RegenerateShield(GoRogue.FOV playerFov, IList<Entity> monsters)
         {
-            this.Shield.OnMove();
-            this.ChangeToShieldColor();
+            this.Shield.OnMove(playerFov, monsters);
+            if (!this.Shield.IsDown())
+            {
+                this.ChangeToShieldColor();
+            }
         }
 
         private void ChangeToShieldColor()
