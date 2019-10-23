@@ -2117,10 +2117,6 @@ namespace DeenGames.AliTheAndroid.Model
                 entity.X = targetX;
                 entity.Y = targetY;
 
-                if (entity == Player)
-                {
-                    Player.OnMove(previousX, previousY);
-                }
                 return true;
             }
             else
@@ -2183,19 +2179,23 @@ namespace DeenGames.AliTheAndroid.Model
             if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveUp])))
             {
                 destinationY -= 1;
+                this.Player.DirectionFacing = Direction.Up;
             }
             else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveDown])))
             {
                 destinationY += 1;
+                this.Player.DirectionFacing = Direction.Down;
             }
 
             if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveLeft])))
             {
                 destinationX -= 1;
+                this.Player.DirectionFacing = Direction.Left;
             }
             else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.MoveRight])))
             {
                 destinationX += 1;
+                this.Player.DirectionFacing = Direction.Right;
             }
             else if ((this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.TurnCounterClockWise])))
             {
@@ -2279,7 +2279,7 @@ namespace DeenGames.AliTheAndroid.Model
                     {
                         defaultDirection = Player.X < monster.X ? Direction.Right : Direction.Left;
                     }
-                    this.ApplyKnockbacks(monster, Player.X, Player.Y, 1, defaultDirection);
+                    this.ApplyKnockbacks(monster, Player.X, Player.Y, 2, defaultDirection);
                 }
             }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)

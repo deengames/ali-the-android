@@ -20,7 +20,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             { Weapon.PlasmaCannon,      "Super-heats the floor to damage anything in its wake." },
         };
 
-        public Direction DirectionFacing { get; private set; }
+        public Direction DirectionFacing { get; internal set; }
         public Weapon CurrentWeapon = Weapon.Blaster;
         public bool HasEnvironmentSuit = false;
 
@@ -67,19 +67,6 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
 
             this.ChangeToShieldColor();
-        }
-
-        public void OnMove(int previousX, int previousY)
-        {
-            var dx = this.X - previousX;
-            var dy = this.Y - previousY;;
-
-            // Naive and not error-proof; correct if we only move in one direction at a time
-            if (dx == 0) {
-                this.DirectionFacing = dy < 0 ? Direction.Up : Direction.Down;
-            } else {
-                this.DirectionFacing = dx < 0 ? Direction.Left : Direction.Right;
-            }
         }
 
         public void Freeze() {
