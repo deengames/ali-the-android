@@ -1876,7 +1876,7 @@ namespace DeenGames.AliTheAndroid.Model
             var dx = entity.X - centerX;
             var dy = entity.Y - centerY;
             if (dx == 0 && dy == 0) {
-                // Special case of sorts: gravity shot hit dead-center on the entity; use directtion.
+                // Special case of sorts: gravity shot hit dead-center on the entity; use direction.
                 switch (optionalDirection) {
                     case Direction.Down: dy += 1; break;
                     case Direction.Right: dx += 1; break;
@@ -2260,12 +2260,27 @@ namespace DeenGames.AliTheAndroid.Model
             }
             else if (this.GetMonsterAt(destinationX, destinationY) != null)
             {
+                // Melee attack
                 var monster = this.GetMonsterAt(destinationX, destinationY);
                 processedInput = true;
 
                 var damage = Player.Strength - monster.Defense;
                 monster.Damage(damage, Weapon.Undefined);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
+                
+                if (Options.MeleeAttackPushesMonsters)
+                {
+                    var defaultDirection = Direction.Up; // arbitrarily chosen
+                    if (monster.X == Player.X)
+                    {
+                        defaultDirection = Player.Y < monster.Y ? Direction.Down : Direction.Up;
+                    }
+                    else if (monster.Y == Player.Y)
+                    {
+                        defaultDirection = Player.X < monster.X ? Direction.Right : Direction.Left;
+                    }
+                    this.ApplyKnockbacks(monster, Player.X, Player.Y, 1, defaultDirection);
+                }
             }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
             {
