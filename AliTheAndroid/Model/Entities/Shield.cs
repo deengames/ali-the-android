@@ -9,7 +9,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private const int ShieldRegenPerMove = 1;
         
         [JsonProperty]
-        internal int CurrentShield { get; private set; }
+        internal int CurrentShield { get; protected set; }
 
         public Shield()
         {
@@ -22,15 +22,16 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             this.CurrentShield = currentShield;
         }
 
-        public void OnMove()
+        public virtual void OnMove()
         {
-            this.IncrementallyRegenerate();
+            this.CurrentShield += Shield.ShieldRegenPerMove;
+            this.CurrentShield = Math.Min(this.CurrentShield, Shield.MaxShield);
         }
 
         /// <summary>
         /// Tries to damage the shield by the specified amount. Returns the actual amount damaged
         /// (eg. if the shield is only 8, calling Damage(20) returns 8).
-        internal int Damage(int damage)
+        internal virtual int Damage(int damage)
         {
             var actualDamage = Math.Min(this.CurrentShield, damage);
             this.CurrentShield -= actualDamage;
@@ -40,12 +41,6 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         internal bool IsDown()
         {
             return this.CurrentShield <= 0;
-        }
-
-        private void IncrementallyRegenerate()
-        {
-            this.CurrentShield += Shield.ShieldRegenPerMove;
-            this.CurrentShield = Math.Min(this.CurrentShield, Shield.MaxShield);
         }
     }
 }
