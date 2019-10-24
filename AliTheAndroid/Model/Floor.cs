@@ -1872,7 +1872,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void ApplyKnockbacks(Entity entity, int centerX, int centerY, int distance, Direction optionalDirection)
         {
-            // Primary knockback in the direction of entity => cemter
+            // Primary knockback in the direction of entity => center
             var dx = entity.X - centerX;
             var dy = entity.Y - centerY;
             if (dx == 0 && dy == 0) {
@@ -1885,38 +1885,21 @@ namespace DeenGames.AliTheAndroid.Model
                 }
             }
             
-            int startX = entity.X;
-            int startY = entity.Y;
-            int stopX = startX + distance * Math.Sign(dx);
-            int stopY = startY + distance * Math.Sign(dy);
-
-            // Horrible method but iterates in one direction only, guaranteed
-            var minX = Math.Min(startX, stopX);
-            var maxX = Math.Max(startX, stopX);
-            var minY = Math.Min(startY, stopY);
-            var maxY = Math.Max(startY, stopY);
-
-            // Move if spaces are clear
-            for (var y = minY; y <= maxY; y++)
+            // Move entity <distance> times if spaces are clear
+            for (var i = 0; i < distance; i++)
             {
-                for (var x = minX; x <= maxX; x++)
+                // Check all spaces and move the entity one by one if the space is empty.
+                if (this.IsWalkable(entity.X + Math.Sign(dx), entity.Y + Math.Sign(dy)))
                 {
-                    if (x != entity.X || y != entity.Y)
-                    {
-                        // Check all spaces and move the entity one by one if the space is empty.
-                        if (this.IsWalkable(entity.X + Math.Sign(dx), entity.Y + Math.Sign(dy)))
-                        {
-                            // One of these is zero so we're really just moving in one direction.
-                            // We can't just set entity position because maybe the knockback is 
-                            // knocking back to the leftm we're always iterating to the right.
-                            entity.X += Math.Sign(dx);                            
-                            entity.Y += Math.Sign(dy);
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
+                    // One of these is zero so we're really just moving in one direction.
+                    // We can't just set entity position because maybe the knockback is 
+                    // knocking back to the left, we're always iterating to the right.
+                    entity.X += Math.Sign(dx);                            
+                    entity.Y += Math.Sign(dy);
+                }
+                else
+                {
+                    return;
                 }
             }
         }
