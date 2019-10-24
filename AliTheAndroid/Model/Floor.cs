@@ -61,10 +61,11 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
+        
         // Work-around for poor serialization support of self-referencing entities
         // See comments on SerializationTests.SerializeAndDeserializePowerUps.
         // We pair everything here on deserialize.
-        public PowerUp[] PairedPowerUps;
+        public PowerUp[] PairedPowerUps = new PowerUp[0];
         public readonly List<AbstractEntity> QuantumPlasma = new List<AbstractEntity>();
 
         public Player Player;
@@ -644,16 +645,18 @@ namespace DeenGames.AliTheAndroid.Model
             return GetAdjacentFloors(coordinates).Count;
         }
 
-        internal List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
-            return this.GetAdjacentFloors(coordinates.X, coordinates.Y);
+        internal List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates, bool isGravityWalkable = false)
+        {
+            return this.GetAdjacentFloors(coordinates.X, coordinates.Y, isGravityWalkable);
         }
 
-        internal List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY) {
+        internal List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY, bool isGravityWalkable = false)
+        {
             var toReturn = new List<GoRogue.Coord>();
 
             for (var y = centerY - 1; y <= centerY + 1; y++) {
                 for (var x = centerX - 1; x <= centerX + 1; x++) {
-                    if (IsWalkable(x, y))
+                    if (IsWalkable(x, y) || (isGravityWalkable && this.GravityWaves.Any(g => g.X == x && g.Y == y)))
                     {
                         toReturn.Add(new GoRogue.Coord(x, y));
                     }
@@ -760,7 +763,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GeneratePowerUps()
         {
-            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y) || this.GravityWaves.Any(g => g.X == f.X && g.Y == f.Y)).ToList();
+            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation, true);
             if (floorsNearStairs.Count < 2)
             {
                 // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
@@ -775,6 +778,11 @@ namespace DeenGames.AliTheAndroid.Model
                 moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
 
                 floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            }
+
+            if (!floorsNearStairs.Any() || floorsNearStairs.Count < 2)
+            {
+                throw new InvalidOperationException($"Can't generate power-ups on B{this.FloorNum + 1}");
             }
 
             // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
@@ -936,11 +944,14 @@ namespace DeenGames.AliTheAndroid.Model
                 this.SurroundStairsWithRelevantObstacle();
             }
 
-            this.GeneratePowerUps();
-            this.GenerateWeaponPickUp();
-            this.GenerateDataCube();
-            this.GenerateShipCore();
+            if (actualFloorNum < Dungeon.NumFloors)
+            {
+                this.GeneratePowerUps();
+                this.GenerateWeaponPickUp();
+                this.GenerateDataCube();
+            }
 
+            this.GenerateShipCore();
             this.GenerateMonsters();
 
             // Hack for bug: some rooms are like pocket dimensions for light

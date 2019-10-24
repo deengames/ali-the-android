@@ -143,5 +143,22 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             Assert.That(tutorialMessage.Contains("F to fire"));
             Assert.That(tutorialMessage.Contains("Q and E to turn"));
         }
+
+        [Test]
+        // https://trello.com/c/Eac7FBXb/164-no-power-ups-on-b7-b8-stairs-down
+        // Regression: when we made plasma unwalkable, it broke power-up generation in cases where the stairs
+        // room is filled with plasma (such as on B6, the Plasma Cannon floor).
+        public void PowerUpsGenerateOnAllFloorsNearStairs()
+        {
+            var dungeon = new Dungeon(80, 28, 559074989);
+
+            for (int floorNum = 0; floorNum < 9; floorNum++)
+            {
+                var floor = dungeon.Floors[floorNum];
+                var center = floor.StairsDownLocation;
+                Assert.That(floor.PowerUps.Any(p => p.X >= center.X - 3 && p.X <= center.X + 3 && p.Y >= center.Y - 3 && p.Y <= center.Y + 3),
+                    $"No powerups found around stairs ({center}) on B{floorNum + 1}.");
+            }
+        }
     }
 }
