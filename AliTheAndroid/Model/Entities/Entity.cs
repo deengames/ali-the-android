@@ -29,7 +29,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         public int Defense { get; set; }
 
         public int VisionRange { get; set; }
-        public virtual bool CanMove { get; set; } = true; // False for fake walls
+        public virtual bool CanMove { get; set; } = true; // False for fake walls, eggs, etc.
+        public virtual bool IsStunned { get; set; } = false;
 
         public static Entity CreateFromTemplate(string name, int x, int y)
         {

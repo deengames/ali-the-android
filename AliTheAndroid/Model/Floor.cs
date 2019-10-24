@@ -2037,63 +2037,70 @@ namespace DeenGames.AliTheAndroid.Model
             // Just use ToArray here to create a copy.
             foreach (var monster in this.Monsters.Where(m => m.CanMove).ToArray())
             {
-                var distance = Math.Sqrt(Math.Pow(Player.X - monster.X, 2) + Math.Pow(Player.Y - monster.Y, 2));
-
-                // Monsters who you can see, or hurt monsters, attack.
-                if (!monster.IsDead && (distance <= monster.VisionRange || monster.CurrentHealth < monster.TotalHealth))
+                if (monster.IsStunned)
                 {
-                    var spawner = monster as Spawner;
-                    if (spawner != null)
-                    {
-                        var floors = this.GetAdjacentFloors(new GoRogue.Coord(monster.X, monster.Y));
-                        if (floors.Any())
-                        {
-                            var floor = floors.OrderBy(f => random.Next()).First();
-                            this.Monsters.Add(Entity.CreateFromTemplate("Egg", floor.X, floor.Y));
-                            AudioManager.Instance.Play("EggLaid");
-                        }
-                    }
-                    
-                    // Process turn.
-                    if (distance <= 1)
-                    {
-                        // ATTACK~!
-                        var damage = Math.Max(monster.Strength - Player.Defense, 0);
-                        Player.Damage(damage, Weapon.Undefined);
-                        this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
-                        AudioManager.Instance.Play($"{monster.Name.Replace(" ", "")}Attacks");
-                    }
-                    else
-                    {
-                        // Move closer. Randomly-chosen axis.
-                        var dx = Math.Sign(Player.X - monster.X);
-                        var dy = Math.Sign(Player.Y - monster.Y);
-                        var moved = false;
-                        var validMoves = new List<GoRogue.Coord>(2);
-                        
-                        if (this.IsWalkable(monster.X + dx, monster.Y))
-                        {
-                            validMoves.Add(new GoRogue.Coord(monster.X + dx, monster.Y));
-                        }
-                        if (this.IsWalkable(monster.X, monster.Y + dy))
-                        {
-                            validMoves.Add(new GoRogue.Coord(monster.X, monster.Y + dy));
-                        }
+                    monster.IsStunned = false;
+                }
+                else
+                {
+                    var distance = Math.Sqrt(Math.Pow(Player.X - monster.X, 2) + Math.Pow(Player.Y - monster.Y, 2));
 
-                        if (validMoves.Any())
+                    // Monsters who you can see, or hurt monsters, attack.
+                    if (!monster.IsDead && (distance <= monster.VisionRange || monster.CurrentHealth < monster.TotalHealth))
+                    {
+                        var spawner = monster as Spawner;
+                        if (spawner != null)
                         {
-                            var move = validMoves[this.random.Next(0, validMoves.Count)];
-                            moved = this.TryToMove(monster, move.X, move.Y);
-                        }
-
-                        if (moved)
-                        {
-                            var plasma = this.PlasmaResidue.SingleOrDefault(p => p.X == monster.X && p.Y == monster.Y);
-                            if (plasma != null)
+                            var floors = this.GetAdjacentFloors(new GoRogue.Coord(monster.X, monster.Y));
+                            if (floors.Any())
                             {
-                                // Damaging here may cause the monsters collection to modify while iterating over it
-                                plasmaBurnedMonsters.Add(monster);
-                                this.PlasmaResidue.Remove(plasma);
+                                var floor = floors.OrderBy(f => random.Next()).First();
+                                this.Monsters.Add(Entity.CreateFromTemplate("Egg", floor.X, floor.Y));
+                                AudioManager.Instance.Play("EggLaid");
+                            }
+                        }
+                        
+                        // Process turn.
+                        if (distance <= 1)
+                        {
+                            // ATTACK~!
+                            var damage = Math.Max(monster.Strength - Player.Defense, 0);
+                            Player.Damage(damage, Weapon.Undefined);
+                            this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
+                            AudioManager.Instance.Play($"{monster.Name.Replace(" ", "")}Attacks");
+                        }
+                        else
+                        {
+                            // Move closer. Randomly-chosen axis.
+                            var dx = Math.Sign(Player.X - monster.X);
+                            var dy = Math.Sign(Player.Y - monster.Y);
+                            var moved = false;
+                            var validMoves = new List<GoRogue.Coord>(2);
+                            
+                            if (this.IsWalkable(monster.X + dx, monster.Y))
+                            {
+                                validMoves.Add(new GoRogue.Coord(monster.X + dx, monster.Y));
+                            }
+                            if (this.IsWalkable(monster.X, monster.Y + dy))
+                            {
+                                validMoves.Add(new GoRogue.Coord(monster.X, monster.Y + dy));
+                            }
+
+                            if (validMoves.Any())
+                            {
+                                var move = validMoves[this.random.Next(0, validMoves.Count)];
+                                moved = this.TryToMove(monster, move.X, move.Y);
+                            }
+
+                            if (moved)
+                            {
+                                var plasma = this.PlasmaResidue.SingleOrDefault(p => p.X == monster.X && p.Y == monster.Y);
+                                if (plasma != null)
+                                {
+                                    // Damaging here may cause the monsters collection to modify while iterating over it
+                                    plasmaBurnedMonsters.Add(monster);
+                                    this.PlasmaResidue.Remove(plasma);
+                                }
                             }
                         }
                     }
@@ -2267,6 +2274,7 @@ namespace DeenGames.AliTheAndroid.Model
                 var damage = Player.Strength - monster.Defense;
                 monster.Damage(damage, Weapon.Undefined);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
+                AudioManager.Instance.Play("Melee");
                 
                 if (Options.MeleeAttackPushesMonsters)
                 {
@@ -2279,7 +2287,13 @@ namespace DeenGames.AliTheAndroid.Model
                     {
                         defaultDirection = Player.X < monster.X ? Direction.Right : Direction.Left;
                     }
+
                     this.ApplyKnockbacks(monster, Player.X, Player.Y, 1, defaultDirection);
+                }
+
+                if (Options.MeleeAttackStuns)
+                {
+                    monster.IsStunned = true;
                 }
             }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)
