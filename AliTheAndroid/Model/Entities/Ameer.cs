@@ -10,7 +10,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private const int StunRoundsPerZap = 3;
 
         // Same colour as Zug or strongest monster
-        public bool IsStunned { get { return this.turnsLeftStunned > 0; } }
+        new public bool IsStunned { get { return this.turnsLeftStunned > 0; } }
 
         internal int turnsLeftStunned = 0;
 
