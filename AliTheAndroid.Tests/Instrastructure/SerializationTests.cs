@@ -50,7 +50,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
         {
             var expected = new Player();
 
-            var shieldDamage = 90;
+            var shieldDamage = 30;
             expected.Acquire(Weapon.GravityCannon);
             expected.Acquire(Weapon.InstaTeleporter);
             expected.CurrentWeapon = Weapon.GravityCannon;
@@ -73,7 +73,7 @@ namespace DeenGames.AliTheAndroid.Tests.Infrastructure
             Assert.That(actual.Strength, Is.EqualTo(expected.Strength));
             Assert.That(actual.TotalHealth, Is.EqualTo(expected.TotalHealth));
             Assert.That(actual.VisionRange, Is.EqualTo(expected.VisionRange));
-            Assert.That(actual.Shield.CurrentShield, Is.EqualTo(Shield.MaxShield - shieldDamage));
+            Assert.That(actual.Shield.CurrentShield, Is.EqualTo(KlogborgShield.MaxShield - shieldDamage));
 
             Assert.That(actual.Weapons.Count, Is.EqualTo(expected.Weapons.Count));
             foreach (var weapon in expected.Weapons)

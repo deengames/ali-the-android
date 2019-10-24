@@ -1,5 +1,4 @@
 using System.Linq;
-using Newtonsoft.Json;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
@@ -9,11 +8,18 @@ namespace DeenGames.AliTheAndroid.Model.Entities
     // fire, or get hit for three consecutive turns.)
     public class KlogborgShield : Shield
     {
+        new public const int MaxShield = 40;
+
+        public KlogborgShield()
+        {
+            this.CurrentShield = KlogborgShield.MaxShield;
+        }
+
         override public void OnMove(GoRogue.FOV playerFov, System.Collections.Generic.IList<Entity> monsters)
         {
-            if (this.CurrentShield < Shield.MaxShield && !monsters.Any(m => playerFov.BooleanFOV[m.X, m.Y] == true))
+            if (this.CurrentShield < KlogborgShield.MaxShield && !monsters.Any(m => playerFov.BooleanFOV[m.X, m.Y] == true))
             {
-                this.CurrentShield = Shield.MaxShield;
+                this.CurrentShield = KlogborgShield.MaxShield;
             }
         }
     }

@@ -24,7 +24,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
             shield.OnMove(fov, monsters);
 
             // Assert
-            Assert.That(shield.CurrentShield, Is.Not.EqualTo(Shield.MaxShield));
+            Assert.That(shield.CurrentShield, Is.Not.EqualTo(KlogborgShield.MaxShield));
         }
 
         [Test]
@@ -43,7 +43,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
             shield.OnMove(fov, monsters);
 
             // Assert
-            Assert.That(shield.CurrentShield, Is.EqualTo(Shield.MaxShield));
+            Assert.That(shield.CurrentShield, Is.EqualTo(KlogborgShield.MaxShield));
         }
     }
 }
