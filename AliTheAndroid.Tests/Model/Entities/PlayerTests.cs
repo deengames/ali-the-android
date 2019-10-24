@@ -34,7 +34,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
         {
             var player = new Player();
             Assert.That(player.Has(Weapon.Blaster), Is.True);
-            Assert.That(player.Shield.CurrentShield, Is.EqualTo(Shield.MaxShield));
+            Assert.That(player.Shield.CurrentShield, Is.EqualTo(KlogborgShield.MaxShield));
         }
 
         [Test]

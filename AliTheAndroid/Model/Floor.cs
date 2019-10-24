@@ -61,10 +61,11 @@ namespace DeenGames.AliTheAndroid.Model
         public readonly List<AbstractEntity> Chasms = new  List<AbstractEntity>();
         public readonly IList<Entity> Monsters = new List<Entity>();
         public readonly IList<PowerUp> PowerUps = new List<PowerUp>();
+        
         // Work-around for poor serialization support of self-referencing entities
         // See comments on SerializationTests.SerializeAndDeserializePowerUps.
         // We pair everything here on deserialize.
-        public PowerUp[] PairedPowerUps;
+        public PowerUp[] PairedPowerUps = new PowerUp[0];
         public readonly List<AbstractEntity> QuantumPlasma = new List<AbstractEntity>();
 
         public Player Player;
@@ -644,16 +645,18 @@ namespace DeenGames.AliTheAndroid.Model
             return GetAdjacentFloors(coordinates).Count;
         }
 
-        internal List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates) {
-            return this.GetAdjacentFloors(coordinates.X, coordinates.Y);
+        internal List<GoRogue.Coord> GetAdjacentFloors(GoRogue.Coord coordinates, bool isGravityWalkable = false)
+        {
+            return this.GetAdjacentFloors(coordinates.X, coordinates.Y, isGravityWalkable);
         }
 
-        internal List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY) {
+        internal List<GoRogue.Coord> GetAdjacentFloors(int centerX, int centerY, bool isGravityWalkable = false)
+        {
             var toReturn = new List<GoRogue.Coord>();
 
             for (var y = centerY - 1; y <= centerY + 1; y++) {
                 for (var x = centerX - 1; x <= centerX + 1; x++) {
-                    if (IsWalkable(x, y))
+                    if (IsWalkable(x, y) || (isGravityWalkable && this.GravityWaves.Any(g => g.X == x && g.Y == y)))
                     {
                         toReturn.Add(new GoRogue.Coord(x, y));
                     }
@@ -760,7 +763,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void GeneratePowerUps()
         {
-            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation).Where(f => this.IsWalkable(f.X, f.Y) || this.GravityWaves.Any(g => g.X == f.X && g.Y == f.Y)).ToList();
+            var floorsNearStairs = this.GetAdjacentFloors(StairsDownLocation, true);
             if (floorsNearStairs.Count < 2)
             {
                 // No nearby floors? Look harder. This happens when you generate a floor with seed=1234
@@ -775,6 +778,11 @@ namespace DeenGames.AliTheAndroid.Model
                 moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
 
                 floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+            }
+
+            if (!floorsNearStairs.Any() || floorsNearStairs.Count < 2)
+            {
+                throw new InvalidOperationException($"Can't generate power-ups on B{this.FloorNum + 1}");
             }
 
             // Use Distinct here because we may get duplicate floors (probably if we have only <= 2 tiles next to stairs)
@@ -936,11 +944,14 @@ namespace DeenGames.AliTheAndroid.Model
                 this.SurroundStairsWithRelevantObstacle();
             }
 
-            this.GeneratePowerUps();
-            this.GenerateWeaponPickUp();
-            this.GenerateDataCube();
-            this.GenerateShipCore();
+            if (actualFloorNum < Dungeon.NumFloors)
+            {
+                this.GeneratePowerUps();
+                this.GenerateWeaponPickUp();
+                this.GenerateDataCube();
+            }
 
+            this.GenerateShipCore();
             this.GenerateMonsters();
 
             // Hack for bug: some rooms are like pocket dimensions for light
@@ -1872,7 +1883,7 @@ namespace DeenGames.AliTheAndroid.Model
 
         private void ApplyKnockbacks(Entity entity, int centerX, int centerY, int distance, Direction optionalDirection)
         {
-            // Primary knockback in the direction of entity => cemter
+            // Primary knockback in the direction of entity => center
             var dx = entity.X - centerX;
             var dy = entity.Y - centerY;
             if (dx == 0 && dy == 0) {
@@ -1885,38 +1896,21 @@ namespace DeenGames.AliTheAndroid.Model
                 }
             }
             
-            int startX = entity.X;
-            int startY = entity.Y;
-            int stopX = startX + distance * Math.Sign(dx);
-            int stopY = startY + distance * Math.Sign(dy);
-
-            // Horrible method but iterates in one direction only, guaranteed
-            var minX = Math.Min(startX, stopX);
-            var maxX = Math.Max(startX, stopX);
-            var minY = Math.Min(startY, stopY);
-            var maxY = Math.Max(startY, stopY);
-
-            // Move if spaces are clear
-            for (var y = minY; y <= maxY; y++)
+            // Move entity <distance> times if spaces are clear
+            for (var i = 0; i < distance; i++)
             {
-                for (var x = minX; x <= maxX; x++)
+                // Check all spaces and move the entity one by one if the space is empty.
+                if (this.IsWalkable(entity.X + Math.Sign(dx), entity.Y + Math.Sign(dy)))
                 {
-                    if (x != entity.X || y != entity.Y)
-                    {
-                        // Check all spaces and move the entity one by one if the space is empty.
-                        if (this.IsWalkable(entity.X + Math.Sign(dx), entity.Y + Math.Sign(dy)))
-                        {
-                            // One of these is zero so we're really just moving in one direction.
-                            // We can't just set entity position because maybe the knockback is 
-                            // knocking back to the leftm we're always iterating to the right.
-                            entity.X += Math.Sign(dx);                            
-                            entity.Y += Math.Sign(dy);
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
+                    // One of these is zero so we're really just moving in one direction.
+                    // We can't just set entity position because maybe the knockback is 
+                    // knocking back to the left, we're always iterating to the right.
+                    entity.X += Math.Sign(dx);                            
+                    entity.Y += Math.Sign(dy);
+                }
+                else
+                {
+                    return;
                 }
             }
         }
@@ -2037,63 +2031,70 @@ namespace DeenGames.AliTheAndroid.Model
             // Just use ToArray here to create a copy.
             foreach (var monster in this.Monsters.Where(m => m.CanMove).ToArray())
             {
-                var distance = Math.Sqrt(Math.Pow(Player.X - monster.X, 2) + Math.Pow(Player.Y - monster.Y, 2));
-
-                // Monsters who you can see, or hurt monsters, attack.
-                if (!monster.IsDead && (distance <= monster.VisionRange || monster.CurrentHealth < monster.TotalHealth))
+                if (monster.IsStunned)
                 {
-                    var spawner = monster as Spawner;
-                    if (spawner != null)
-                    {
-                        var floors = this.GetAdjacentFloors(new GoRogue.Coord(monster.X, monster.Y));
-                        if (floors.Any())
-                        {
-                            var floor = floors.OrderBy(f => random.Next()).First();
-                            this.Monsters.Add(Entity.CreateFromTemplate("Egg", floor.X, floor.Y));
-                            AudioManager.Instance.Play("EggLaid");
-                        }
-                    }
-                    
-                    // Process turn.
-                    if (distance <= 1)
-                    {
-                        // ATTACK~!
-                        var damage = Math.Max(monster.Strength - Player.Defense, 0);
-                        Player.Damage(damage, Weapon.Undefined);
-                        this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
-                        AudioManager.Instance.Play($"{monster.Name.Replace(" ", "")}Attacks");
-                    }
-                    else
-                    {
-                        // Move closer. Randomly-chosen axis.
-                        var dx = Math.Sign(Player.X - monster.X);
-                        var dy = Math.Sign(Player.Y - monster.Y);
-                        var moved = false;
-                        var validMoves = new List<GoRogue.Coord>(2);
-                        
-                        if (this.IsWalkable(monster.X + dx, monster.Y))
-                        {
-                            validMoves.Add(new GoRogue.Coord(monster.X + dx, monster.Y));
-                        }
-                        if (this.IsWalkable(monster.X, monster.Y + dy))
-                        {
-                            validMoves.Add(new GoRogue.Coord(monster.X, monster.Y + dy));
-                        }
+                    monster.IsStunned = false;
+                }
+                else
+                {
+                    var distance = Math.Sqrt(Math.Pow(Player.X - monster.X, 2) + Math.Pow(Player.Y - monster.Y, 2));
 
-                        if (validMoves.Any())
+                    // Monsters who you can see, or hurt monsters, attack.
+                    if (!monster.IsDead && (distance <= monster.VisionRange || monster.CurrentHealth < monster.TotalHealth))
+                    {
+                        var spawner = monster as Spawner;
+                        if (spawner != null)
                         {
-                            var move = validMoves[this.random.Next(0, validMoves.Count)];
-                            moved = this.TryToMove(monster, move.X, move.Y);
-                        }
-
-                        if (moved)
-                        {
-                            var plasma = this.PlasmaResidue.SingleOrDefault(p => p.X == monster.X && p.Y == monster.Y);
-                            if (plasma != null)
+                            var floors = this.GetAdjacentFloors(new GoRogue.Coord(monster.X, monster.Y));
+                            if (floors.Any())
                             {
-                                // Damaging here may cause the monsters collection to modify while iterating over it
-                                plasmaBurnedMonsters.Add(monster);
-                                this.PlasmaResidue.Remove(plasma);
+                                var floor = floors.OrderBy(f => random.Next()).First();
+                                this.Monsters.Add(Entity.CreateFromTemplate("Egg", floor.X, floor.Y));
+                                AudioManager.Instance.Play("EggLaid");
+                            }
+                        }
+                        
+                        // Process turn.
+                        if (distance <= 1)
+                        {
+                            // ATTACK~!
+                            var damage = Math.Max(monster.Strength - Player.Defense, 0);
+                            Player.Damage(damage, Weapon.Undefined);
+                            this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
+                            AudioManager.Instance.Play($"{monster.Name.Replace(" ", "")}Attacks");
+                        }
+                        else
+                        {
+                            // Move closer. Randomly-chosen axis.
+                            var dx = Math.Sign(Player.X - monster.X);
+                            var dy = Math.Sign(Player.Y - monster.Y);
+                            var moved = false;
+                            var validMoves = new List<GoRogue.Coord>(2);
+                            
+                            if (this.IsWalkable(monster.X + dx, monster.Y))
+                            {
+                                validMoves.Add(new GoRogue.Coord(monster.X + dx, monster.Y));
+                            }
+                            if (this.IsWalkable(monster.X, monster.Y + dy))
+                            {
+                                validMoves.Add(new GoRogue.Coord(monster.X, monster.Y + dy));
+                            }
+
+                            if (validMoves.Any())
+                            {
+                                var move = validMoves[this.random.Next(0, validMoves.Count)];
+                                moved = this.TryToMove(monster, move.X, move.Y);
+                            }
+
+                            if (moved)
+                            {
+                                var plasma = this.PlasmaResidue.SingleOrDefault(p => p.X == monster.X && p.Y == monster.Y);
+                                if (plasma != null)
+                                {
+                                    // Damaging here may cause the monsters collection to modify while iterating over it
+                                    plasmaBurnedMonsters.Add(monster);
+                                    this.PlasmaResidue.Remove(plasma);
+                                }
                             }
                         }
                     }
@@ -2267,6 +2268,7 @@ namespace DeenGames.AliTheAndroid.Model
                 var damage = Player.Strength - monster.Defense;
                 monster.Damage(damage, Weapon.Undefined);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
+                AudioManager.Instance.Play("Melee");
                 
                 if (Options.MeleeAttackPushesMonsters)
                 {
@@ -2279,7 +2281,13 @@ namespace DeenGames.AliTheAndroid.Model
                     {
                         defaultDirection = Player.X < monster.X ? Direction.Right : Direction.Left;
                     }
-                    this.ApplyKnockbacks(monster, Player.X, Player.Y, 2, defaultDirection);
+
+                    this.ApplyKnockbacks(monster, Player.X, Player.Y, 1, defaultDirection);
+                }
+
+                if (Options.MeleeAttackStuns)
+                {
+                    monster.IsStunned = true;
                 }
             }
             else if (this.Doors.SingleOrDefault(d => d.X == destinationX && d.Y == destinationY && d.IsLocked == false) != null)

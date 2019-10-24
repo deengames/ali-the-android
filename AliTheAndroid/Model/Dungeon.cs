@@ -31,6 +31,7 @@ namespace DeenGames.AliTheAndroid.Model
         private readonly IGenerator globalRandom;
 
         [JsonConstructor]
+        // JSON/deserialization constructor
         public Dungeon(int width, int height, int currentFloorNum, Floor currentFloor, Player player) : this(width, height)
         {
             this.CurrentFloorNum = currentFloorNum;
@@ -38,6 +39,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.Player = player;
         }
 
+        // Common constructor
         public Dungeon(int width, int height)
         {
             Dungeon.Instance = this;
@@ -56,6 +58,7 @@ namespace DeenGames.AliTheAndroid.Model
             this.Height = height;
         }
 
+        // Production-code constructor
         public Dungeon(int widthInTiles, int heightInTiles, int? gameSeed = null)
         : this(widthInTiles, heightInTiles)
         {

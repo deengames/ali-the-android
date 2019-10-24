@@ -46,6 +46,7 @@ namespace DeenGames.AliTheAndroid
         // Constants. "Retired" feature toggles, if you will.
         public const bool ShowFakeWalls = true; // Should always be true
         public const bool MeleeAttackPushesMonsters = true;
+        public const bool MeleeAttackStuns = true;
 
         // Manual testing stuff
         public const bool StartWithAllWeapons = false;
