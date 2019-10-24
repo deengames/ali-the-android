@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RuntimeFrameworkVersion>2.1.13</RuntimeFrameworkVersion>
     <VersionPrefix>1.0.0</VersionPrefix>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
