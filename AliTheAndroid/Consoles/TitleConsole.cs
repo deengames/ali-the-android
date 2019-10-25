@@ -77,7 +77,8 @@ namespace DeenGames.AliTheAndroid.Consoles
             EventBus.Reset();
             InGameSubMenuConsole.IsOpen = false;
 
-            MenuY = (this.Height / 2) - 2;
+            // Not sure where -1 comes from. Credits, maybe?
+            MenuY = (this.Height / 2) - 1;
 
             this.DrawTitleText();
             this.DrawMenu();
@@ -281,7 +282,12 @@ namespace DeenGames.AliTheAndroid.Consoles
 
             var twitterX = (this.Width - "Twitter: @nightblade99".Length) / 2;
             var twitterY = deenGamesY + 1;
+
             this.Print(twitterX, twitterY, "Twitter: @nightblade99", Palette.Blue);
+
+            var message = "Co-designed by Peter Klogborg (@peterklogborg)";
+            var coDesignedX = (this.Width - message.Length) / 2;
+            this.Print(coDesignedX, twitterY + 1, message, Palette.Blue);
         }
 
         private void DrawMenu()
