@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace DeenGames.AliTheAndroid.Consoles
 {
-    class SplashConsole : SadConsole.Console
+    class SplashConsole : AbstractConsole
     {
         private Texture2D texture;
         private Vector2 position;
