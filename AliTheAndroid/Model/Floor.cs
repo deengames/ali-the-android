@@ -656,7 +656,7 @@ namespace DeenGames.AliTheAndroid.Model
 
             for (var y = centerY - 1; y <= centerY + 1; y++) {
                 for (var x = centerX - 1; x <= centerX + 1; x++) {
-                    if (IsWalkable(x, y) || (isGravityWalkable && this.GravityWaves.Any(g => g.X == x && g.Y == y)))
+                    if (IsWalkable(x, y) || (isGravityWalkable && IsWalkable(x, y, true)))
                     {
                         toReturn.Add(new GoRogue.Coord(x, y));
                     }
@@ -772,12 +772,12 @@ namespace DeenGames.AliTheAndroid.Model
                 var leftOfStairs = new GoRogue.Coord(StairsDownLocation.X - 1, StairsDownLocation.Y);
                 var rightOfStairs = new GoRogue.Coord(StairsDownLocation.X + 1, StairsDownLocation.Y);
 
-                var moreTiles = this.GetAdjacentFloors(aboveStairs);
-                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs));
-                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs));
-                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs));
+                var moreTiles = this.GetAdjacentFloors(aboveStairs, true);
+                moreTiles.AddRange(this.GetAdjacentFloors(belowStairs, true));
+                moreTiles.AddRange(this.GetAdjacentFloors(leftOfStairs, true));
+                moreTiles.AddRange(this.GetAdjacentFloors(rightOfStairs, true));
 
-                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y)).ToList();
+                floorsNearStairs = moreTiles.Where(f => this.IsWalkable(f.X, f.Y, true)).ToList();
             }
 
             if (!floorsNearStairs.Any() || floorsNearStairs.Count < 2)

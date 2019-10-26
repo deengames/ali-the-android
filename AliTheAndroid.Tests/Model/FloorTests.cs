@@ -747,6 +747,15 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             }
         }
 
+        [Test]
+        // https://trello.com/c/TjX5mEQg/169-power-ups-generate-on-top-of-chasms-epic-sigh
+        public void PowerUpsDontGenerateOnChasms()
+        {
+            var dungeon = new Dungeon(80, 28, 948154598);
+            var b8 = dungeon.Floors[7];
+            Assert.That(b8.PowerUps.All(p => b8.Chasms.All(c => p.X != c.X || p.Y != c.Y)));
+        }
+
         private List<GoRogue.Coord> getSurroundingTiles(GoRogue.Coord location)
         {
             var x = location.X;
