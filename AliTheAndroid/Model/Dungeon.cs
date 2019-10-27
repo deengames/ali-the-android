@@ -97,7 +97,7 @@ namespace DeenGames.AliTheAndroid.Model
         {
             if (this.CurrentFloorNum > -1)
             {
-                AudioManager.Instance.Play("Descend");
+                AudioManager.Instance.Play("Descend", true);
             }
 
             this.CurrentFloorNum++;
@@ -128,7 +128,7 @@ namespace DeenGames.AliTheAndroid.Model
         public void GoToPreviousFloor()
         {
             Options.EnableOmniSight = false;
-            AudioManager.Instance.Play("Ascend");
+            AudioManager.Instance.Play("Ascend", true);
             this.CurrentFloorNum--;
             this.CurrentFloor = this.Floors[this.CurrentFloorNum];
             LastGameLogger.Instance.Log($"Ascended to B{this.CurrentFloorNum + 1}");

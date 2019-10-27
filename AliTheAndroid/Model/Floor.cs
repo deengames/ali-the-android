@@ -204,7 +204,7 @@ namespace DeenGames.AliTheAndroid.Model
                         }
                         else
                         {
-                            AudioManager.Instance.Play("MonsterDies");
+                            AudioManager.Instance.Play("MonsterDies", true);
                         }
                     }
                 }
@@ -220,7 +220,7 @@ namespace DeenGames.AliTheAndroid.Model
                     if (egg != null)
                     {
                         this.Monsters.Remove(egg);
-                        AudioManager.Instance.Play("EggHatches");
+                        AudioManager.Instance.Play("EggHatches", true);
                     }
 
                     // Add monster
@@ -293,7 +293,7 @@ namespace DeenGames.AliTheAndroid.Model
                 foreach (var bolt in backlashes.Where(b => b.Character == '$')) {
                     foreach (var door in Doors.Where(d => d.IsLocked && d.X == bolt.X && d.Y == bolt.Y)) {
                         door.IsLocked = false;
-                        AudioManager.Instance.Play("UnlockDoor");
+                        AudioManager.Instance.Play("UnlockDoor", true);
                         this.LatestMessage = "You unlock the door!";
                     }
                 }
@@ -371,7 +371,7 @@ namespace DeenGames.AliTheAndroid.Model
                         else
                         {
                             this.LatestMessage = "Energy splays harmlessly across the crystal core.";
-                            AudioManager.Instance.Play("CoreAbsorbs");
+                            AudioManager.Instance.Play("CoreAbsorbs", true);
                         }
                     }
                 }
@@ -422,7 +422,7 @@ namespace DeenGames.AliTheAndroid.Model
                     {
                         var waves = GravityWaveFinder.FloodFillFind(wave, this.GravityWaves);
                         this.GravityWaves.RemoveAll(w => waves.Contains(w));
-                        AudioManager.Instance.Play("DisperseGravity");
+                        AudioManager.Instance.Play("DisperseGravity", true);
                     }
                 }
 
@@ -431,7 +431,7 @@ namespace DeenGames.AliTheAndroid.Model
                 {
                     Player.X = teleporterShot.TeleportTo.X;
                     Player.Y = teleporterShot.TeleportTo.Y;
-                    AudioManager.Instance.Play("Teleport");
+                    AudioManager.Instance.Play("Teleport", true);
                     this.OnPlayerMoved();
                 }
 
@@ -695,7 +695,7 @@ namespace DeenGames.AliTheAndroid.Model
             {
                 this.PowerUps.Remove(powerUpUnderPlayer);
                 Player.Absorb(powerUpUnderPlayer);
-                AudioManager.Instance.Play("PowerUp");
+                AudioManager.Instance.Play("PowerUp", true);
                 powerUpUnderPlayer.PickUp();
 
                 //  Heal if it's a health power-up
@@ -756,7 +756,7 @@ namespace DeenGames.AliTheAndroid.Model
                     }
                 }
             }
-            AudioManager.Instance.Play("Explosion");
+            AudioManager.Instance.Play("Explosion", true);
         }
 
         
@@ -2050,7 +2050,7 @@ namespace DeenGames.AliTheAndroid.Model
                             {
                                 var floor = floors.OrderBy(f => random.Next()).First();
                                 this.Monsters.Add(Entity.CreateFromTemplate("Egg", floor.X, floor.Y));
-                                AudioManager.Instance.Play("EggLaid");
+                                AudioManager.Instance.Play("EggLaid", true);
                             }
                         }
                         
@@ -2061,7 +2061,7 @@ namespace DeenGames.AliTheAndroid.Model
                             var damage = Math.Max(monster.Strength - Player.Defense, 0);
                             Player.Damage(damage, Weapon.Undefined);
                             this.LatestMessage += $" {monster.Name} attacks for {damage} damage!";
-                            AudioManager.Instance.Play($"{monster.Name.Replace(" ", "")}Attacks");
+                            AudioManager.Instance.Play($"{monster.Name.Replace(" ", "")}Attacks", true);
                         }
                         else
                         {
@@ -2209,32 +2209,32 @@ namespace DeenGames.AliTheAndroid.Model
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectBlaster]) && Player.Has(Weapon.Blaster))
             {
                 Player.CurrentWeapon = Weapon.Blaster;
-                AudioManager.Instance.Play("ChangeGun");
+                AudioManager.Instance.Play("ChangeGun", true);
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectMiniMissile]) && Player.Has(Weapon.MiniMissile))
             {
                 Player.CurrentWeapon = Weapon.MiniMissile;
-                AudioManager.Instance.Play("ChangeGun");
+                AudioManager.Instance.Play("ChangeGun", true);
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectZapper]) && Player.Has(Weapon.Zapper))
             {
                 Player.CurrentWeapon = Weapon.Zapper;
-                AudioManager.Instance.Play("ChangeGun");
+                AudioManager.Instance.Play("ChangeGun", true);
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectGravityCannon]) && Player.Has(Weapon.GravityCannon))
             {
                 Player.CurrentWeapon = Weapon.GravityCannon;
-                AudioManager.Instance.Play("ChangeGun");
+                AudioManager.Instance.Play("ChangeGun", true);
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectPlasmaCannon]) && Player.Has(Weapon.PlasmaCannon))
             {
                 Player.CurrentWeapon = Weapon.PlasmaCannon;
-                AudioManager.Instance.Play("ChangeGun");
+                AudioManager.Instance.Play("ChangeGun", true);
             }
             else if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.SelectTeleporter]) && Player.Has(Weapon.InstaTeleporter))
             {
                 Player.CurrentWeapon = Weapon.InstaTeleporter;
-                AudioManager.Instance.Play("ChangeGun");
+                AudioManager.Instance.Play("ChangeGun", true);
             }
             else if (this.FloorNum < 9 && this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.DescendStairs]) && (Options.CanUseStairsFromAnywhere || (Player.X == StairsDownLocation.X && Player.Y == StairsDownLocation.Y)))
             {
@@ -2268,7 +2268,7 @@ namespace DeenGames.AliTheAndroid.Model
                 var damage = Player.Strength - monster.Defense;
                 monster.Damage(damage, Weapon.Undefined);
                 this.LatestMessage = $"You hit {monster.Name} for {damage} damage!";
-                AudioManager.Instance.Play("Melee");
+                AudioManager.Instance.Play("Melee", true);
                 
                 if (Options.MeleeAttackPushesMonsters)
                 {
@@ -2296,7 +2296,7 @@ namespace DeenGames.AliTheAndroid.Model
                 if (!door.IsOpened) {
                     door.IsOpened = true;
                     this.LatestMessage = "You open the door.";
-                    AudioManager.Instance.Play("OpenDoor");
+                    AudioManager.Instance.Play("OpenDoor", true);
                 } else {
                     Player.X = door.X;
                     Player.Y = door.Y;
@@ -2439,7 +2439,7 @@ namespace DeenGames.AliTheAndroid.Model
                 EffectEntities.Add(new Bolt(Player.X + 2*dx - 2*ox, Player.Y + 2*dy - 2*oy));
                 EffectEntities.Add(new Bolt(Player.X + 3*dx - 3*ox, Player.Y + 3*dy - 3*oy));
 
-                AudioManager.Instance.Play("Zapper");
+                AudioManager.Instance.Play("Zapper", true);
             }
             
             this.Player.Freeze();
