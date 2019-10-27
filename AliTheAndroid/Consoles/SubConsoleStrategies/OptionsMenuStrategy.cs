@@ -111,7 +111,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
                     if (keyboard.IsKeyPressed(Key.NumPad4))
                     {
                         Options.SoundEffectsVolume = (Options.SoundEffectsVolume + SfxIncrement) % (100 + SfxIncrement);
-                        AudioManager.Instance.Play("Blaster");
+                        AudioManager.Instance.Play("Blaster", true);
                         this.SaveOptionsToDisk();
                     }
                     if (keyboard.IsKeyPressed(Key.NumPad5))

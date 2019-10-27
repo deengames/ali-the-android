@@ -2401,7 +2401,7 @@ namespace DeenGames.AliTheAndroid.Model
                 EffectEntities.Add(shot);
                 if (!string.IsNullOrEmpty(soundEffect))
                 {
-                    AudioManager.Instance.Play(soundEffect);
+                    AudioManager.Instance.Play(soundEffect, true);
                 }
             }
             else

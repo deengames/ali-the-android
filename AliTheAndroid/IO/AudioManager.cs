@@ -9,16 +9,19 @@ namespace  DeenGames.AliTheAndroid.IO
 {
     public class AudioManager
     {
+        private const float PITCH_VARIATION = 0.25f;
+
         public static AudioManager Instance = new AudioManager();
         private const string AudioFilesDirectory = "Content";
         private bool isInitialized = false;
+        private Random random = new Random();
 
         private IDictionary<string, SoundEffect> soundLibrary = new Dictionary<string, SoundEffect>();
         
         // Each sound and the one and only instance it can play
         private IDictionary<string, SoundEffectInstance> instances = new  ConcurrentDictionary<string, SoundEffectInstance>();
 
-        public void Play(string sound)
+        public void Play(string sound, bool varyPitch = false)
         {
             if (!isInitialized)
             {
@@ -46,6 +49,20 @@ namespace  DeenGames.AliTheAndroid.IO
 
             var instance = this.soundLibrary[sound].CreateInstance();
             instance.Volume = (Options.SoundEffectsVolume / 100f) * Options.GlobalSfxVolumeNerf;
+
+            if (varyPitch)
+            {
+                var probability = random.Next(100);
+                if (probability < 33)
+                {
+                    instance.Pitch = -PITCH_VARIATION;
+                }
+                else if (probability < 66)
+                {
+                    instance.Pitch = PITCH_VARIATION;
+                }
+            }
+
             instance.Play();
             this.instances[sound] = instance;
         }
