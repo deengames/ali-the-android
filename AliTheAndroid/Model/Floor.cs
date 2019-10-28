@@ -656,7 +656,9 @@ namespace DeenGames.AliTheAndroid.Model
 
             for (var y = centerY - 1; y <= centerY + 1; y++) {
                 for (var x = centerX - 1; x <= centerX + 1; x++) {
-                    if (IsWalkable(x, y) || (isGravityWalkable && IsWalkable(x, y, true)))
+                    if (
+                        (x != this.StairsDownLocation.X || y != this.StairsDownLocation.Y) &&
+                        (IsWalkable(x, y) || (isGravityWalkable && IsWalkable(x, y, true))))
                     {
                         toReturn.Add(new GoRogue.Coord(x, y));
                     }

@@ -754,6 +754,37 @@ namespace DeenGames.AliTheAndroid.Tests.Model
             var dungeon = new Dungeon(80, 28, 948154598);
             var b8 = dungeon.Floors[7];
             Assert.That(b8.PowerUps.All(p => b8.Chasms.All(c => p.X != c.X || p.Y != c.Y)));
+        
+        
+        }
+
+        [Test]
+        // https://trello.com/c/ZJXr2v4s/173-power-ups-shouldnt-appear-on-stairs
+        public void PowerUpsDontGenerateOnStairs()
+        {
+            var floor = new Floor(80, 28, 7, new StandardGenerator(527947247));
+            var powerUpFails = floor.PowerUps.Where(p => p.X == floor.StairsDownLocation.X && p.Y == floor.StairsDownLocation.Y);
+            Assert.That(!powerUpFails.Any(), "Found power-up on top of stairs-down");
+        }
+
+        // Helper method. When we find bugs, instead of generating dungeons and asserting on a specific floor,
+        // find a standalone floor that fails with that same condition. This is both more correct (we know that
+        // the fix worked, not that generation changed somewhere else that caused an entirely different floor to
+        // generate that doesn't reproduce the problem) and more efficient (dungeon = 10 floors slow, 1 floor = fast)
+        private void FindFloor()
+        {
+            const int FLOOR_NUM = 7; //  7 = B8
+
+            var random = new Random();
+
+            while (true)
+            {
+                var seed = random.Next();
+                var floor = new Floor(80, 28, FLOOR_NUM, new StandardGenerator(seed));
+                if (floor.PowerUps.Any(p => p.X == floor.StairsDownLocation.X && p.Y == floor.StairsDownLocation.Y)) {
+                    throw new Exception($"Found a matching seed s={seed} f={floor.FloorNum}");
+                }
+            }
         }
 
         private List<GoRogue.Coord> getSurroundingTiles(GoRogue.Coord location)
