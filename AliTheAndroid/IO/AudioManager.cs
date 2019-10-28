@@ -9,7 +9,7 @@ namespace  DeenGames.AliTheAndroid.IO
 {
     public class AudioManager
     {
-        private const float PITCH_VARIATION = 0.25f;
+        private const float PITCH_VARIATION = 0.10f;
 
         public static AudioManager Instance = new AudioManager();
         private const string AudioFilesDirectory = "Content";
