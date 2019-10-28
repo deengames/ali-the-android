@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using DeenGames.AliTheAndroid.Enums;
-using Microsoft.Xna.Framework;
 
 namespace DeenGames.AliTheAndroid.Model.Entities
 {
     public  class DataCube : AbstractEntity
     {
-        internal const int FirstDataCubeFloor = 2; // 2 = B2
+        internal const int FirstDataCubeFloor = 1; // 1 = B1 = Khalifa's Message
         internal static int NumCubes { get { return cubeTexts.Count; } }
 
         // Buzz-words: Experiment Chamber, AllCure, prototype #37, Ameer
         // Tuple of (title, text)
         private static List<Tuple<string, string>> cubeTexts = new List<Tuple<string, string>>()
         {
+            // B1 = intro
+            new Tuple<string, string>("The Khalifa's Message", @"Hello, world!!!!!!"),
             // B2
             new Tuple<string, string>("First Day", @"Shifaa Corporation hired me to work on some sort of cure. It's exciting to start working at this space station, because the Qur'an teaches us that saving one life is like saving all of humanity!"),
             new Tuple<string, string>("Explosion", @"There was an explosion in the Experiment Chamber. AllCure prototype #37 leaked and affected a couple of the crew. The Ameer put them in quarantine. Why? Was it an accident? Or ... sabotage?"),

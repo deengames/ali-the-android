@@ -67,6 +67,8 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             }
 
             this.ChangeToShieldColor();
+
+            this.GotDataCube(DataCube.GetCube(1, GoRogue.Coord.NONE));
         }
 
         public void Freeze() {

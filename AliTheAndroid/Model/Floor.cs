@@ -1873,6 +1873,11 @@ namespace DeenGames.AliTheAndroid.Model
             return false;
         }
 
+        internal void ShowIntroCube()
+        {
+            this.ShowDataCube(DataCube.GetCube(1, GoRogue.Coord.NONE));
+        }
+
         private void ShowDataCube(DataCube cube)
         {
             // Trigger the data cube screen and select the cube in question

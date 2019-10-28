@@ -127,6 +127,13 @@ namespace DeenGames.AliTheAndroid.Consoles
                 }
 
                 SadConsole.Global.CurrentScreen = new CoreGameConsole(this.Width, this.Height, dungeon);
+
+                // Show intro events after all event bus handlers are set
+                if (dungeon.CurrentFloorNum == 0 && !loadGame)
+                {
+                    // New game. Show intro data cube, now that event handlers are set up.
+                    dungeon.Floors[0].ShowIntroCube();
+                }
             }
 
             if (optionsMenu == null)
