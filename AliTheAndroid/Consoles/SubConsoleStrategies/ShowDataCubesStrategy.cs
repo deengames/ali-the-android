@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeenGames.AliTheAndroid.Accessibility;
@@ -137,8 +136,15 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
         {
             console.Print(2, 2, cubeShown.Title, Palette.LightRed);
             var lastY = this.PrettyPrint(console, 2, 4, cubeShown.Text, Palette.OffWhite);
-            
-            if (cubeShown == DataCube.EndGameCube)
+
+            if (cubeShown.FloorNumber == 1)
+            {
+                lastY = this.PrettyPrint(console, 2, lastY + 2, "Our engineers outfitted you with a prototype combat shield that recharges instantly, but it only works if you're alone - any nearby entities will prevent it from charging.", Palette.OffWhite);
+                
+                var signature = "-The Khalifa";
+                console.Print(console.Width - 2 - signature.Length, lastY + 2, signature, Palette.OffWhite);
+            }
+            else if (cubeShown == DataCube.EndGameCube)
             {
                 console.Print(2, lastY + 2, "Congratulations on completing the game!", Palette.White);
                 console.Print(2, lastY + 4, "Thanks for playing! If you have any feedback,", Palette.Blue);

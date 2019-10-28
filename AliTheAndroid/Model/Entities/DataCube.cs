@@ -14,7 +14,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
         private static List<Tuple<string, string>> cubeTexts = new List<Tuple<string, string>>()
         {
             // B1 = intro
-            new Tuple<string, string>("The Khalifa's Message", @"Hello, world!!!!!!"),
+            new Tuple<string, string>("The Khalifa's Message", @"Ali, I'm dispatching you to you this space station to investigate what happened. They were researching a nanotech cure that could help us defeat The Hive before Earth is overrun. Communications went dark two weeks ago and I fear the Hive may have reached them. Find out what happened and report back to me."),
             // B2
             new Tuple<string, string>("First Day", @"Shifaa Corporation hired me to work on some sort of cure. It's exciting to start working at this space station, because the Qur'an teaches us that saving one life is like saving all of humanity!"),
             new Tuple<string, string>("Explosion", @"There was an explosion in the Experiment Chamber. AllCure prototype #37 leaked and affected a couple of the crew. The Ameer put them in quarantine. Why? Was it an accident? Or ... sabotage?"),
@@ -27,7 +27,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             new Tuple<string, string>("Too Late", @"The Ameer finished the AllCure, infected himself, and killed everyone. His wounds heal instantly. If I can overload the ship core with my plasma cannon, the resulting quantum plasma will vapourize everything - that abomindable AllCure ceases to exist. There are no escape pods.")
         };
 
-        internal static DataCube EndGameCube = new DataCube(0, 0, 0, "Intercepted: Ameer's Message", "At last! The experiments were a success - I used the final version of the AllCure virus on myself, and I am indestructible! Our plan to end the khilafah and achieve wealth beyond imagination can now begin in earnest. I sent you the genetic blueprints for replication - please begin production immediately.");
+        internal static DataCube EndGameCube = new DataCube(0, 0, 0, "Intercepted: Ameer's Message", "At last! The experiments were a success - I used the final version of the AllCure virus on myself, and I am indestructible! The Khalifa, the empire, and then the Hive will be no match for our armies. I sent you the genetic blueprint for replication - begin production immediately.");
 
         private const char DisplayCharacter = (char)240; // ≡
 
