@@ -18,7 +18,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
             // B2
             new Tuple<string, string>("First Day", @"Shifaa Corporation hired me to work on some sort of cure. It's exciting to start working at this space station, because the Qur'an teaches us that saving one life is like saving all of humanity!"),
             new Tuple<string, string>("Explosion", @"There was an explosion in the Experiment Chamber. AllCure prototype #37 leaked and affected a couple of the crew. The Ameer put them in quarantine. Why? Was it an accident? Or ... sabotage?"),
-            new Tuple<string, string>("Weapon", @"We're not building a cure. We're building a weapon. We told the Ameer, but he didn't even blink.  He knew.  How can he support this? Doesn't he know that he will be held accountable after death?"),
+            new Tuple<string, string>("Weapon", @"We're not building a cure. We're building a weapon. We told the Ameer, but he didn't even blink.  He knew.  How can he support this? Doesn't he know that he will be held accountable in the Afterlife?"),
             new Tuple<string, string>("Virus", @"After working hours, I gained access to the Experiment Chamber through the vents.  I found and analyzed a blood sample with AllCure.  It's an air-borne virus. It's in the vents. It's everywhere."),
             new Tuple<string, string>("Infection", @"I cut myself on a metal fragment coming back from the Experiment Chamber. Feel strange. I'm infected. I can feel my senses heightening, muscles growing. What am I becoming?"),
             new Tuple<string, string>("Plasma Drive", @"The scientists finished AllCure - the Ameer turned them into Zugs with the prototype. They damaged our warp drive ... inert gravity waves spread everywhere."),
