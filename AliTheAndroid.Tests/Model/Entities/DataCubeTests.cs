@@ -8,7 +8,7 @@ namespace DeenGames.AliTheAndroid.Tests.Model.Entities
     public class DataCubeTests
     {
         [TestCase(0)]
-        [TestCase(1)]
+        [TestCase(-1)]
         [TestCase(10)]
         [TestCase(17)]
         public void GetCubeThrowsIfFloorIsOutOfRange(int floorNum)
