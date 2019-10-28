@@ -2132,7 +2132,12 @@ namespace DeenGames.AliTheAndroid.Model
         }
 
         private bool ProcessPlayerInput()
-        {            
+        {
+            if (InGameSubMenuConsole.IsOpen)
+            {
+                return false;
+            }
+
             if (Player.IsDead) {
                 if (this.keyboard.IsKeyPressed(Options.KeyBindings[GameAction.OpenMenu]))
                 {
