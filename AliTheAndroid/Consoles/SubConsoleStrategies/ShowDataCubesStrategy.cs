@@ -139,7 +139,7 @@ namespace  DeenGames.AliTheAndroid.Consoles.SubConsoleStrategies
 
             if (cubeShown.FloorNumber == 1)
             {
-                lastY = this.PrettyPrint(console, 2, lastY + 2, "Our engineers outfitted you with a prototype combat shield that recharges instantly, but it only works if you're alone - any nearby entities will prevent it from charging.", Palette.OffWhite);
+                lastY = this.PrettyPrint(console, 2, lastY + 2, "Our engineers outfitted you with a prototype combat shield that recharges instantly, but it needs space to work - any nearby entities will prevent it from recharging.", Palette.OffWhite);
                 
                 var signature = "-The Khalifa";
                 console.Print(console.Width - 2 - signature.Length, lastY + 2, signature, Palette.OffWhite);
