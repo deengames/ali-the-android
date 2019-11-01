@@ -87,7 +87,7 @@ namespace DeenGames.AliTheAndroid.Model
             // Intro events/message
             var arrowKeys = $"{Options.KeyBindings[GameAction.MoveUp]}{Options.KeyBindings[GameAction.MoveLeft]}{Options.KeyBindings[GameAction.MoveDown]}{Options.KeyBindings[GameAction.MoveRight]}";
             var rotateKeys = $"{Options.KeyBindings[GameAction.TurnCounterClockWise]} and {Options.KeyBindings[GameAction.TurnClockWise]}";
-            this.Floors[0].LatestMessage = $"You beam to the deep-space research station. No lights or life-support. Use {arrowKeys} to move. Press {Options.KeyBindings[GameAction.Fire]} to fire, {rotateKeys} to turn.";
+            this.Floors[0].LatestMessage = $"You beam to the deep-space research station. No lights or life-support. Use {arrowKeys} to move. Press {Options.KeyBindings[GameAction.Fire]} to fire, {rotateKeys} to turn. Walk into enemies to knock them back.";
 
             stopwatch.Stop();
             LastGameLogger.Instance.Log($"Generated in {stopwatch.Elapsed.TotalSeconds}s");

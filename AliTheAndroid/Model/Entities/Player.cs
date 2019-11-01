@@ -14,7 +14,7 @@ namespace DeenGames.AliTheAndroid.Model.Entities
 
         internal static readonly Dictionary<Weapon, string> WeaponPickupMessages = new Dictionary<Weapon, string>() {
             { Weapon.MiniMissile,       "Fire missiles to destroy cracked walls and debris." },
-            { Weapon.Zapper,            "Unjam sealed doors with a jolt of energy." },
+            { Weapon.Zapper,            "Unjam sealed doors with a jolt of energy. Zaps adjacent enemies." },
             { Weapon.GravityCannon,     "Knock back monsters and disperse gravity waves." },
             { Weapon.InstaTeleporter,   "Teleport across insurmountable chasms." },
             { Weapon.PlasmaCannon,      "Super-heats the floor to damage anything in its wake." },
