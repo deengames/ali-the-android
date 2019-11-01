@@ -1,7 +1,7 @@
 [Bb]in
 [Oo]bj
+publish
 out_windows
-out_linux
 *.zip
 LastGame.txt
 Options.txt
