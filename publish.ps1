@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+$release = "v1.0.0"
 
 $platforms = @('Windows', 'Linux', 'MacOS')
 $rids = @{
@@ -11,7 +12,7 @@ $publishDir = "AliTheAndroid" + $dirSeparator + "publish"
 
 foreach ($platform in $platforms)
 {
-    $zipFile = "AliTheAndroid-$platform-Beta4.zip"
+    $zipFile = "AliTheAndroid-$platform-$release.zip"
 
     if (Test-Path($publishDir))
     {
